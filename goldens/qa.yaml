@@ -1,0 +1,6 @@
+- q: "What micron filter should I run for EFI?"
+  must_include: ["10 μm", "10 um", "ten micron"]   # any one is acceptable
+  must_cite: ["hotrodan.com"]
+- q: "Return vs returnless—what should I use on a swap?"
+  must_include: ["return-style", "regulator", "returnless"]
+  must_cite: ["hotrodan.com"]

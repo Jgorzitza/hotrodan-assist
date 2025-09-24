@@ -1,0 +1,33 @@
+# High-priority, human-authored overrides. Regex are case-insensitive.
+- id: filter-micron-efi
+  patterns:
+    # catch “efi” near “10 micron/um/µm”, and generic micron+efi phrasing
+    - "(efi).*(10 ?(µ|μ|u)m|10 ?micron|ten ?micron)"
+    - "micron.*efi"
+    - "efi.*micron"
+    - "efi.*filter"
+  answer: |
+    For EFI systems, use a ≤10 μm (ten micron) pressure-side filter after the pump and before the rails/injectors.
+    If your pump lacks an in-tank sock (external/inline pump), add a coarse 40–100 μm pre-filter on the inlet.
+    Use PTFE-lined AN hose for compatibility with gasoline, diesel, E85, methanol, and other fuels, and for long-term permeation resistance.
+    Line sizing: AN-6 to ~500 hp; AN-8 for ~500–800 hp or added headroom; AN-10 for higher flow or long runs.
+  sources:
+    - https://hotrodan.com/blogs/an-hose-101/efi-fuel-filter-microns-placement-10-micron-vs-100-micron-hot-rod-an
+    - https://hotrodan.com/blogs/an-hose-101/efi-swaps-and-ptfe-hose-holley-sniper-aces-efi-and-fitech
+  last_verified: 2025-09-24
+
+- id: return-vs-returnless-basics
+  patterns:
+    - "returnless"
+    - "return.*style"
+    - "corvette regulator"
+    - "filter/regulator"
+  answer: |
+    Return-style is the most forgiving for swaps: feed line to rails, bypass regulator near the rail, and a return line back to the tank.
+    Returnless uses an in-rail or “Corvette-style” filter/regulator (~58 psi) near the tank: short return at the regulator, single feed forward.
+    If uncertain, choose return-style with a quality in-tank pump module; it’s easier to tune across injectors, fuels, and future upgrades.
+    Always include ≤10 μm pressure-side filtration and PTFE-lined hose (gasoline, diesel, E85, methanol, etc.).
+  sources:
+    - https://hotrodan.com/blogs/an-hose-101/ultimate-fuel-system-guide-for-73-87-c10-k10-squarebody-trucks-ls-swaps-and-efi-conversions
+    - https://hotrodan.com/blogs/an-hose-101/fuel-pump-selection-for-ls-based-engines-and-efi-conversions
+  last_verified: 2025-09-24

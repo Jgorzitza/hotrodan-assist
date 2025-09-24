@@ -1,0 +1,58 @@
+import os, yaml, subprocess, sys, re
+
+GOLDENS = "goldens/qa.yaml"
+ROUTER = "query_chroma_router.py"
+
+def run_query(q):
+    p = subprocess.run([sys.executable, ROUTER, q], capture_output=True, text=True)
+    if p.returncode != 0:
+        raise RuntimeError(f"Router errored: {p.stderr.strip()}")
+    return p.stdout
+
+def check_case(case, out):
+    ok = True
+    ans_start = out.find("=== ANSWER ===")
+    ans = out[ans_start:] if ans_start >= 0 else out
+    ci = ans.lower()
+
+    # must include (any token must appear)
+    tokens = case.get("must_include", [])
+    if tokens:
+        if not any(t.lower() in ci for t in tokens):
+            print(f"[FAIL include] Missing any of {tokens}")
+            ok = False
+
+    # must cite (any domain must appear in sources section)
+    src_start = out.find("=== SOURCES ===")
+    src = out[src_start:] if src_start >= 0 else out
+    cites = case.get("must_cite", [])
+    if cites:
+        if not any(dom.lower() in src.lower() for dom in cites):
+            print(f"[FAIL cite] Missing any of {cites}")
+            ok = False
+    return ok
+
+def main():
+    if not os.getenv("OPENAI_API_KEY"):
+        print("Missing OPENAI_API_KEY")
+        sys.exit(2)
+
+    cases = yaml.safe_load(open(GOLDENS))
+    failures = 0
+    for i, case in enumerate(cases, 1):
+        q = case["q"]
+        print(f"\n[{i}] {q}")
+        out = run_query(q)
+        ok = check_case(case, out)
+        if not ok:
+            print("---- OUTPUT ----")
+            print(out)
+            failures += 1
+    if failures:
+        print(f"\n{failures} failing golden(s).")
+        sys.exit(1)
+    print("\nAll goldens passed.")
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()
