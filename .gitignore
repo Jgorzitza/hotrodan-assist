@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# LlamaIndex / Chroma artifacts
+chroma/
+storage/
+data/chroma/
+data/storage/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Node (if used for Approval App)
+node_modules/
+pnpm-lock.yaml
+yarn.lock
+npm-debug.log*
