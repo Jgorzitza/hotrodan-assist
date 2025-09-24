@@ -1,0 +1,128 @@
+import os, sys, re, chromadb
+from chromadb.config import Settings as ChromaSettings
+from llama_index.core import StorageContext, load_index_from_storage, Settings
+from llama_index.vector_stores.chroma import ChromaVectorStore
+from llama_index.llms.openai import OpenAI
+from llama_index.embeddings.openai import OpenAIEmbedding
+from rag_config import INDEX_ID, CHROMA_PATH, PERSIST_DIR, COLLECTION
+from router_config import ESCALATE_KEYWORDS, LEN_THRESHOLD
+
+# Valid escalation candidates on your account (top name wins)
+ESCALATE_CANDIDATES = [
+    "gpt-5",        # top-tier reasoning
+    "gpt-5-mini",   # mid-tier, cheaper
+    "gpt-4.1",      # strong fallback
+]
+
+def pick_model(candidates, temperature=0.2):
+    return OpenAI(model=candidates[0], temperature=temperature)
+
+def choose_model(question: str):
+    q = question.lower()
+    long_q = len(q) >= LEN_THRESHOLD
+    keyword_hit = any(k in q for k in ESCALATE_KEYWORDS)
+    if long_q or keyword_hit:
+        return pick_model(ESCALATE_CANDIDATES, temperature=0.2)
+    return OpenAI(model="gpt-4o-mini", temperature=0.2)
+
+# --- NEW: parse customer signals and build a tiny dynamic addendum ---
+def parse_signals(q: str):
+    ql = q.lower()
+
+    # horsepower: prefer explicit "xxx hp"; else largest 2–4 digit number as a guess
+    hp = None
+    m = re.findall(r'(\d{2,4})\s*hp', ql)
+    if m:
+        hp = max(int(x) for x in m)
+    else:
+        nums = [int(x) for x in re.findall(r'\b(\d{2,4})\b', ql)]
+        if nums:
+            # ignore years like 1979 if "hp" not nearby; keep <= 1500 as plausible hp
+            plausible = [n for n in nums if 60 <= n <= 1500]
+            if plausible:
+                hp = max(plausible)
+
+    fuel = "E85" if any(k in ql for k in ["e85", "ethanol", "flex fuel"]) else "pump gas"
+    boosted = any(k in ql for k in ["boost", "turbo", "supercharg", "blower"])
+    dual_tanks = any(k in ql for k in ["dual tank", "saddle tank", "selector valve", "tank switch"])
+    returnless = any(k in ql for k in ["returnless", "corvette regulator", "in-rail regulator"])
+
+    return {
+        "hp": hp,
+        "fuel": fuel,
+        "boosted": boosted,
+        "dual_tanks": dual_tanks,
+        "returnless": returnless,
+    }
+
+def dynamic_addendum(signals: dict) -> str:
+    hp = signals["hp"]
+    fuel = signals["fuel"]
+    boosted = signals["boosted"]
+    dual = signals["dual_tanks"]
+    retless = signals["returnless"]
+
+    bits = []
+    if hp:
+        bits.append(f"Approx target horsepower: ~{hp} hp. Recommend pump sizing with ~30% headroom.")
+    else:
+        bits.append("If horsepower is unspecified, assume mild street build (~350–450 hp) and note headroom options.")
+
+    bits.append(f"Fuel: {fuel}.")
+    bits.append("Induction: boosted." if boosted else "Induction: naturally aspirated.")
+    if dual:
+        bits.append("Plumbing note: customer mentions dual/selector-tank setup—address lift/merge or selector valve strategy.")
+    if retless:
+        bits.append("Customer mentioned returnless; compare with return-style and clarify regulator placement.")
+
+    # universal, product-forward guidance we always want included
+    bits.append("Always specify: ≤10 μm EFI pressure-side filtration; PTFE hose for ethanol compatibility.")
+    bits.append("Line sizing rule-of-thumb: AN-6 up to ~500 hp; AN-8 for ~500–800 hp or headroom; AN-10 for higher flow.")
+    bits.append("If boosted or E85, call out increased flow needs and recommend stepping pump/lines accordingly.")
+    return " ".join(bits)
+
+def main(question: str):
+    if not os.getenv("OPENAI_API_KEY"):
+        raise SystemExit("Missing OPENAI_API_KEY in environment.")
+
+    # Route per query
+    llm = choose_model(question)
+    Settings.llm = llm
+    Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
+
+    # Load vector store + index
+    client = chromadb.PersistentClient(path=CHROMA_PATH, settings=ChromaSettings())
+    collection = client.get_or_create_collection(COLLECTION, metadata={"hnsw:space":"cosine"})
+    vector_store = ChromaVectorStore(chroma_collection=collection)
+    storage = StorageContext.from_defaults(vector_store=vector_store, persist_dir=PERSIST_DIR)
+    index = load_index_from_storage(storage, index_id=INDEX_ID)
+
+    # General, platform-agnostic system hint
+    system_hint = (
+        "You are a Hot Rod AN tech specialist. Provide clear, platform-agnostic EFI fuel system recommendations "
+        "for street/performance builds across many vehicles (classic and modern, LS and non-LS). "
+        "Always cover: pump sizing (LPH vs target horsepower and fuel type), return vs returnless tradeoffs, "
+        "regulator placement, required filtration (≤10 μm pressure-side), typical AN line sizes, and PTFE hose for ethanol. "
+        "Reference parts generically (tanks/modules, inline options, filters, hose/fittings) without assuming a specific model. "
+        "Keep answers concise, practical, and ready-to-buy."
+    )
+
+    # Build dynamic context from the user's question
+    sig = parse_signals(question)
+    addendum = dynamic_addendum(sig)
+
+    qe = index.as_query_engine(response_mode="compact", similarity_top_k=10, text_qa_template=None)
+    resp = qe.query(system_hint + "\n\nCustomer signals: " + addendum + "\n\nQuestion: " + question)
+
+    print(f"\n[Model] {llm.model}\n")
+    print("=== ANSWER ===")
+    print(resp)
+    print("\n=== SOURCES ===")
+    for n in getattr(resp, "source_nodes", []):
+        print("-", n.metadata.get("source_url", "unknown"))
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print('Usage: python query_chroma_router.py "your question here"')
+        raise SystemExit(2)
+    main(" ".join(sys.argv[1:]))
