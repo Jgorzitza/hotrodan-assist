@@ -22,3 +22,5 @@ python run_goldens.py  # offline corrections-only; no API calls
 - Golden tests: goldens/qa.yaml, run_goldens.py
 - Handover spec: HANDOVER.md
 >>>>>>> c11eefd (Initial handover bundle)
+
+See **HANDOVER_ALL_IN_ONE.md** for the full spec.
