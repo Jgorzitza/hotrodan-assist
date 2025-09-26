@@ -7,6 +7,7 @@ import {
 } from "@remix-run/react";
 import {
   Badge,
+  Banner,
   BlockStack,
   Button,
   ButtonGroup,
@@ -20,21 +21,32 @@ import {
 import { TitleBar } from "@shopify/app-bridge-react";
 
 import { authenticate } from "../shopify.server";
-import { getDashboardOverview } from "../mocks";
-import type { DashboardOverview } from "../mocks/dashboard";
+import { scenarioFromRequest } from "~/mocks";
+import { getDashboardOverview, type DashboardOverview } from "~/mocks/dashboard";
+import { USE_MOCK_DATA } from "~/mocks/config.server";
+import type { MockScenario } from "~/types/dashboard";
 
 const RANGE_OPTIONS = ["today", "7d", "28d", "90d"] as const;
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
+type LoaderData = {
+  data: DashboardOverview;
+  useMockData: boolean;
+  scenario: MockScenario;
+};
 
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const range = url.searchParams.get("range") ?? "28d";
+  const scenario = scenarioFromRequest(request);
 
-  const data = await getDashboardOverview(range);
+  if (!USE_MOCK_DATA) {
+    await authenticate.admin(request);
+  }
 
-  return json<{ data: DashboardOverview }>(
-    { data },
+  const data = await getDashboardOverview(range, scenario);
+
+  return json<LoaderData>(
+    { data, useMockData: USE_MOCK_DATA, scenario },
     {
       headers: {
         "Cache-Control": "private, max-age=0, must-revalidate",
@@ -44,7 +56,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function DashboardRoute() {
-  const { data } = useLoaderData<typeof loader>();
+  const { data, useMockData, scenario } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -63,6 +75,17 @@ export default function DashboardRoute() {
         primaryAction={{ content: "Settings", url: "/app/settings" }}
       />
       <BlockStack gap="500">
+        {useMockData && (
+          <Banner
+            title={`Mock data scenario: ${scenario}`}
+            tone={scenario === "warning" ? "warning" : "info"}
+          >
+            <p>
+              Change the `mockState` query parameter (base, empty, warning, error)
+              to preview different UI permutations.
+            </p>
+          </Banner>
+        )}
         <Card>
           <BlockStack gap="200">
             <InlineStack align="space-between" blockAlign="center">

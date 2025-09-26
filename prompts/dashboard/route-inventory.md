@@ -1,26 +1,26 @@
 # Route `/inventory` — Demand Planning
 
 ## Scope
-Provide actionable inventory planning tools:
-- Buckets: Need urgently (local supplier <2 days), Manufacturer sea (20d+30d), Manufacturer air (30d+5d).
-- Metrics: velocity, stockout date, safety stock, reorder point, overstock warnings with promo suggestions.
-- Purchase Order planner drafting recommended POs by vendor.
-- Trend charts for product velocity and forecast vs actual.
-- Integrations for manual adjustments, CSV import/export, and background sync jobs.
+Deliver a cockpit for demand planning and PO drafting:
+- Buckets: Need urgently (<48h), Manufacturer air (≈30d), Manufacturer sea (≈60d), Overstock / promo.
+- Metrics per SKU: velocity, safety stock, reorder point, projected stockout date, recommended reorder quantity.
+- Vendor purchase-order planner with inline quantity edits, notes, and draft totals.
+- SKU drill-in modal with demand trend placeholder and bucket context.
+- Stubs for CSV export and action hooks that will later connect to background jobs + live Shopify inventory.
 
 ## Deliverables
-- Remix loader supplying bucketed inventory data + vendor recommendations from mock dataset.
-- Polaris UI: `Page`, `Layout`, `Card`, `Tabs`, `IndexTable`, `Chart` component for trends, `Modal` for PO planner.
-- Action endpoints for creating draft POs (mock persistence) and tagging promo suggestions.
-- Helper components: `InventoryBadge`, `TrendSparkline`, `RiskCallout`.
-- Empty state for fully stocked scenario + skeletons for loading.
+- Remix loader returning an `InventoryDashboardPayload` (summary metrics, bucket metadata, SKU detail, vendor drafts) from mock data.
+- Polaris UI composed of `Page`, `Layout`, `Tabs`, `IndexTable`, `Card`, `Modal`, `Banner`, and inline controls.
+- Action handler supporting draft-save (mock persistence) and CSV export stubbed via JSON payload for client-side download.
+- Inline editing for vendor drafts (quantities + notes) with optimistic UI and success badge feedback.
+- Detail modal surfacing computed metrics and a temporary trend block (replace with Polaris `LineChart` later).
 
 ## Technical Notes
-- Loader should compute bucket thresholds via `app/lib/inventory/math.ts`; ensure math functions accept overrides from settings.
-- Provide toggle for viewing data by vendor vs product; persists via URL params.
-- PO planner action writes to mock store + returns toast; TODO for integration with actual workflow (possibly Shopify draft orders or external ERP).
-- Export route for CSV should stream results; include TODO for background queue when >5k rows.
-- Ensure accessibility: table captions, descriptive aria labels on risk badges.
+- Inventory mocks now use `app/lib/inventory/math.ts` to derive safety stock, reorder point, and stockout dates; buckets & vendors seeded with deterministic faker data.
+- Loader/action both respect `USE_MOCK_DATA`; when false, they authenticate via Admin API stub before accessing mock builders.
+- URL param `bucket` drives tab selection; actions accept `bucketId` / `vendorId` for targeted CSV exports.
+- CSV export currently returns CSV text in JSON for client-side download; swap to streamed response once real data volume is wired.
+- TODOs: replace trend placeholder with Polaris chart, persist drafts in real store, wire background jobs for bucket recompute + CSV exports >5k rows.
 
 ## Dependencies
 - `seed-data.md` inventory scenarios + vendor metadata.
@@ -29,15 +29,15 @@ Provide actionable inventory planning tools:
 
 ## Tasks
 - [x] Loader hooking into inventory overview mocks (math helpers ready for live wiring).
-- [x] Summary card + row count controls (tabs/search still TODO).
-- [ ] Buckets/tabs UI with search + filters.
-- [ ] Trend charts and risk callouts.
-- [ ] PO planner modal/action stub with optimistic updates.
-- [ ] CSV export stub + documentation.
-- [x] Update overview + testing docs once implemented.
+- [x] Summary cards + bucket tabs with URL-param persistence.
+- [x] SKU `IndexTable` with detail modal and mock trend block.
+- [x] PO planner action + inline editing with optimistic feedback.
+- [x] CSV export stub + documentation.
+- [ ] Swap mock trend block for Polaris chart + real analytics feed.
+- [ ] Integrate live persistence (Shopify draft orders / background jobs) once data layer lands.
 
 ## Status / Notes
 - Owner: Codex (Section 0 bootstrap)
-- Blockers: awaiting planner modal + export flows.
-- Notes: current UI renders summary + item list via `dashboard/app/routes/app.inventory.tsx`; controls allow adjusting row count. Inventory mocks rebuilt with faker seed + `getInventoryOverview`; buckets/trends reflect scenario state.
-- Next: implement vendor/product tabs, trend visualizations, and PO planner once live data layer ready.
+- Blockers: pending live analytics + persistence layer to replace mock CSV + trend placeholder.
+- Notes: `dashboard/app/routes/app.inventory.tsx` now renders bucket tabs, SKU table, detail modal, and vendor planner; `dashboard/app/mocks/inventory.ts` supplies deterministic payloads per `mockState`. CSV export generates client-side download; TODO to stream once real data size known.
+- Next: instrument chart visualization, hook real Shopify data, and fold route into end-to-end testing once Admin credentials available.

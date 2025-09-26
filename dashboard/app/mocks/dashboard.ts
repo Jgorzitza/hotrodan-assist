@@ -164,11 +164,20 @@ const toInboxSnapshot = ({ inbox }: DashboardMocks): InboxSnapshot => {
   };
 };
 
-const toInventorySnapshot = ({ inventory }: DashboardMocks): InventorySnapshot => ({
-  lowStock: inventory.summary.low,
-  purchaseOrdersInFlight: inventory.summary.backorder + inventory.summary.preorder,
-  overstock: inventory.summary.preorder,
-});
+const toInventorySnapshot = ({ inventory }: DashboardMocks): InventorySnapshot => {
+  const purchaseOrdersInFlight = inventory.vendors.reduce((total, vendor) => {
+    return total + vendor.items.filter((item) => item.draftQuantity > 0).length;
+  }, 0);
+
+  const overstock =
+    inventory.buckets.find((bucket) => bucket.id === "overstock")?.skuCount ?? 0;
+
+  return {
+    lowStock: inventory.summary.skusAtRisk,
+    purchaseOrdersInFlight,
+    overstock,
+  };
+};
 
 const toSeoHighlight = ({ seo }: DashboardMocks): SeoHighlight => {
   const risingQueries = seo.insights.filter(

@@ -9,10 +9,10 @@ import type {
   ThresholdSettings,
 } from "../types/settings";
 
-const BASE_SHOP_DOMAIN = "demo-shop.myshopify.com";
-const HISTORY_LIMIT = 5;
+import { clone } from "./shared";
 
-const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+export const BASE_SHOP_DOMAIN = "demo-shop.myshopify.com";
+const HISTORY_LIMIT = 5;
 
 const baseThresholds: ThresholdSettings = {
   lowStockMinimum: 8,

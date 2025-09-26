@@ -7,3 +7,5 @@ llama-index-readers-web
 llama-index-readers-file
 chromadb>=0.5
 python-dotenv
+llama-index-embeddings-fastembed
+fastembed

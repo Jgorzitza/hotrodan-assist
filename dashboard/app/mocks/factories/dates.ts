@@ -1,5 +1,7 @@
 import type { DateRange, SalesGranularity } from "~/types/dashboard";
 
+export const DEFAULT_RANGE_END = new Date("2024-02-15T00:00:00.000Z");
+
 const toUtc = (value: Date | string): Date => {
   return typeof value === "string" ? new Date(value) : new Date(value.getTime());
 };
@@ -20,7 +22,7 @@ export const toIso = (date: Date): string => {
 
 export const createDateRange = (
   days: number,
-  end: Date = new Date(),
+  end: Date = DEFAULT_RANGE_END,
   label?: string,
 ): DateRange => {
   const safeDays = Math.max(days, 1);
@@ -60,4 +62,3 @@ export const buildDateBuckets = (
 
   return buckets;
 };
-
