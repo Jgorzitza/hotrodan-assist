@@ -18,6 +18,11 @@
 - `ingest_incremental_chroma.py` → compares sitemap last-mod times, deletes stale docs, reingests updates (tracks `ingest_state.json`).
 - `rag_config.py` → shared Settings (chunk size 1500/overlap 150, OpenAI defaults with FastEmbed + mock LLM fallback when `OPENAI_API_KEY` missing/placeholder).
 
+#### Status / Notes (2025-09-26)
+- `rag_config.py` now honors `RAG_FORCE_MOCK_EMBED` and falls back to a deterministic MockEmbedding when FastEmbed cannot download (prints a single warning instead of stalling for 60s+).
+- `run_goldens.py` exports `RAG_FORCE_MOCK_EMBED=1`; offline goldens finish in ~5s and still pass with current corrections stub (no OpenAI key required).
+- Incremental ingest: URL/state parity holds (133 URLs). Fetch/reingest still blocked — FastEmbed download fails without network and Chroma `PersistentClient` currently returns sqlite code 14 (`unable to open database file`) inside the sandbox.
+
 ### Query & Routing
 - `query_chroma_router.py` → primary CLI; applies corrections, model routing (`gpt-4o-mini` default, escalates to GPT-5 family), adds dynamic context.
 - `router_config.py` → keyword + length triggers for model escalation.
@@ -68,6 +73,8 @@
 4. Auto-generate FAQ updates with approval + publish to Shopify (FAQPage JSON-LD).
 5. Demand mining reports on unmet product requests.
 6. Flesh out the Approval App as the single operator UI.
+
+**Workstream cadence:** advance items 1, 3, 4, 5, and the Storefront MCP integration in parallel with other sprint goals—ship incremental slices each cycle instead of deferring them.
 
 ## Operating Guardrails
 - Always show sources; persist them alongside drafts.

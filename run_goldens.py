@@ -7,6 +7,7 @@ TIMEOUT_S = 45  # fail fast if anything stalls
 def run_query(q):
     env = dict(os.environ)
     env["OFFLINE_CORRECTIONS_ONLY"] = "1"  # tests never call the LLM
+    env.setdefault("RAG_FORCE_MOCK_EMBED", "1")
     p = subprocess.run([sys.executable, ROUTER, q],
                        capture_output=True, text=True, timeout=TIMEOUT_S, env=env)
     if p.returncode != 0:
