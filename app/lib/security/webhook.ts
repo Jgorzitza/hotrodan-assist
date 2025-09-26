@@ -21,8 +21,16 @@ export const verifyShopifySignature = (
   }
 
   const computed = computeShopifyHmac(payload, secret);
-  const expected = Buffer.from(expectedSignature, 'utf8');
-  const actual = Buffer.from(computed, 'utf8');
+
+  let expected: Buffer;
+  let actual: Buffer;
+
+  try {
+    expected = Buffer.from(expectedSignature, 'base64');
+    actual = Buffer.from(computed, 'base64');
+  } catch (error) {
+    return false;
+  }
 
   if (expected.length !== actual.length) {
     return false;

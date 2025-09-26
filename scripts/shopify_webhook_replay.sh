@@ -44,13 +44,13 @@ fi
 PAYLOAD=$(cat <<JSON
 {
   "event": "${EVENT}",
-  "sent_at": "$(date --utc +%FT%TZ)",
+  "sent_at": "$(date -u +%FT%TZ)",
   "test": true
 }
 JSON
 )
 
-SIGNATURE=$(printf '%s' "${PAYLOAD}" | openssl dgst -sha256 -hmac "${SHOPIFY_HMAC_KEY}" -binary | openssl base64)
+SIGNATURE=$(printf '%s' "${PAYLOAD}" | openssl dgst -sha256 -hmac "${SHOPIFY_HMAC_KEY}" -binary | openssl base64 -A)
 
 curl -sS "${SHOPIFY_CLI_TUNNEL_URL}" \
   -H "Content-Type: application/json" \

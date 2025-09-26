@@ -44,11 +44,13 @@ QUICKSTART (LOCAL DEV)
 1) Dependencies
    pip install -U llama-index openai "chromadb>=0.5" \
                   llama-index-vector-stores-chroma \
-                  llama-index-readers-web llama-index-readers-file pyyaml
+                  llama-index-readers-web llama-index-readers-file \
+                  pyyaml llama-index-embeddings-fastembed fastembed
 
 2) Env
    cp .env.example .env
-   # fill at least: OPENAI_API_KEY
+   # fill at least: OPENAI_API_KEY (leave empty only if you accept FastEmbed
+   # fallback + retrieval-only answers from rag-api)
 
 3) Build vectors (optional if fresh)
    python discover_urls.py
@@ -59,6 +61,16 @@ QUICKSTART (LOCAL DEV)
 
 5) Offline golden tests (no LLM calls)
    python run_goldens.py
+
+6) Remix dashboard checks (run from repo root)
+   npm install  # first-time only
+   npm run lint
+   npm test -- --run
+   npm run test:e2e -- --list  # enumerates Playwright smoke specs; requires PLAYWRIGHT_BASE_URL to execute
+
+Supporting scripts
+- `scripts/shopify_webhook_replay.sh` simulates signed Shopify webhooks for staging/dev tunnels when the CLI is unavailable.
+- Dashboard test scaffolding lives under `app/tests/` (Vitest) and `e2e/` (Playwright); see `prompts/dashboard/testing.md` for the full plan.
 
 Docker Compose (local)
 ----------------------

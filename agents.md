@@ -14,9 +14,9 @@
 ## Key Components & Files
 ### RAG + Ingest
 - `discover_urls.py` → builds `urls.txt` and `urls_with_lastmod.tsv` from Shopify sitemaps with filtering.
-- `ingest_site_chroma.py` → bootstrap ingest into persistent Chroma + storage.
+- `ingest_site_chroma.py` → bootstrap ingest into persistent Chroma + storage (auto-detects embed mode: OpenAI vs FastEmbed fallback).
 - `ingest_incremental_chroma.py` → compares sitemap last-mod times, deletes stale docs, reingests updates (tracks `ingest_state.json`).
-- `rag_config.py` → shared Settings (chunk size 1500/overlap 150, embed `text-embedding-3-small`).
+- `rag_config.py` → shared Settings (chunk size 1500/overlap 150, OpenAI defaults with FastEmbed + mock LLM fallback when `OPENAI_API_KEY` missing/placeholder).
 
 ### Query & Routing
 - `query_chroma_router.py` → primary CLI; applies corrections, model routing (`gpt-4o-mini` default, escalates to GPT-5 family), adds dynamic context.
@@ -35,12 +35,12 @@
 
 ## Setup Checklist
 ### Python Environment
-- Install core deps: `pip install -U llama-index openai "chromadb>=0.5" llama-index-vector-stores-chroma llama-index-readers-web llama-index-readers-file pyyaml`.
+- Install core deps: `pip install -U llama-index openai "chromadb>=0.5" llama-index-vector-stores-chroma llama-index-readers-web llama-index-readers-file pyyaml llama-index-embeddings-fastembed fastembed`.
 - Optional: create virtualenv; keep environment local (no `.env` committed).
 
 ### Environment Variables
 - Copy template: `cp .env.example .env`.
-- Populate at minimum: `OPENAI_API_KEY`; add Shopify bot signature trio and Zoho credentials when integrations ship.
+- Populate at minimum: `OPENAI_API_KEY` (leave blank only if you intentionally want retrieval-only bullets via FastEmbed fallback); add Shopify bot signature trio and Zoho credentials when integrations ship.
 - New adapters expect: `ZOHO_ACCOUNT_ID`, `ZOHO_DEFAULT_FROM`, `ZOHO_CLIENT_ID`, `ZOHO_CLIENT_SECRET`, `ZOHO_REFRESH_TOKEN`, and Shopify Admin creds (`SHOPIFY_SHOP`, `SHOPIFY_ACCESS_TOKEN`, `SHOPIFY_API_VERSION`).
 - Shopify webhooks require `SHOPIFY_WEBHOOK_SECRET` (used for HMAC verification) and the sync service now stores customers/orders/inventory in Postgres.
 - `shopify.app.toml` defines CLI configuration (scopes, webhook subscriptions pointing at `http://localhost:8003/shopify/webhook`). Run `shopify app config use shopify.app.toml` and `shopify app deploy` after editing to sync with Shopify.
@@ -56,8 +56,10 @@
 - Expect source URLs listed after every answer; verify corrections trigger when applicable.
 
 ### Testing
-- Execute `python run_goldens.py`; CI mirrors this offline regimen.
-- Add new golden cases whenever you add corrections or fix regressions.
+- Python: run `python run_goldens.py`; CI mirrors this offline regimen.
+- Remix dashboard: from repo root run `npm run lint`, `npm test -- --run`, and `npm run test:e2e -- --list` (smoke skips until `PLAYWRIGHT_BASE_URL` is set). Playwright browsers install automatically in CI; locally call `npx playwright install --with-deps` the first time.
+- Webhooks: use `scripts/shopify_webhook_replay.sh orders/updated` to replay signed payloads when Shopify CLI isn’t available.
+- Add new golden/Vitest/Playwright cases whenever you introduce corrections, handlers, or UI flows.
 
 ## Roadmap Highlights (Next Builds)
 1. Zoho email integration: ingest/send drafts, respect approval flow, learn from edits.
