@@ -19,9 +19,10 @@
 - `rag_config.py` → shared Settings (chunk size 1500/overlap 150, OpenAI defaults with FastEmbed + mock LLM fallback when `OPENAI_API_KEY` missing/placeholder).
 
 #### Status / Notes (2025-09-26)
-- `rag_config.py` now honors `RAG_FORCE_MOCK_EMBED` and falls back to a deterministic MockEmbedding when FastEmbed cannot download (prints a single warning instead of stalling for 60s+).
+- `rag_config.py` honors `RAG_FORCE_MOCK_EMBED` and falls back to a deterministic MockEmbedding when FastEmbed cannot download (prints a single warning instead of stalling for 60s+).
 - `run_goldens.py` exports `RAG_FORCE_MOCK_EMBED=1`; offline goldens finish in ~5s and still pass with current corrections stub (no OpenAI key required).
-- Incremental ingest: URL/state parity holds (133 URLs). Fetch/reingest still blocked — FastEmbed download fails without network and Chroma `PersistentClient` currently returns sqlite code 14 (`unable to open database file`) inside the sandbox.
+- Both ingest scripts now try persistent Chroma first and fall back to an ephemeral client when sqlite code 14 (`unable to open database file`) fires; logs mark these runs as "non-persistent" so ops knows nothing hit disk.
+- Incremental ingest: URL/state parity holds (133 URLs). Full bootstrap remains blocked — Shopify hosts fail DNS lookups inside the sandbox despite retries, so `ingest_site_chroma.py` aborts after exhausting fetch attempts.
 
 ### Query & Routing
 - `query_chroma_router.py` → primary CLI; applies corrections, model routing (`gpt-4o-mini` default, escalates to GPT-5 family), adds dynamic context.

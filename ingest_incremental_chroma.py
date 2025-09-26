@@ -1,7 +1,9 @@
 import os, json, time
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import chromadb
+from chromadb.api import ClientAPI
 from chromadb.config import Settings as ChromaSettings
+from chromadb.errors import ChromaError
 from bs4 import BeautifulSoup
 import requests
 
@@ -21,9 +23,14 @@ def read_urls_with_lastmod(path="urls_with_lastmod.tsv") -> List[Tuple[str,str]]
     return pairs
 
 def load_state() -> Dict[str,str]:
-    if os.path.exists(STATE_FILE):
-        return json.load(open(STATE_FILE))
-    return {}
+    if not os.path.exists(STATE_FILE):
+        return {}
+    try:
+        with open(STATE_FILE, "r") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError) as err:
+        print(f"[WARN] Could not read {STATE_FILE}: {err}. Rebuilding from scratch.")
+        return {}
 
 def save_state(d: Dict[str,str]):
     with open(STATE_FILE,"w") as f:
@@ -38,16 +45,39 @@ def shopify_headers():
         headers.update({"Signature-Input": si, "Signature": s, "Signature-Agent": sa})
     return headers
 
-def fetch_text(url: str) -> str:
-    r = requests.get(url, headers=shopify_headers(), timeout=30)
-    r.raise_for_status()
-    soup = BeautifulSoup(r.text, "html.parser")
-    for tag in soup(["script","style","noscript"]): tag.extract()
-    return soup.get_text(" ", strip=True)
+def fetch_text(url: str, retries: int = 2, backoff: float = 1.5) -> Optional[str]:
+    last_err = None
+    for attempt in range(retries + 1):
+        try:
+            r = requests.get(url, headers=shopify_headers(), timeout=30)
+            r.raise_for_status()
+            soup = BeautifulSoup(r.text, "html.parser")
+            for tag in soup(["script", "style", "noscript"]):
+                tag.extract()
+            return soup.get_text(" ", strip=True)
+        except requests.RequestException as err:
+            last_err = err
+            wait = backoff * (attempt + 1)
+            print(f"[WARN] fetch failed for {url} ({attempt + 1}/{retries + 1}): {err}")
+            if attempt < retries:
+                time.sleep(wait)
+    print(f"[ERROR] giving up on {url}: {last_err}")
+    return None
+
+def init_chroma_client() -> tuple[ClientAPI, bool]:
+    settings = ChromaSettings(anonymized_telemetry=False, allow_reset=True)
+    try:
+        client = chromadb.PersistentClient(path=CHROMA_PATH, settings=settings)
+        return client, False
+    except ChromaError as err:
+        print(f"[WARN] Persistent Chroma unavailable ({err}); using EphemeralClient (non-persistent).")
+    except Exception as err:  # pragma: no cover - defensive catch for unexpected failures
+        print(f"[WARN] Persistent Chroma threw unexpected error ({err}); using EphemeralClient (non-persistent).")
+    client = chromadb.EphemeralClient(settings=ChromaSettings(anonymized_telemetry=False, allow_reset=True))
+    return client, True
+
 
 def main():
-    if not os.getenv("OPENAI_API_KEY"):
-        raise SystemExit("Missing OPENAI_API_KEY in environment.")
     if not os.path.exists("urls_with_lastmod.tsv"):
         raise SystemExit("Run discover_urls.py first to build urls_with_lastmod.tsv")
 
@@ -56,7 +86,7 @@ def main():
     state = load_state()
 
     # Chroma + index load / create
-    client = chromadb.PersistentClient(path=CHROMA_PATH, settings=ChromaSettings())
+    client, ephemeral = init_chroma_client()
     collection = client.get_or_create_collection(COLLECTION, metadata={"hnsw:space":"cosine"})
     vector_store = ChromaVectorStore(chroma_collection=collection)
     storage = StorageContext.from_defaults(vector_store=vector_store)
@@ -82,24 +112,43 @@ def main():
             collection.delete(where={"source_url": {"$in": batch}})
 
     # For changed URLs: delete old vectors for that URL, then upsert fresh content
-    for u, _m in to_update:
-        collection.delete(where={"source_url": u})
+    refreshed = []
+    skipped = []
+    for u, m in to_update:
         text = fetch_text(u)
+        if not text:
+            skipped.append(u)
+            continue
+        collection.delete(where={"source_url": u})
         doc = Document(text=text, metadata={"source_url": u}, doc_id=u)
         # insert via index (honors current Settings + chunking)
         index.insert_documents([doc])
+        refreshed.append((u, m))
         time.sleep(0.1)
 
     # Persist non-vector parts (index_store/docstore)
     storage.persist(persist_dir=PERSIST_DIR)
 
     # Update state
-    for u, m in to_update:
+    for u, m in refreshed:
         state[u] = m
     for u in to_delete:
         state.pop(u, None)
     save_state(state)
-    print("Incremental upsert complete.")
+
+    summary = []
+    if refreshed:
+        summary.append(f"updated {len(refreshed)}")
+    if skipped:
+        summary.append(f"skipped {len(skipped)}")
+    if to_delete:
+        summary.append(f"deleted {len(to_delete)}")
+    persistence_hint = " (non-persistent run)" if ephemeral else ""
+    print("Incremental upsert complete." + (" (" + ", ".join(summary) + ")" if summary else "") + persistence_hint)
+    if skipped:
+        print("Retry needed for:")
+        for u in skipped:
+            print("-", u)
 
 if __name__ == "__main__":
     main()
