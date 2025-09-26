@@ -80,6 +80,74 @@ export type OrderTimelineEvent = {
   state?: OrderStatus;
 };
 
+export type OrdersMetrics = {
+  totalOrders: number;
+  awaitingFulfillment: number;
+  awaitingTracking: number;
+  overdue: number;
+  overduePercentage: number;
+  averageFulfillmentHours: number;
+  slaBreaches: number;
+};
+
+export type OrderPriority = "vip" | "rush" | "standard";
+
+export type OrderIssue =
+  | "inventory"
+  | "payment"
+  | "address"
+  | "carrier"
+  | "manual_check"
+  | "none";
+
+export type OrderOwner = "assistant" | "unassigned" | string;
+
+export type ShipmentTrackingPending = {
+  id: string;
+  orderNumber: string;
+  expectedShipDate: string;
+  owner: OrderOwner;
+};
+
+export type ShipmentDelayed = {
+  id: string;
+  orderNumber: string;
+  carrier: string;
+  delayHours: number;
+  lastUpdate: string;
+};
+
+export type ShipmentsPanel = {
+  trackingPending: ShipmentTrackingPending[];
+  delayed: ShipmentDelayed[];
+  deliveredToday: number;
+};
+
+export type ReturnStage = "awaiting_label" | "in_transit" | "inspection";
+
+export type ReturnEntry = {
+  id: string;
+  orderNumber: string;
+  reason: string;
+  stage: ReturnStage;
+  ageDays: number;
+  refundAmount: Money;
+};
+
+export type ReturnsPanel = {
+  pending: ReturnEntry[];
+  refundsDue: number;
+  refundValue: Money;
+};
+
+export type InventoryHold = {
+  sku: string;
+  title: string;
+  ordersWaiting: number;
+  onHand: number;
+  eta?: string;
+};
+
 export type OrderCustomer = {
   id: string;
   name: string;
@@ -98,6 +166,12 @@ export type Order = {
   fulfillmentStatus: OrderFulfillmentStatus;
   placedAt: string;
   fulfillmentDueAt?: string;
+  shipBy?: string;
+  ageHours: number;
+  priority: OrderPriority;
+  issue: OrderIssue;
+  assignedTo: OrderOwner;
+  channel: "online" | "pos" | "draft";
   total: Money;
   subtotal: Money;
   shipping: Money;
@@ -105,24 +179,40 @@ export type Order = {
   lineItems: OrderLineItem[];
   tags: string[];
   timeline: OrderTimelineEvent[];
+  supportThread?: string;
 };
 
 export type OrdersDataset = {
   scenario: MockScenario;
   state: DatasetState;
   tab: "all" | "unfulfilled" | "overdue" | "refunded";
+  period: DateRange;
   orders: Order[];
   count: number;
   pageInfo: {
     hasNextPage: boolean;
     endCursor: string | null;
   };
+  metrics: OrdersMetrics;
+  shipments: ShipmentsPanel;
+  returns: ReturnsPanel;
+  inventory: InventoryHold[];
+  alerts: string[];
+  dataGaps: string[];
   alert?: string;
   error?: string;
 };
 
+export type OrdersActionResponse = {
+  success: boolean;
+  message: string;
+  updatedOrders: Order[];
+};
+
 export type InboxTicketStatus = "open" | "snoozed" | "resolved" | "escalated";
 export type InboxTicketPriority = "low" | "medium" | "high" | "urgent";
+
+export type InboxProvider = "email" | "shopify" | "instagram" | "tiktok";
 
 export type InboxTicket = {
   id: string;
@@ -132,6 +222,7 @@ export type InboxTicket = {
   sentiment: "positive" | "neutral" | "negative";
   updatedAt: string;
   createdAt: string;
+  channel: InboxProvider;
   customer: {
     id: string;
     name: string;
@@ -154,7 +245,33 @@ export type InboxDataset = {
   error?: string;
 };
 
+export type InboxMetrics = {
+  outstanding: number;
+  overdue: number;
+  closedToday: number;
+  approvalsPending: number;
+  ideaCandidates: number;
+};
+
+export type InboxConversation = {
+  id: string;
+  subject: string;
+  customer: string;
+  status: InboxTicketStatus;
+  channel: InboxProvider;
+  sentiment: InboxTicket["sentiment"];
+  receivedAt: string;
+};
+
+export type InboxData = {
+  dataset: InboxDataset;
+  metrics: InboxMetrics;
+  conversations: InboxConversation[];
+};
+
 export type InventoryStatus = "healthy" | "low" | "backorder" | "preorder";
+
+export type InventoryBucketId = "urgent" | "air" | "sea" | "overstock";
 
 export type InventoryVelocity = {
   turnoverDays: number;
@@ -162,33 +279,100 @@ export type InventoryVelocity = {
   lastWeekUnits: number;
 };
 
-export type InventoryItem = {
+export type InventoryDemandTrendPoint = {
+  label: string;
+  units: number;
+};
+
+export type InventorySkuDemand = {
   id: string;
   title: string;
   sku: string;
+  vendorId: string;
+  vendorName: string;
   status: InventoryStatus;
-  available: number;
-  incoming: number;
+  bucketId: InventoryBucketId;
+  onHand: number;
+  inbound: number;
   committed: number;
-  backordered: number;
+  coverDays: number;
+  safetyStock: number;
+  reorderPoint: number;
+  recommendedOrder: number;
+  stockoutDate: string;
+  unitCost: Money;
   velocity: InventoryVelocity;
-  restockEta?: string;
+  trend: InventoryDemandTrendPoint[];
 };
 
-export type InventoryDataset = {
+export type InventoryBucketSummary = {
+  id: InventoryBucketId;
+  label: string;
+  description: string;
+  leadTimeDays: number;
+  skuCount: number;
+  valueAtRisk: Money;
+};
+
+export type InventoryDashboardSummary = {
+  skusAtRisk: number;
+  averageCoverDays: number;
+  openPoBudget: Money;
+};
+
+export type PurchaseOrderDraftItem = {
+  skuId: string;
+  sku: string;
+  title: string;
+  recommendedOrder: number;
+  draftQuantity: number;
+  unitCost: Money;
+};
+
+export type PurchaseOrderDraft = {
+  vendorId: string;
+  vendorName: string;
+  leadTimeDays: number;
+  budgetRemaining: Money;
+  lastOrderAt?: string;
+  notes?: string;
+  items: PurchaseOrderDraftItem[];
+};
+
+export type InventoryDashboardPayload = {
   scenario: MockScenario;
   state: DatasetState;
-  summary: {
-    totalSkus: number;
-    healthy: number;
-    low: number;
-    backorder: number;
-    preorder: number;
-  };
-  items: InventoryItem[];
+  summary: InventoryDashboardSummary;
+  buckets: InventoryBucketSummary[];
+  skus: InventorySkuDemand[];
+  vendors: PurchaseOrderDraft[];
   alert?: string;
   error?: string;
 };
+
+export type InventoryOverviewBucket = {
+  id: InventoryBucketId;
+  label: string;
+  description: string;
+  skuCount: number;
+  href: string;
+};
+
+export type InventoryVelocityTrend = {
+  label: string;
+  currentStock: number;
+  projectedDays: number;
+};
+
+export type InventoryOverview = {
+  scenario: MockScenario;
+  state: DatasetState;
+  buckets: InventoryOverviewBucket[];
+  trends: InventoryVelocityTrend[];
+  alert?: string;
+  error?: string;
+};
+
 
 export type KpiState = "ok" | "warning" | "critical";
 
@@ -247,7 +431,7 @@ export type DashboardMocks = {
   sales: SalesDataset;
   orders: OrdersDataset;
   inbox: InboxDataset;
-  inventory: InventoryDataset;
+  inventory: InventoryDashboardPayload;
   kpis: KpiDataset;
   seo: SeoDataset;
   settings: SettingsPayload;
@@ -261,4 +445,3 @@ export type ScenarioOptions = {
 export type ScenarioRequest = ScenarioOptions & {
   searchParams?: URLSearchParams;
 };
-

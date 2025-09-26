@@ -1,3 +1,13 @@
+import type {
+  DashboardMocks,
+  MockScenario,
+  OrdersDataset,
+  SalesDataset,
+} from "~/types/dashboard";
+
+import { buildDashboardMocks } from "./builder";
+import { createMoney, percentage } from "./shared";
+
 export type DashboardMetric = {
   id: string;
   label: string;
@@ -44,92 +54,181 @@ export type DashboardOverview = {
   mcpRecommendation: string;
 };
 
-const baseSparkline = [42, 48, 52, 51, 60, 58, 64];
+const FALLBACK_RANGE = "28d";
 
-const metricsByRange: Record<string, DashboardMetric[]> = {
-  today: [
-    { id: "gmv", label: "GMV", value: "$24.6K", delta: 8.4, deltaPeriod: "WoW" },
-    { id: "orders", label: "Orders", value: "182", delta: 5.2, deltaPeriod: "WoW" },
-    { id: "aov", label: "AOV", value: "$135", delta: 2.1, deltaPeriod: "WoW" },
-    { id: "refunds", label: "Refunds", value: "$640", delta: -1.4, deltaPeriod: "WoW" },
-  ],
-  "7d": [
-    { id: "gmv", label: "GMV", value: "$162K", delta: 12.5, deltaPeriod: "MoM" },
-    { id: "orders", label: "Orders", value: "1,134", delta: 9.3, deltaPeriod: "MoM" },
-    { id: "aov", label: "AOV", value: "$143", delta: 1.8, deltaPeriod: "MoM" },
-    { id: "refunds", label: "Refunds", value: "$4.2K", delta: -2.6, deltaPeriod: "MoM" },
-  ],
-  "28d": [
-    { id: "gmv", label: "GMV", value: "$602K", delta: 18.2, deltaPeriod: "YoY" },
-    { id: "orders", label: "Orders", value: "4,380", delta: 15.7, deltaPeriod: "YoY" },
-    { id: "aov", label: "AOV", value: "$137", delta: 2.9, deltaPeriod: "YoY" },
-    { id: "refunds", label: "Refunds", value: "$16.4K", delta: -3.1, deltaPeriod: "YoY" },
-  ],
-  "90d": [
-    { id: "gmv", label: "GMV", value: "$1.8M", delta: 9.8, deltaPeriod: "YoY" },
-    { id: "orders", label: "Orders", value: "12,240", delta: 7.4, deltaPeriod: "YoY" },
-    { id: "aov", label: "AOV", value: "$146", delta: 3.3, deltaPeriod: "YoY" },
-    { id: "refunds", label: "Refunds", value: "$48.6K", delta: -4.7, deltaPeriod: "YoY" },
-  ],
+const RANGE_CONFIG: Record<string, { deltaPeriod: DashboardMetric["deltaPeriod"]; label: string }> = {
+  today: { deltaPeriod: "WoW", label: "today" },
+  "7d": { deltaPeriod: "WoW", label: "7d" },
+  "28d": { deltaPeriod: "MoM", label: "28d" },
+  "90d": { deltaPeriod: "YoY", label: "90d" },
 };
 
-const ordersBuckets: OrdersBucket[] = [
-  {
-    id: "unfulfilled",
-    label: "Open & Unfulfilled",
-    count: 37,
-    description: "Orders waiting on pick/pack",
-    href: "/app/orders?tab=unshipped",
-  },
-  {
-    id: "tracking",
-    label: "Tracking stalled",
-    count: 12,
-    description: "No carrier movement in 48h",
-    href: "/app/orders?tab=delivery",
-  },
-  {
-    id: "issues",
-    label: "Delivery issues",
-    count: 5,
-    description: "Customer reported problems",
-    href: "/app/orders?tab=issues",
-  },
-];
-
-const inboxSnapshot: InboxSnapshot = {
-  outstanding: 24,
-  overdueHours: 6,
-  approvalsPending: 9,
+const scenarioMessages: Record<MockScenario, string> = {
+  base: "Feature the Camaro Stage 3 kit to capitalize on search lift.",
+  empty: "No dataset connected yet—enable integrations in settings.",
+  warning: "Sales are lagging forecast. Target inventory velocity campaigns.",
+  error: "Mock services offline. Retry after mock data refresh.",
 };
 
-const inventorySnapshot: InventorySnapshot = {
-  lowStock: 14,
-  purchaseOrdersInFlight: 3,
-  overstock: 5,
+const toMetrics = (
+  mocks: DashboardMocks,
+  deltaPeriod: DashboardMetric["deltaPeriod"],
+): DashboardMetric[] => {
+  const sales = mocks.sales;
+  const orders = mocks.orders;
+  const refundedTotal = orders.orders
+    .filter((order) => order.status === "refunded")
+    .reduce((total, order) => total + order.total.amount, 0);
+
+  return [
+    {
+      id: "gmv",
+      label: "GMV",
+      value: sales.totals.currentTotal.formatted,
+      delta: sales.totals.deltaPercentage,
+      deltaPeriod,
+    },
+    {
+      id: "orders",
+      label: "Orders",
+      value: orders.count.toLocaleString("en-US"),
+      delta: sales.totals.deltaPercentage * 0.75,
+      deltaPeriod,
+    },
+    {
+      id: "aov",
+      label: "AOV",
+      value: sales.totals.averageOrderValue.formatted,
+      delta: sales.totals.deltaPercentage * 0.35,
+      deltaPeriod,
+    },
+    {
+      id: "refunds",
+      label: "Refunds",
+      value: createMoney(refundedTotal).formatted,
+      delta: -Math.abs(sales.totals.deltaPercentage * 0.25),
+      deltaPeriod,
+    },
+  ];
 };
 
-const seoHighlight: SeoHighlight = {
-  trafficDelta: 6.2,
-  risingQueries: 7,
-  criticalIssues: 2,
-  summary: "Collection pages climbing for 'LS swap kits'; two pages blocked by robots.txt.",
+const toOrderBuckets = ({ orders }: DashboardMocks): OrdersBucket[] => {
+  const unfulfilled = orders.orders.filter(
+    (order) => order.fulfillmentStatus !== "fulfilled",
+  ).length;
+  const stalled = orders.orders.filter(
+    (order) => order.fulfillmentStatus === "partial",
+  ).length;
+  const issues = orders.orders.filter(
+    (order) => order.status === "refunded" || order.status === "cancelled",
+  ).length;
+
+  return [
+    {
+      id: "unfulfilled",
+      label: "Open & Unfulfilled",
+      count: unfulfilled,
+      description: "Orders waiting on pick/pack",
+      href: "/app/orders?tab=unfulfilled",
+    },
+    {
+      id: "tracking",
+      label: "Tracking stalled",
+      count: stalled,
+      description: "No carrier movement in 48h",
+      href: "/app/orders?tab=tracking",
+    },
+    {
+      id: "issues",
+      label: "Delivery issues",
+      count: issues,
+      description: "Customer reported problems",
+      href: "/app/orders?tab=issues",
+    },
+  ];
+};
+
+const toInboxSnapshot = ({ inbox }: DashboardMocks): InboxSnapshot => {
+  const outstanding = inbox.tickets.filter(
+    (ticket) => ticket.status !== "resolved",
+  ).length;
+  const breached = inbox.tickets.filter((ticket) => ticket.slaBreached).length;
+  const approvals = inbox.tickets.filter(
+    (ticket) => ticket.status === "open" && ticket.priority !== "low",
+  ).length;
+
+  return {
+    outstanding,
+    overdueHours: breached * 3,
+    approvalsPending: approvals,
+  };
+};
+
+const toInventorySnapshot = ({ inventory }: DashboardMocks): InventorySnapshot => ({
+  lowStock: inventory.summary.low,
+  purchaseOrdersInFlight: inventory.summary.backorder + inventory.summary.preorder,
+  overstock: inventory.summary.preorder,
+});
+
+const toSeoHighlight = ({ seo }: DashboardMocks): SeoHighlight => {
+  const risingQueries = seo.insights.filter(
+    (insight) => insight.severity !== "critical",
+  ).length;
+  const criticalIssues = seo.insights.filter(
+    (insight) => insight.severity === "critical",
+  ).length;
+
+  const summary = seo.alert
+    ? seo.alert
+    : seo.insights
+        .slice(0, 2)
+        .map((insight) => insight.title)
+        .join(" · ") || "Search performance steady.";
+
+  return {
+    trafficDelta: seo.scorecard.clickThroughRate,
+    risingQueries,
+    criticalIssues,
+    summary,
+  };
+};
+
+const toSparkline = (sales: SalesDataset): number[] => {
+  return sales.trend.map((point) => Number.parseFloat(point.total.amount.toFixed(2)));
 };
 
 export const getDashboardOverview = async (
   range: string,
+  scenario: MockScenario = "base",
 ): Promise<DashboardOverview> => {
-  const preset = metricsByRange[range] ? range : "28d";
+  const config = RANGE_CONFIG[range] ?? RANGE_CONFIG[FALLBACK_RANGE];
+  const mocks = buildDashboardMocks({ scenario });
 
   return {
-    range: preset,
-    metrics: metricsByRange[preset],
-    sparkline: baseSparkline,
-    orders: ordersBuckets,
-    inbox: inboxSnapshot,
-    inventory: inventorySnapshot,
-    seo: seoHighlight,
-    mcpRecommendation:
-      "Feature the Camaro Stage 3 kit in the hero banner this week to capitalize on search lift.",
+    range: config.label,
+    metrics: toMetrics(mocks, config.deltaPeriod),
+    sparkline: toSparkline(mocks.sales),
+    orders: toOrderBuckets(mocks),
+    inbox: toInboxSnapshot(mocks),
+    inventory: toInventorySnapshot(mocks),
+    seo: toSeoHighlight(mocks),
+    mcpRecommendation: scenarioMessages[scenario],
   };
+};
+
+export const getOrderFulfillmentRatio = (orders: OrdersDataset): number => {
+  if (!orders.orders.length) {
+    return 0;
+  }
+  const fulfilled = orders.orders.filter(
+    (order) => order.fulfillmentStatus === "fulfilled",
+  ).length;
+  return percentage(fulfilled, orders.orders.length, 0);
+};
+
+export const getSalesToOrderRatio = (sales: SalesDataset, orders: OrdersDataset) => {
+  if (!orders.orders.length) {
+    return 0;
+  }
+  return sales.totals.currentTotal.amount / orders.orders.length;
 };
