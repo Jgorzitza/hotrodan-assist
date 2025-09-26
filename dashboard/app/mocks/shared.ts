@@ -1,4 +1,4 @@
-import { Faker, fakerEN_US } from "@faker-js/faker";
+import { Faker, en } from "@faker-js/faker";
 
 import type {
   CurrencyCode,
@@ -21,7 +21,7 @@ const SCENARIO_SEEDS: Record<MockScenario, number> = {
 export const DEFAULT_CURRENCY: CurrencyCode = "USD";
 
 export const createSeededFaker = (seed = DEFAULT_SEED) => {
-  const faker = new Faker({ locale: [fakerEN_US] });
+  const faker = new Faker({ locale: [en] });
   faker.seed(seed);
   return faker;
 };
@@ -100,4 +100,3 @@ export const scenarioToDatasetState = (scenario: MockScenario): DatasetState => 
 };
 
 export { deltaPercentage, percentage, roundTo };
-

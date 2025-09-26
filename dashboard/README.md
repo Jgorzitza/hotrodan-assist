@@ -62,6 +62,10 @@ Press P to open the URL to your app. Once you click install, you can start devel
 
 Local development is powered by [the Shopify CLI](https://shopify.dev/docs/apps/tools/cli). It logs into your partners account, connects to an app, provides environment variables, updates remote config, creates a tunnel and provides commands to generate extensions.
 
+### Mock data mode
+
+Set `USE_MOCK_DATA=true` in your environment (see `.env.example`) to bypass live Shopify APIs during development. When enabled, Remix loaders source deterministic fixtures from `app/mocks`, seeded by `@faker-js/faker` so every run returns the same data. You can preview empty, warning, or error permutations by appending `?mockState=empty|warning|error` to any dashboard URL. Run `npm exec vitest run` inside the `dashboard/` directory to verify mock contracts stay stable.
+
 ### Authenticating and querying data
 
 To authenticate and query data you can use the `shopify` const that is exported from `/app/shopify.server.js`:

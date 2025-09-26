@@ -57,8 +57,8 @@ describe("inventory mocks", () => {
 
     expect(dataset.state).toBe("warning");
     expect(dataset.alert).toMatch(/low-stock/i);
-    expect(dataset.summary.low).toBeGreaterThan(0);
-    expect(dataset.items.length).toBeGreaterThan(0);
+    expect(dataset.summary.skusAtRisk).toBeGreaterThan(0);
+    expect(dataset.vendors.length).toBeGreaterThan(0);
   });
 });
 

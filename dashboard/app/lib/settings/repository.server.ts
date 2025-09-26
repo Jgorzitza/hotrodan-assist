@@ -113,11 +113,21 @@ export class StoreSettingsRepository {
     }
 
     bucket[input.provider] = encryptSecret(input.secret);
+    const current = getMockSettings(shopDomain);
+    const existingMetadata = current.secrets[input.provider];
+    const verifiedAt =
+      input.verifiedAt !== undefined
+        ? input.verifiedAt
+        : existingMetadata?.lastVerifiedAt ?? null;
+    const rotationReminderAt =
+      input.rotationReminderAt === null
+        ? null
+        : input.rotationReminderAt ?? existingMetadata?.rotationReminderAt ?? null;
     const metadata = buildSecretMetadata(
       input.provider,
       input.secret,
-      input.verifiedAt,
-      input.rotationReminderAt,
+      verifiedAt,
+      rotationReminderAt,
     );
 
     return updateMockSecret(shopDomain, input.provider, metadata);
