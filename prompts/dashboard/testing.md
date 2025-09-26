@@ -83,6 +83,16 @@ Comprehensive test strategy for the Remix dashboard covering UI flows, Remix loa
 - Pager duty hook: alert on failing nightly regression.
 - Logging verification: Ensure structured logs ship to monitoring (Datadog/NewRelic) with request IDs.
 
+## Post-Deploy Smoke Checklist
+- [ ] Hit `/health` on the freshly deployed target (Fly app or Render service) and confirm HTTP 200.
+- [ ] Log in via Shopify OAuth from an admin account; land on Overview route with no 5xx or auth prompts.
+- [ ] Spot-check dashboard freshness: Orders count, Inventory low-stock badge, Sales summary timeframe.
+- [ ] Exercise one write path (Inventory adjust or Settings toggle) and confirm DB + Polaris toast update.
+- [ ] Replay `orders/create` webhook (`shopify app webhook trigger orders/create`) and verify worker logs + DB ingest.
+- [ ] Inspect background job queue/cron (Fly machine or Render worker) for heartbeat logs within last 5 min.
+- [ ] Tail platform logs for warnings/errors across the first 5 minutes post-deploy.
+- [ ] Run `npm run prisma:migrate` (or platform release command) and record result in the release ticket.
+
 ## Entry / Exit Criteria
 - **Entry:** Feature PR merged into `feature/testing` worktree with passing unit/integration suite.
 - **Exit:** All checklists executed, automated suites green, webhook drills pass, deployment smoke validated.
@@ -95,7 +105,7 @@ Comprehensive test strategy for the Remix dashboard covering UI flows, Remix loa
 - [ ] Create Playwright project with auth storage fixtures and environment switch.
 - [ ] Document webhook replay scripts and expected DB assertions.
 - [ ] Wire CI workflows (lint, test, e2e) with caching + artifacts.
-- [ ] Publish smoke checklist for post-deploy verification.
+- [x] Publish smoke checklist for post-deploy verification.
 
 ## Status / Notes
 - Owner: _unassigned_

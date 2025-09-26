@@ -30,3 +30,19 @@ python run_goldens.py  # offline corrections-only; no API calls
 - Quality guardrails: `corrections/corrections.yaml`, `goldens/qa.yaml`, `run_goldens.py`.
 - Service stubs: FastAPI apps under `app/` (rag-api, assistants, sync, approval-app).
 - Specs & docs: `HANDOVER.md`, `HANDOVER_ALL_IN_ONE.md`, and `agents.md`.
+
+## Dashboard Remix App
+The Shopify Admin dashboard lives under `dashboard/` and was scaffolded from the official Remix template.
+
+```
+cd dashboard
+npm install
+cp .env.example .env
+# Authenticate the CLI interactively before running the next command
+shopify app config link
+shopify app dev --store=afafsaf.myshopify.com
+```
+
+- Update `.env` / `.env.production` with Partner app credentials, tunnel URL, and `DATABASE_URL`.
+- Switch stores by running `shopify app dev --store=fm8vte-ex.myshopify.com` once live-ready.
+- Section 0 status, route briefs, data layer, and integration plans live in `prompts/dashboard/`.

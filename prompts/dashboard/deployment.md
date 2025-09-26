@@ -17,8 +17,9 @@ Define the end-to-end path for packaging and operating the Shopify Remix dashboa
 # syntax=docker/dockerfile:1.6
 ARG NODE_VERSION=20
 FROM node:${NODE_VERSION}-bullseye AS base
-ENV NODE_ENV=production
 WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=8080
 
 FROM base AS deps
 COPY package.json package-lock.json ./
@@ -28,21 +29,23 @@ FROM deps AS build
 COPY . .
 RUN npm run build
 
+FROM deps AS prod-deps
+RUN npm prune --omit=dev
+
 FROM base AS runtime
-# copy production node_modules (without devDeps)
-COPY --from=deps /app/node_modules ./node_modules
-# bring over compiled Remix assets
+COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
-COPY --from=build /app/server ./server
-COPY package.json ./
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/package-lock.json ./package-lock.json
 EXPOSE 8080
 CMD ["npm", "run", "start"]
 ```
 
 **Usage notes**
-- Ensure `npm run build` outputs the server bundle under `build/` and `server/`. Adjust COPY paths as needed for the Remix project layout.
-- Add any runtime-only dependencies (Prisma engines, `prisma generate`, etc.) as extra stages prior to the final COPY.
+- Keep `dashboard/.dockerignore` in sync so local `node_modules`, build output, and dev SQLite DB stay out of the image context.
+- If Prisma engines or other native dependencies are needed, add a dedicated stage before `prod-deps` to run `npm run prisma:generate`.
 - Local smoke test before deploying: `docker build -t dashboard-remix .` then `docker run --env-file=.env -p 8080:8080 dashboard-remix`.
 
 ## Hosting
@@ -85,19 +88,28 @@ CMD ["npm", "run", "start"]
    source = "chroma_data"
    destination = "/data/chroma"
    ```
-6. Deploy:
+6. Deploy the web app:
    ```
-   fly deploy --dockerfile Dockerfile --build-secret SHOPIFY_API_KEY=$SHOPIFY_API_KEY
+   fly deploy --dockerfile Dockerfile
    ```
-   Include additional build secrets if `npm run build` needs them.
-7. Scale and observe:
+   (Add `--build-secret` flags if the build requires private registries.)
+7. Run migrations via release command (executes against the attached Postgres):
+   ```
+   fly deploy --dockerfile Dockerfile --release-command "npm run prisma:migrate"
+   ```
+   or set in `fly.toml`:
+   ```toml
+   [deploy]
+   release_command = "npm run prisma:migrate"
+   ```
+8. Scale and observe:
    ```
    fly scale count 2
    fly scale memory 512
    fly scale vm shared-cpu-2x
    fly logs
    ```
-8. Wire observability: configure log drains (Datadog, Better Stack) or run a Vector sidecar. Enable Fly metrics and alerts on CPU, memory, and HTTP 5xx.
+9. Wire observability: configure log drains (Datadog, Better Stack) or run a Vector sidecar. Enable Fly metrics and alerts on CPU, memory, and HTTP 5xx.
 
 ### Render Workflow
 1. Create a Docker web service in Render pointing at this repo (Dockerfile above).
@@ -118,13 +130,16 @@ CMD ["npm", "run", "start"]
            sync: false
          - key: SHOPIFY_ACCESS_TOKEN
            sync: false
+       healthCheckPath: /health
+       deploy:
+         preDeployCommand: npm run prisma:migrate
    databases:
      - name: dashboard-remix-db
        plan: starter
    ```
    Apply via `render blueprint apply render.yaml` once Render CLI is configured.
-5. Enable auto-deploy on `main` and set a health check route `/health` (implemented in Remix loaders/actions).
-6. Create a Background Worker service if long-running sync jobs or queue processors are needed.
+5. Enable auto-deploy on `main` and confirm health check route `/health` exists in Remix (simple loader returning 200).
+6. Create a Background Worker service if long-running sync jobs or queue processors are needed; mount the same environment secrets.
 7. Stream logs to your observability stack (Datadog, Better Stack, Splunk) using Render integrations or sidecars.
 
 ## Environment Strategy
@@ -138,7 +153,7 @@ CMD ["npm", "run", "start"]
 | `SHOPIFY_WEBHOOK_SECRET` | Secret from the dev store webhook registration | Production webhook secret | Update Fly/Render secrets after rotating at Shopify. |
 | `SHOPIFY_API_VERSION` | `2024-10` (ensure compatibility) | Same | Align versions to avoid schema drift. |
 | `OPENAI_API_KEY` | Sandbox key with throttled usage | Production key with higher quota | Consider separate OpenAI projects for staging vs prod. |
-| `POSTGRES_URL` | Local docker-compose or Fly/Render staging Postgres | Managed production Postgres (Fly Postgres, Render Postgres, or RDS) | Run migrations on deploy (`npm run prisma:migrate`). |
+| `POSTGRES_URL` | Local docker-compose or Fly/Render staging Postgres | Managed production Postgres (Fly Postgres, Render Postgres, or RDS) | Run migrations on deploy via `npm run prisma:migrate`. |
 | `REDIS_URL` | Optional (local Redis docker, Render Starter Redis) | Managed Redis (Upstash/Fly Machines/Render) | Required if using session or job queues. |
 | `CHROMA_PATH` / `PERSIST_DIR` | `/data/chroma` on staging volume | `/data/chroma` on production volume | Size volumes based on embedding count; keep ingest pipeline ready for rebuilds. |
 | `ZOHO_*` | Sandbox org credentials | Production org credentials | Label secrets for quick rotation; restrict access per environment. |
@@ -158,7 +173,7 @@ CMD ["npm", "run", "start"]
 - **Backups & DR:** Enable automated Postgres snapshots (Fly nightly snapshots, Render backups). Re-hydrate Chroma from `ingest_site_chroma.py` if the volume is lost; store embeddings export in object storage weekly.
 
 ## Post-Deploy Validation
-- Follow the smoke steps in `prompts/dashboard/testing.md` (see the pending smoke checklist task under "Tasks" and the "Entry / Exit Criteria" section) immediately after Fly/Render deploys.
+- Follow the smoke steps in `prompts/dashboard/testing.md` (see "Post-Deploy Smoke Checklist") immediately after Fly/Render deploys.
 - Capture evidence in the release ticket: deploy ID, smoke run (Playwright or manual), webhook replay results, and log excerpts showing healthy start.
 
 ## Tasks

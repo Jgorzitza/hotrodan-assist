@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "shopify:deploy": "shopify app deploy",
+    "lint": "npm run typecheck",
+    "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:unit": "vitest run --dir app/tests/unit",
     "test:integration": "vitest run --dir app/tests/integration",
@@ -12,9 +14,9 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.43.1",
+    "@remix-run/testing": "^2.8.0",
     "@types/node": "^20.12.7",
     "@vitest/coverage-v8": "^1.4.0",
-    "@remix-run/testing": "^2.8.0",
     "msw": "^2.2.3",
     "prisma": "^5.11.0",
     "ts-node": "^10.9.2",

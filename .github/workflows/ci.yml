@@ -1,11 +1,45 @@
 name: CI
-on: [push, pull_request]
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+
 jobs:
-  tests:
+  backend-tests:
+    name: Chroma Smoke
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
+        with:
+          python-version: '3.12'
       - run: pip install -U llama-index openai "chromadb>=0.5" llama-index-vector-stores-chroma llama-index-readers-web llama-index-readers-file pyyaml
       - run: OFFLINE_CORRECTIONS_ONLY=1 python run_goldens.py
+
+  dashboard-tests:
+    name: Dashboard Lint & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium webkit
+      - name: Typecheck
+        run: npm run lint
+      - name: Vitest Suite
+        run: npm run test -- --run
+      - name: Playwright Smoke
+        run: npm run test:e2e -- --reporter=line
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          if-no-files-found: ignore
