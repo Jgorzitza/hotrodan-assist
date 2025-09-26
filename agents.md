@@ -22,7 +22,8 @@
 - `rag_config.py` honors `RAG_FORCE_MOCK_EMBED` and falls back to a deterministic MockEmbedding when FastEmbed cannot download (prints a single warning instead of stalling for 60s+).
 - `run_goldens.py` exports `RAG_FORCE_MOCK_EMBED=1`; offline goldens finish in ~5s and still pass with current corrections stub (no OpenAI key required).
 - Both ingest scripts now try persistent Chroma first and fall back to an ephemeral client when sqlite code 14 (`unable to open database file`) fires; logs mark these runs as "non-persistent" so ops knows nothing hit disk.
-- Incremental ingest: URL/state parity holds (133 URLs). Full bootstrap remains blocked — Shopify hosts fail DNS lookups inside the sandbox despite retries, so `ingest_site_chroma.py` aborts after exhausting fetch attempts.
+- Full bootstrap completed (133 URLs) with FastEmbed embeddings; `ingest_state.json` synced to sitemap timestamps and Chroma writes persist locally.
+- Incremental ingest now runs clean (`Changed: 0 | Deleted: 0` after second pass) and reuses the new `index.insert` path in LlamaIndex 0.14.
 
 ### Query & Routing
 - `query_chroma_router.py` → primary CLI; applies corrections, model routing (`gpt-4o-mini` default, escalates to GPT-5 family), adds dynamic context.

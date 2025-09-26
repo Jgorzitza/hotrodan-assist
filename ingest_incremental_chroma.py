@@ -119,10 +119,11 @@ def main():
         if not text:
             skipped.append(u)
             continue
+        # remove stale vectors after we know we have new content
         collection.delete(where={"source_url": u})
         doc = Document(text=text, metadata={"source_url": u}, doc_id=u)
         # insert via index (honors current Settings + chunking)
-        index.insert_documents([doc])
+        index.insert(doc)
         refreshed.append((u, m))
         time.sleep(0.1)
 
