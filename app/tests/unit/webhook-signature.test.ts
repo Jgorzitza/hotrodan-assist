@@ -32,4 +32,17 @@ describe('Shopify webhook signature helpers', () => {
     });
     expect(ok).toBe(false);
   });
+
+  it('handles Buffer payloads and invalid base64 safely', () => {
+    const signature = computeShopifyHmac(payload, secret);
+    const ok = verifyShopifySignature(Buffer.from(payload), secret, {
+      'x-shopify-hmac-sha256': signature
+    });
+    expect(ok).toBe(true);
+
+    const invalid = verifyShopifySignature(payload, secret, {
+      'x-shopify-hmac-sha256': '!@#$%^&*'
+    });
+    expect(invalid).toBe(false);
+  });
 });

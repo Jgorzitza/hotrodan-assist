@@ -28,15 +28,15 @@ Handle Shopify webhook subscriptions, HMAC verification, routing, and persistenc
 
 ## Testing Workflow
 - Local: `shopify app dev --store=afafsaf.myshopify.com` (tunnel) + `shopify app webhook trigger orders_create`.
-- Staging: Use Shopify CLI or `curl` with HMAC header computed via script (`scripts/webhooks/sign_payload.ts`).
-- Document expected DB mutations per topic + Vitest coverage for signature helper.
+- Staging: Use Shopify CLI or `scripts/shopify_webhook_replay.sh orders/updated` to send signed payloads (falls back to curl + HMAC generation).
+- Document expected DB mutations per topic + Vitest coverage for signature helper (`app/tests/unit/webhook-signature.test.ts`).
 
 ## Tasks
 - [ ] Implement registration helper invoked post-install.
-- [ ] Build HMAC verification middleware with tests.
+- [x] Build HMAC verification middleware with tests.
 - [ ] Create handler skeletons per topic writing to mock persistence.
 - [ ] Add background processing stub (Remix resource route) for heavy tasks.
-- [ ] Write local testing scripts + documentation in README/testing plan.
+- [x] Write local testing scripts + documentation in README/testing plan.
 - [ ] Update `overview.md` + `database.md` references once handlers wired.
 
 ## Status / Notes
