@@ -1,334 +1,254 @@
-import { useEffect } from "react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { useFetcher } from "@remix-run/react";
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import {
-  Page,
-  Layout,
-  Text,
-  Card,
-  Button,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from "@remix-run/react";
+import {
+  Badge,
   BlockStack,
-  Box,
-  List,
-  Link,
+  Button,
+  ButtonGroup,
+  Card,
+  InlineGrid,
   InlineStack,
+  Layout,
+  Page,
+  Text,
 } from "@shopify/polaris";
-import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
+import { TitleBar } from "@shopify/app-bridge-react";
+
 import { authenticate } from "../shopify.server";
+import { getDashboardOverview } from "../mocks";
+import type { DashboardOverview } from "../mocks/dashboard";
+
+const RANGE_OPTIONS = ["today", "7d", "28d", "90d"] as const;
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
 
-  return null;
+  const url = new URL(request.url);
+  const range = url.searchParams.get("range") ?? "28d";
+
+  const data = await getDashboardOverview(range);
+
+  return json<{ data: DashboardOverview }>(
+    { data },
+    {
+      headers: {
+        "Cache-Control": "private, max-age=0, must-revalidate",
+      },
+    },
+  );
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const { admin } = await authenticate.admin(request);
-  const color = ["Red", "Orange", "Yellow", "Green"][
-    Math.floor(Math.random() * 4)
-  ];
-  const response = await admin.graphql(
-    `#graphql
-      mutation populateProduct($product: ProductCreateInput!) {
-        productCreate(product: $product) {
-          product {
-            id
-            title
-            handle
-            status
-            variants(first: 10) {
-              edges {
-                node {
-                  id
-                  price
-                  barcode
-                  createdAt
-                }
-              }
-            }
-          }
-        }
-      }`,
-    {
-      variables: {
-        product: {
-          title: `${color} Snowboard`,
-        },
-      },
-    },
-  );
-  const responseJson = await response.json();
+export default function DashboardRoute() {
+  const { data } = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
-  const product = responseJson.data!.productCreate!.product!;
-  const variantId = product.variants.edges[0]!.node!.id!;
+  const activeRange = searchParams.get("range") ?? data.range ?? "28d";
 
-  const variantResponse = await admin.graphql(
-    `#graphql
-    mutation shopifyRemixTemplateUpdateVariant($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-      productVariantsBulkUpdate(productId: $productId, variants: $variants) {
-        productVariants {
-          id
-          price
-          barcode
-          createdAt
-        }
-      }
-    }`,
-    {
-      variables: {
-        productId: product.id,
-        variants: [{ id: variantId, price: "100.00" }],
-      },
-    },
-  );
-
-  const variantResponseJson = await variantResponse.json();
-
-  return {
-    product: responseJson!.data!.productCreate!.product,
-    variant:
-      variantResponseJson!.data!.productVariantsBulkUpdate!.productVariants,
+  const handleRangeSelect = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("range", value);
+    navigate(`?${params.toString()}`, { replace: true });
   };
-};
-
-export default function Index() {
-  const fetcher = useFetcher<typeof action>();
-
-  const shopify = useAppBridge();
-  const isLoading =
-    ["loading", "submitting"].includes(fetcher.state) &&
-    fetcher.formMethod === "POST";
-  const productId = fetcher.data?.product?.id.replace(
-    "gid://shopify/Product/",
-    "",
-  );
-
-  useEffect(() => {
-    if (productId) {
-      shopify.toast.show("Product created");
-    }
-  }, [productId, shopify]);
-  const generateProduct = () => fetcher.submit({}, { method: "POST" });
 
   return (
     <Page>
-      <TitleBar title="Remix app template">
-        <button variant="primary" onClick={generateProduct}>
-          Generate a product
-        </button>
-      </TitleBar>
+      <TitleBar
+        title="Operations dashboard"
+        primaryAction={{ content: "Settings", url: "/app/settings" }}
+      />
       <BlockStack gap="500">
-        <Layout>
-          <Layout.Section>
-            <Card>
-              <BlockStack gap="500">
-                <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
-                    Congrats on creating a new Shopify app 🎉
-                  </Text>
-                  <Text variant="bodyMd" as="p">
-                    This embedded app template uses{" "}
-                    <Link
-                      url="https://shopify.dev/docs/apps/tools/app-bridge"
-                      target="_blank"
-                      removeUnderline
-                    >
-                      App Bridge
-                    </Link>{" "}
-                    interface examples like an{" "}
-                    <Link url="/app/additional" removeUnderline>
-                      additional page in the app nav
-                    </Link>
-                    , as well as an{" "}
-                    <Link
-                      url="https://shopify.dev/docs/api/admin-graphql"
-                      target="_blank"
-                      removeUnderline
-                    >
-                      Admin GraphQL
-                    </Link>{" "}
-                    mutation demo, to provide a starting point for app
-                    development.
-                  </Text>
-                </BlockStack>
-                <BlockStack gap="200">
-                  <Text as="h3" variant="headingMd">
-                    Get started with products
-                  </Text>
-                  <Text as="p" variant="bodyMd">
-                    Generate a product with GraphQL and get the JSON output for
-                    that product. Learn more about the{" "}
-                    <Link
-                      url="https://shopify.dev/docs/api/admin-graphql/latest/mutations/productCreate"
-                      target="_blank"
-                      removeUnderline
-                    >
-                      productCreate
-                    </Link>{" "}
-                    mutation in our API references.
-                  </Text>
-                </BlockStack>
-                <InlineStack gap="300">
-                  <Button loading={isLoading} onClick={generateProduct}>
-                    Generate a product
+        <Card>
+          <BlockStack gap="200">
+            <InlineStack align="space-between" blockAlign="center">
+              <Text as="h2" variant="headingLg">
+                Sales overview
+              </Text>
+              <ButtonGroup>
+                {RANGE_OPTIONS.map((option) => (
+                  <Button
+                    key={option}
+                    pressed={activeRange === option}
+                    onClick={() => handleRangeSelect(option)}
+                  >
+                    {option.toUpperCase()}
                   </Button>
-                  {fetcher.data?.product && (
-                    <Button
-                      url={`shopify:admin/products/${productId}`}
-                      target="_blank"
-                      variant="plain"
-                    >
-                      View product
-                    </Button>
-                  )}
-                </InlineStack>
-                {fetcher.data?.product && (
-                  <>
-                    <Text as="h3" variant="headingMd">
-                      {" "}
-                      productCreate mutation
+                ))}
+              </ButtonGroup>
+            </InlineStack>
+            <InlineGrid columns={{ xs: 1, sm: 2, lg: 4 }} gap="300">
+              {data.metrics.map((metric) => (
+                <Card key={metric.id} sectioned>
+                  <BlockStack gap="100">
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      {metric.label}
                     </Text>
-                    <Box
-                      padding="400"
-                      background="bg-surface-active"
-                      borderWidth="025"
-                      borderRadius="200"
-                      borderColor="border"
-                      overflowX="scroll"
-                    >
-                      <pre style={{ margin: 0 }}>
-                        <code>
-                          {JSON.stringify(fetcher.data.product, null, 2)}
-                        </code>
-                      </pre>
-                    </Box>
-                    <Text as="h3" variant="headingMd">
-                      {" "}
-                      productVariantsBulkUpdate mutation
+                    <Text as="p" variant="headingLg">
+                      {metric.value}
                     </Text>
-                    <Box
-                      padding="400"
-                      background="bg-surface-active"
-                      borderWidth="025"
-                      borderRadius="200"
-                      borderColor="border"
-                      overflowX="scroll"
-                    >
-                      <pre style={{ margin: 0 }}>
-                        <code>
-                          {JSON.stringify(fetcher.data.variant, null, 2)}
-                        </code>
-                      </pre>
-                    </Box>
-                  </>
-                )}
+                    <Badge tone={metric.delta >= 0 ? "success" : "critical"}>
+                      {formatDelta(metric.delta)} {metric.deltaPeriod}
+                    </Badge>
+                  </BlockStack>
+                </Card>
+              ))}
+            </InlineGrid>
+            <Text as="p" variant="bodySm" tone="subdued">
+              Sparkline placeholder (hook up Polaris Viz once data layer lands)
+            </Text>
+          </BlockStack>
+        </Card>
+
+        <Layout>
+          <Layout.Section oneHalf>
+            <Card title="Orders attention" sectioned>
+              <BlockStack gap="300">
+                {data.orders.map((bucket) => (
+                  <InlineStack
+                    key={bucket.id}
+                    align="space-between"
+                    blockAlign="center"
+                  >
+                    <BlockStack gap="050">
+                      <Text as="p" variant="headingMd">
+                        {bucket.label}
+                      </Text>
+                      <Text as="span" variant="bodySm" tone="subdued">
+                        {bucket.description}
+                      </Text>
+                    </BlockStack>
+                    <InlineStack gap="200" blockAlign="center">
+                      <Text as="span" variant="headingMd">
+                        {bucket.count}
+                      </Text>
+                      <Button url={bucket.href} accessibilityLabel={`View ${bucket.label}`}>
+                        Open
+                      </Button>
+                    </InlineStack>
+                  </InlineStack>
+                ))}
               </BlockStack>
             </Card>
           </Layout.Section>
-          <Layout.Section variant="oneThird">
-            <BlockStack gap="500">
-              <Card>
-                <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
-                    App template specs
+          <Layout.Section secondary>
+            <Card title="Inbox" sectioned>
+              <BlockStack gap="200">
+                <InlineStack align="space-between">
+                  <Text variant="bodyMd" as="span">
+                    Outstanding
                   </Text>
-                  <BlockStack gap="200">
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Framework
-                      </Text>
-                      <Link
-                        url="https://remix.run"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        Remix
-                      </Link>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Database
-                      </Text>
-                      <Link
-                        url="https://www.prisma.io/"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        Prisma
-                      </Link>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Interface
-                      </Text>
-                      <span>
-                        <Link
-                          url="https://polaris.shopify.com"
-                          target="_blank"
-                          removeUnderline
-                        >
-                          Polaris
-                        </Link>
-                        {", "}
-                        <Link
-                          url="https://shopify.dev/docs/apps/tools/app-bridge"
-                          target="_blank"
-                          removeUnderline
-                        >
-                          App Bridge
-                        </Link>
-                      </span>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        API
-                      </Text>
-                      <Link
-                        url="https://shopify.dev/docs/api/admin-graphql"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        GraphQL API
-                      </Link>
-                    </InlineStack>
-                  </BlockStack>
-                </BlockStack>
-              </Card>
-              <Card>
-                <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
-                    Next steps
+                  <Text variant="headingMd" as="span">
+                    {data.inbox.outstanding}
                   </Text>
-                  <List>
-                    <List.Item>
-                      Build an{" "}
-                      <Link
-                        url="https://shopify.dev/docs/apps/getting-started/build-app-example"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        {" "}
-                        example app
-                      </Link>{" "}
-                      to get started
-                    </List.Item>
-                    <List.Item>
-                      Explore Shopify’s API with{" "}
-                      <Link
-                        url="https://shopify.dev/docs/apps/tools/graphiql-admin-api"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        GraphiQL
-                      </Link>
-                    </List.Item>
-                  </List>
-                </BlockStack>
-              </Card>
-            </BlockStack>
+                </InlineStack>
+                <InlineStack align="space-between">
+                  <Text variant="bodyMd" as="span">
+                    Overdue &gt;12h
+                  </Text>
+                  <Text variant="headingMd" as="span">
+                    {data.inbox.overdueHours}
+                  </Text>
+                </InlineStack>
+                <InlineStack align="space-between">
+                  <Text variant="bodyMd" as="span">
+                    Approvals pending
+                  </Text>
+                  <Text variant="headingMd" as="span">
+                    {data.inbox.approvalsPending}
+                  </Text>
+                </InlineStack>
+                <Button url="/app/inbox" tone="primary" variant="plain">
+                  Go to inbox
+                </Button>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+        </Layout>
+
+        <Layout>
+          <Layout.Section>
+            <Card title="Inventory snapshot" sectioned>
+              <InlineStack gap="400">
+                <MetricTile label="Low stock" value={data.inventory.lowStock} />
+                <MetricTile
+                  label="POs in flight"
+                  value={data.inventory.purchaseOrdersInFlight}
+                />
+                <MetricTile label="Overstock" value={data.inventory.overstock} />
+              </InlineStack>
+              <Button url="/app/inventory" accessibilityLabel="View inventory planner">
+                Open inventory planner
+              </Button>
+            </Card>
+          </Layout.Section>
+        </Layout>
+
+        <Layout>
+          <Layout.Section oneHalf>
+            <Card title="SEO highlights" sectioned>
+              <BlockStack gap="200">
+                <Text as="span" variant="bodyMd">
+                  Traffic Δ
+                </Text>
+                <Badge tone="success">+{data.seo.trafficDelta}%</Badge>
+                <Text as="p" variant="bodySm">
+                  {data.seo.summary}
+                </Text>
+                <InlineStack gap="300">
+                  <Text variant="bodyMd" as="span">
+                    Rising queries
+                  </Text>
+                  <Text variant="headingMd" as="span">
+                    {data.seo.risingQueries}
+                  </Text>
+                </InlineStack>
+                <InlineStack gap="300">
+                  <Text variant="bodyMd" as="span">
+                    Critical issues
+                  </Text>
+                  <Text variant="headingMd" tone="critical" as="span">
+                    {data.seo.criticalIssues}
+                  </Text>
+                </InlineStack>
+                <Button url="/app/seo" variant="plain">
+                  Dive into SEO
+                </Button>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+          <Layout.Section secondary>
+            <Card title="MCP insight" sectioned>
+              <Text as="p" variant="bodyMd">
+                {data.mcpRecommendation}
+              </Text>
+              <Button url="/app/settings" variant="plain">
+                Manage MCP toggles
+              </Button>
+            </Card>
           </Layout.Section>
         </Layout>
       </BlockStack>
     </Page>
   );
 }
+
+function MetricTile({ label, value }: { label: string; value: number }) {
+  return (
+    <BlockStack gap="050">
+      <Text as="span" variant="bodySm" tone="subdued">
+        {label}
+      </Text>
+      <Text as="span" variant="headingMd">
+        {value}
+      </Text>
+    </BlockStack>
+  );
+}
+
+const formatDelta = (delta: number) =>
+  `${delta > 0 ? "+" : ""}${delta.toFixed(1)}%`;

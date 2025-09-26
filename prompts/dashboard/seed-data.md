@@ -7,7 +7,9 @@
 
 ## Dataset Inventory
 - **Sales (`app/mocks/sales.ts`)**: totals (daily/weekly/monthly), trend deltas, channel attribution, forecast variance scenarios.
-- **Orders (`app/mocks/orders.ts`)**: paginated orders with status mix (Paid, Processing, Fulfilled, Refunded), timeline events, fulfillment SLA edge cases.
+- **Orders (`app/mocks/orders.ts`)**: paginated orders with status mix (Paid, Processing, Fulfilled, Refunded), fulfillment SLA edge cases, priority tiers (VIP/Rush/Standard), inventory hold metadata, linked support conversations, and timeline events.
+- **Order Shipments (`app/mocks/orders.shipments.ts`)**: tracking pending queue, delayed shipments with carrier + delay hours, delivered-today counts, sync timestamps.
+- **Order Returns (`app/mocks/orders.returns.ts`)**: pending stages, refund exposure amounts, clustered reasons for analysis.
 - **Inbox (`app/mocks/inbox.ts`)**: support tickets, priority flags, sentiment, assignment, canned responses for empty and overdue queues.
 - **Inventory (`app/mocks/inventory.ts`)**: catalog summaries, low-stock alerts, backorder and preorder examples, velocity metrics.
 - **Sales Route Tiles (`app/mocks/kpis.ts`)**: reusable KPI cards (AOV, conversion, returning customers) with threshold metadata for warning states.
@@ -25,6 +27,8 @@ app/
       numbers.ts            // seeded random number utilities
     sales.ts
     orders.ts
+    orders.shipments.ts
+    orders.returns.ts
     inbox.ts
     inventory.ts
     seo.ts
@@ -42,6 +46,7 @@ app/
 - Co-locate TypeScript types with their loader or data-layer counterparts; re-export types from `app/types/dashboard.ts` to avoid circular deps.
 - Keep payload sizes < 100 items per collection to maintain sub-second loader times.
 - Settings factory should output `SettingsPayload` with defaults, overrides, masked secrets, connection badge state, and rotation metadata; expose helpers per store to simulate stale credentials vs freshly verified ones.
+- Orders factories should precompute backlog metrics (awaiting fulfillment, overdue pct, avg fulfillment hours, breach counts) so `/orders` loader can return deterministic aggregates per scenario.
 
 ## Integration Pattern
 - Create `USE_MOCK_DATA` boolean via Remix server env (`process.env.USE_MOCK_DATA === "true"`).

@@ -1,3 +1,14 @@
 .cache
-build
 node_modules
+npm-debug.log
+dist
+build
+.env
+.env.*
+Dockerfile
+.git
+.gitignore
+.vscode
+coverage
+prisma/dev.sqlite
+extensions/*/dist
