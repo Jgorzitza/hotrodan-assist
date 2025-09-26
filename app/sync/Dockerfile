@@ -4,4 +4,4 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 ENV PORT=8003
-CMD ["uvicorn", "app.sync.main:app", "--host", "0.0.0.0", "--port", "8003"]
+ENTRYPOINT ["python", "-m", "uvicorn", "app.sync.main:app", "--host", "0.0.0.0", "--port", "8003"]
