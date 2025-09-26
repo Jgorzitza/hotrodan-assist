@@ -12,6 +12,7 @@ Comprehensive test strategy for the Remix dashboard covering UI flows, Remix loa
 ## Test Layers & Ownership
 - **Static analysis:** ESLint + TypeScript; run on every commit and CI gate.
 - **Unit tests:** Vitest targeting utility/libs (e.g., inventory math, date helpers). Owner: Feature engineer.
+  - Run locally with `npx vitest run --config dashboard/vitest.config.ts` (includes `app/tests/seo.aggregate.test.ts`).
 - **Integration tests:** Remix loader/action tests using `@remix-run/testing` + in-memory DB or Prisma test schema. Owner: Feature engineer with QA pairing.
 - **E2E UI tests:** Playwright driving critical dashboard routes (overview, orders, inventory, settings). Owner: QA.
 - **Webhook drills:** CLI-triggered Shopify webhook payloads with DB assertions. Owner: Integrations engineer.
@@ -22,6 +23,7 @@ Comprehensive test strategy for the Remix dashboard covering UI flows, Remix loa
 - Login via Shopify OAuth; verify tenant scoping, session persistence, and sign-out.
 - Confirm navigation shell (sidebar, breadcrumbs, search) is responsive desktop/mobile.
 - Validate audit log captures key mutations and is filterable by actor + date.
+- Toggle `mockState` query parameter (base/empty/warning/error) and confirm loaders render the appropriate empty/error banners without breaking navigation.
 - Link acceptance criteria: add Figma QA checklist URL in the associated Jira ticket.
 
 ### Route: Overview
@@ -34,6 +36,7 @@ Comprehensive test strategy for the Remix dashboard covering UI flows, Remix loa
 - Table columns match design ordering; pagination + infinite scroll behave.
 - Filters: status, fulfillment, date range; ensure URL params persist across reloads.
 - Order detail drawer displays timeline events, notes, and fulfillment actions.
+- Detail modal mock action: trigger "Mark investigated" and confirm success banner + modal close.
 - Exports: initiate CSV export, confirm toast, poll export status row.
 - Negative: induce 429 via mock adapter and validate retry/backoff messaging.
 - Link acceptance criteria: Figma Orders spec (TBD).
@@ -59,23 +62,25 @@ Comprehensive test strategy for the Remix dashboard covering UI flows, Remix loa
 - Link acceptance criteria: Figma SEO spec (TBD).
 
 ### Route: Settings
-- Environment badges display for development/staging; prod hides debug toggles.
-- Rotate webhook secret => confirm DB update, forced re-subscribe, regenerated HMAC.
-- User role management: invite, revoke, downgrade; verify email template triggered.
+- Update operational thresholds; expect inline validation, toast confirmation, and persisted values on refresh.
+- Toggle MCP/experimental/beta flags; confirm optimistic checkbox state and toast success.
+- Save/remove GA4/GSC/Bing credentials; ensure masking (`••••1234`), rotation reminder persistence, and warning banner when credential missing.
+- Run Test Connection for each provider; success → success toast, missing credential → error banner, warning scenario → warning banner.
 - Link acceptance criteria: Figma Settings spec (TBD).
 
 ## Automation Strategy
-- **Unit:** Locate tests in `app/tests/unit`. Use Vitest + `ts-mockito`/plain fakes. Focus on data transforms, webhook signature validation, and pricing math.
-- **Integration:** Place under `app/tests/integration`. Spin Prisma test schema via `process.env.DATABASE_URL="file:./tmp.db"`. Cover Remix loaders/actions, verifying HTTP status, redirects, and DB effects.
-- **E2E:** Playwright specs in `e2e/`. Use fixtures for authenticated session (`storageState.json`). Critical flows: onboarding, order review, export download, inventory edit, settings save.
+- **Unit:** Tests in `app/tests/unit` using Vitest + light fakes. Focus on data transforms, webhook signature validation, and pricing math.
+- **Mocks / Settings:** Vitest coverage for scenario builders (`dashboard/app/mocks/__tests__`) and the StoreSettings repository (`dashboard/app/lib/settings/__tests__`) runs via `npx vitest run`.
+- **Integration:** Use `invokeLoader` / `invokeAction` helpers in `app/tests/integration/setup.ts` to exercise Remix loaders/actions with synthetic `Request` objects (see `orders-loader.test.ts`, `action-handler.test.ts`). Swap `process.env.DATABASE_URL="file:./tmp.db"` for isolated Prisma schema; assert HTTP status, redirects, and DB side-effects.
+- **E2E:** Playwright specs in `e2e/` with optional authenticated storage (`e2e/.auth/admin.json`). Set `PLAYWRIGHT_BASE_URL` + `PLAYWRIGHT_WEB_SERVER` to target local/staging servers. Default describe skips when base URL absent.
 - **Visual regression:** Optional Applitools or Playwright trace compare on overview cards.
-- **CI hooks:** GitHub Actions matrix (Node 18 & 20). Parallel jobs for unit/integration vs Playwright. Cache npm + Playwright browsers.
+- **CI hooks:** GitHub Actions matrix (Node 20) splitting Vitest vs Playwright. Cache npm + Playwright browsers; upload traces on failure.
 
 ## Webhook Verification
-- Register webhooks in staging using `shopify app webhook trigger` or `curl` with signed payloads.
-- Validate DB side-effects via Prisma Studio or SQL snapshots.
-- Assert background jobs (queue processing) via log drains; include retry/backoff scenario.
-- Document negative tests: outdated HMAC, duplicate delivery, delayed processing.
+- Preferred: `scripts/shopify_webhook_replay.sh orders/updated` (Shopify CLI) or fallback curl with signed payloads + generated HMAC.
+- After replay, validate Prisma `webhook_events` entry, dependent aggregates (orders/inventory), and worker job completion inside 60s.
+- Negative: invalid HMAC (`expect 401`), duplicate delivery (idempotency guard), delayed processing (>5 min) triggers alert webhook.
+- Capture drill evidence (command transcript + DB snapshot) in release/QA ticket.
 
 ## Tooling & Observability
 - Vitest, Playwright, ESLint, TypeScript, Prisma test harness, MSW for request mocking.
@@ -84,14 +89,8 @@ Comprehensive test strategy for the Remix dashboard covering UI flows, Remix loa
 - Logging verification: Ensure structured logs ship to monitoring (Datadog/NewRelic) with request IDs.
 
 ## Post-Deploy Smoke Checklist
-- [ ] Hit `/health` on the freshly deployed target (Fly app or Render service) and confirm HTTP 200.
-- [ ] Log in via Shopify OAuth from an admin account; land on Overview route with no 5xx or auth prompts.
-- [ ] Spot-check dashboard freshness: Orders count, Inventory low-stock badge, Sales summary timeframe.
-- [ ] Exercise one write path (Inventory adjust or Settings toggle) and confirm DB + Polaris toast update.
-- [ ] Replay `orders/create` webhook (`shopify app webhook trigger orders/create`) and verify worker logs + DB ingest.
-- [ ] Inspect background job queue/cron (Fly machine or Render worker) for heartbeat logs within last 5 min.
-- [ ] Tail platform logs for warnings/errors across the first 5 minutes post-deploy.
-- [ ] Run `npm run prisma:migrate` (or platform release command) and record result in the release ticket.
+- Source of truth: `prompts/dashboard/smoke-checklist.md` (login, freshness, webhook replay, observability, rollback readiness).
+- Run immediately after staging/prod deploys; capture findings + evidence links in release ticket.
 
 ## Entry / Exit Criteria
 - **Entry:** Feature PR merged into `feature/testing` worktree with passing unit/integration suite.
@@ -99,15 +98,15 @@ Comprehensive test strategy for the Remix dashboard covering UI flows, Remix loa
 - Sign-off captured in issue template with evidence links (CI run URL, logs).
 
 ## Tasks
-- [ ] Flesh out manual test cases per route, link to Figma acceptance criteria.
-- [ ] Scaffold Vitest + testing utilities under `app/tests/unit`.
-- [ ] Add Remix loader/action integration harness and seed fixtures.
-- [ ] Create Playwright project with auth storage fixtures and environment switch.
-- [ ] Document webhook replay scripts and expected DB assertions.
-- [ ] Wire CI workflows (lint, test, e2e) with caching + artifacts.
+- [x] Flesh out manual test cases per route, link to Figma acceptance criteria.
+- [x] Scaffold Vitest + testing utilities under `app/tests/unit`.
+- [x] Add Remix loader/action integration harness and seed fixtures.
+- [x] Create Playwright project with auth storage fixtures and environment switch.
+- [x] Document webhook replay scripts and expected DB assertions.
+- [x] Wire CI workflows (lint, test, e2e) with caching + artifacts.
 - [x] Publish smoke checklist for post-deploy verification.
 
 ## Status / Notes
 - Owner: _unassigned_
 - Blockers: _none_
-- Notes: Manual QA coverage outlined per dashboard route; Vitest/Playwright scaffolding landed in repo with placeholder specs.
+- Notes: Manual QA coverage outlined per dashboard route; Vitest/Playwright scaffolding landed in repo with placeholder specs. Inbox/Inventory mocks now seeded via faker; loaders expose `mockState` + URL params—ensure fixtures cover those permutations when real data arrives.
