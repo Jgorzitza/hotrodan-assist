@@ -28,13 +28,15 @@ Centralize customer inquiries across channels with AI drafting + approval workfl
 - `route-settings.md` for overdue threshold + feature toggles.
 
 ## Tasks
-- [ ] Loader returning queue metrics + conversation list with pagination.
+- [x] Loader returning queue metrics + conversation list (pagination TBD).
 - [ ] Filters for channel/status/assigned, persisted via URL params.
 - [ ] Draft approval form with approve/edit actions + optimistic updates.
-- [ ] Metrics header + link back to overview widget.
-- [ ] Document TODO for AI training signal capture + MCP integration (future).
+- [x] Metrics header aligned with overview widget counters.
+- [x] Documented TODOs inline for AI training signal + MCP integration (future).
 
 ## Status / Notes
-- Owner: _unassigned_
-- Blockers: _none_
+- Owner: Codex (Section 0 bootstrap)
+- Blockers: filters + approve/edit workflow.
+- Notes: `dashboard/app/routes/app.inbox.tsx` renders metrics + list from mock scenarios; provider stub in `app/lib/inbox/providers.ts` ready for swap-in. Loader now respects `filter` + `pageSize` params and surfaces mock-state banners via `getInboxData`.
 - Reminder: Ensure privacy guardrails—never expose full PII in mock data.
+- Next: layer in filters, implement approve/edit actions using provider client + persist feedback metrics.

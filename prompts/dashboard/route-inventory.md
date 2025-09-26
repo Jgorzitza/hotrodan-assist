@@ -28,14 +28,16 @@ Provide actionable inventory planning tools:
 - `route-settings.md` thresholds for low stock/overstock.
 
 ## Tasks
-- [ ] Loader hooking into inventory math + mock data.
+- [x] Loader hooking into inventory overview mocks (math helpers ready for live wiring).
+- [x] Summary card + row count controls (tabs/search still TODO).
 - [ ] Buckets/tabs UI with search + filters.
 - [ ] Trend charts and risk callouts.
 - [ ] PO planner modal/action stub with optimistic updates.
 - [ ] CSV export stub + documentation.
-- [ ] Update overview + testing docs once implemented.
+- [x] Update overview + testing docs once implemented.
 
 ## Status / Notes
-- Owner: _unassigned_
-- Blockers: _none_
-- Notes: coordinate with data layer to ensure math functions share types with Prisma models.
+- Owner: Codex (Section 0 bootstrap)
+- Blockers: awaiting planner modal + export flows.
+- Notes: current UI renders summary + item list via `dashboard/app/routes/app.inventory.tsx`; controls allow adjusting row count. Inventory mocks rebuilt with faker seed + `getInventoryOverview`; buckets/trends reflect scenario state.
+- Next: implement vendor/product tabs, trend visualizations, and PO planner once live data layer ready.
