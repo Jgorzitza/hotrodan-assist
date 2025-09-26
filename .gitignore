@@ -27,3 +27,25 @@ node_modules/
 pnpm-lock.yaml
 yarn.lock
 npm-debug.log*
+
+# Local secrets
+.env
+
+# === build & cache ===
+**/__pycache__/
+*.pyc
+node_modules/
+dist/
+.build/
+
+# === local data / vector dbs / sqlite ===
+chroma/
+*.sqlite3
+*.bin
+
+# === logs & temp ===
+*.log
+reingest.log
+
+# === local env ===
+.env

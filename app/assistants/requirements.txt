@@ -4,3 +4,5 @@ openai
 pydantic
 python-dotenv
 httpx
+sqlalchemy[asyncio]
+asyncpg

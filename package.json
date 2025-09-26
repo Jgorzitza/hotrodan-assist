@@ -1,0 +1,24 @@
+{
+  "name": "hotrod-an-assist",
+  "private": true,
+  "scripts": {
+    "shopify:deploy": "shopify app deploy",
+    "test": "vitest",
+    "test:unit": "vitest run --dir app/tests/unit",
+    "test:integration": "vitest run --dir app/tests/integration",
+    "test:watch": "vitest --watch",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.43.1",
+    "@types/node": "^20.12.7",
+    "@vitest/coverage-v8": "^1.4.0",
+    "@remix-run/testing": "^2.8.0",
+    "msw": "^2.2.3",
+    "prisma": "^5.11.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.4",
+    "vitest": "^1.4.0"
+  }
+}
