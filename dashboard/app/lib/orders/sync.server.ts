@@ -10,6 +10,8 @@ import type {
   ShipmentsPanel,
 } from "~/types/dashboard";
 
+const KNOWN_CHANNELS: Order["channel"][] = ["online", "pos", "draft"];
+
 export type FetchOrdersFromSyncParams = {
   baseUrl?: string;
   shopDomain?: string | null;
@@ -21,7 +23,9 @@ export type FetchOrdersFromSyncParams = {
     direction: "after" | "before";
     status?: string;
     priority?: string;
+    channel?: string;
     assigned_to?: string;
+    tag?: string;
     date_start?: string;
     date_end?: string;
   };
@@ -62,9 +66,12 @@ type SyncOrderItem = {
   age_hours?: number | null;
   support_thread?: string | null;
   timeline?: Array<{ ts: string; event: string; details?: string | null }>;
+  channel?: string | null;
+  tags?: string[] | null;
 };
 
 type SyncPageInfo = {
+  cursor?: string | null;
   startCursor: string | null;
   endCursor: string | null;
   nextCursor: string | null;
@@ -79,11 +86,13 @@ type SyncPageInfo = {
 
 type SyncShipments = {
   tracking_pending?: Array<{
+    order_id?: string | null;
     order_number: string;
     expected_ship_date?: string | null;
     owner?: string | null;
   }>;
   delayed?: Array<{
+    order_id?: string | null;
     order_number: string;
     carrier?: string | null;
     delay_hours?: number | null;
@@ -94,6 +103,7 @@ type SyncShipments = {
 
 type SyncReturns = {
   pending?: Array<{
+    order_id?: string | null;
     order_number: string;
     stage: string;
     state?: string;
@@ -184,6 +194,7 @@ const resolveTimelineType = (event: string): Order["timeline"][number]["type"] =
 const mapOrders = (items: SyncOrderItem[]): Order[] =>
   items.map((item, index) => {
     const total = toMoney(item.value_usd ?? 0);
+    const normalizedChannel = (item.channel as Order["channel"]) ?? "online";
     return {
       id: item.id ?? `order-${index}`,
       name: item.order_number ?? `#${1000 + index}`,
@@ -197,7 +208,9 @@ const mapOrders = (items: SyncOrderItem[]): Order[] =>
       priority: (item.priority as Order["priority"]) ?? "standard",
       issue: resolveIssue(item.issue),
       assignedTo: item.assigned_to ?? "unassigned",
-      channel: "online",
+      channel: KNOWN_CHANNELS.includes(normalizedChannel)
+        ? normalizedChannel
+        : "online",
       total,
       subtotal: total,
       shipping: toMoney(0),
@@ -220,7 +233,9 @@ const mapOrders = (items: SyncOrderItem[]): Order[] =>
           total,
         },
       ],
-      tags: [],
+      tags: Array.isArray(item.tags)
+        ? item.tags.filter((tag): tag is string => typeof tag === "string" && tag.length > 0)
+        : [],
       timeline: (item.timeline ?? []).map((entry, timelineIndex) => ({
         id: `${item.id ?? index}-timeline-${timelineIndex}`,
         type: resolveTimelineType(entry.event ?? "status"),
@@ -244,12 +259,14 @@ const mapMetrics = (metrics: SyncOrdersResponse["metrics"]): OrdersMetrics => ({
 const mapShipments = (shipments: SyncShipments): ShipmentsPanel => ({
   trackingPending: (shipments.tracking_pending ?? []).map((entry, index) => ({
     id: `${entry.order_number ?? index}-tracking`,
+    orderId: entry.order_id ?? entry.order_number ?? `${index}`,
     orderNumber: entry.order_number ?? "",
     expectedShipDate: entry.expected_ship_date ?? undefined,
     owner: (entry.owner as Order["assignedTo"]) ?? "assistant",
   })),
   delayed: (shipments.delayed ?? []).map((entry, index) => ({
     id: `${entry.order_number ?? index}-delay`,
+    orderId: entry.order_id ?? entry.order_number ?? `${index}`,
     orderNumber: entry.order_number ?? "",
     carrier: entry.carrier ?? "",
     delayHours: Number.isFinite(entry.delay_hours) ? Number(entry.delay_hours) : 0,
@@ -261,6 +278,7 @@ const mapShipments = (shipments: SyncShipments): ShipmentsPanel => ({
 const mapReturns = (returns: SyncReturns): ReturnsPanel => ({
   pending: (returns.pending ?? []).map((entry, index) => ({
     id: `${entry.order_number ?? index}-return`,
+    orderId: entry.order_id ?? entry.order_number ?? `${index}`,
     orderNumber: entry.order_number ?? "",
     reason: entry.reason ?? "",
     stage: (entry.stage as ReturnEntry["stage"]) ?? "inspection",
@@ -296,7 +314,9 @@ export const fetchOrdersFromSync = async (
   if (search.direction === "before") url.searchParams.set("direction", "before");
   if (search.status) url.searchParams.set("status", search.status);
   if (search.priority) url.searchParams.set("priority", search.priority);
+  if (search.channel) url.searchParams.set("channel", search.channel);
   if (search.assigned_to) url.searchParams.set("assigned_to", search.assigned_to);
+  if (search.tag) url.searchParams.set("tag", search.tag);
   if (search.date_start) url.searchParams.set("date_start", search.date_start);
   if (search.date_end) url.searchParams.set("date_end", search.date_end);
 
@@ -312,25 +332,28 @@ export const fetchOrdersFromSync = async (
 
   const payload = (await response.json()) as SyncOrdersResponse;
   const orders = mapOrders(payload.orders.items ?? []);
+  const pageInfo = payload.orders.page_info;
 
   return {
     scenario: "base",
     state: "ok",
     tab: search.tab,
     period: payload.period,
-    orders,
-    count: payload.metrics.total_orders,
-    pageInfo: {
-      hasNextPage: payload.orders.page_info.hasNextPage,
-      hasPreviousPage: payload.orders.page_info.hasPreviousPage,
-      startCursor: payload.orders.page_info.startCursor ?? null,
-      endCursor: payload.orders.page_info.endCursor ?? null,
-      nextCursor: payload.orders.page_info.nextCursor ?? null,
-      previousCursor: payload.orders.page_info.previousCursor ?? null,
-      shopifyCursor: payload.orders.page_info.shopifyCursor ?? null,
-      page: payload.orders.page_info.page,
-      pageSize: payload.orders.page_info.pageSize,
-      totalPages: payload.orders.page_info.totalPages,
+    orders: {
+      items: orders,
+      count: payload.metrics.total_orders,
+      pageInfo: {
+        cursor: pageInfo.cursor ?? pageInfo.endCursor ?? null,
+        startCursor: pageInfo.startCursor ?? null,
+        endCursor: pageInfo.endCursor ?? null,
+        nextCursor: pageInfo.nextCursor ?? null,
+        previousCursor: pageInfo.previousCursor ?? null,
+        hasNextPage: pageInfo.hasNextPage,
+        hasPreviousPage: pageInfo.hasPreviousPage,
+        page: pageInfo.page,
+        pageSize: pageInfo.pageSize,
+        totalPages: pageInfo.totalPages,
+      },
     },
     metrics: mapMetrics(payload.metrics),
     shipments: mapShipments(payload.shipments ?? {}),

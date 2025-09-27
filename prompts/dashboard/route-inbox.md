@@ -29,14 +29,14 @@ Centralize customer inquiries across channels with AI drafting + approval workfl
 
 ## Tasks
 - [x] Loader returning queue metrics + conversation list (pagination TBD).
-- [ ] Filters for channel/status/assigned, persisted via URL params.
-- [ ] Draft approval form with approve/edit actions + optimistic updates.
+- [x] Filters for channel/status/assigned, persisted via URL params.
+- [x] Draft approval form with approve/edit actions + optimistic updates.
 - [x] Metrics header aligned with overview widget counters.
 - [x] Documented TODOs inline for AI training signal + MCP integration (future).
 
 ## Status / Notes
-- Owner: Codex (Section 0 bootstrap)
-- Blockers: filters + approve/edit workflow.
-- Notes: `dashboard/app/routes/app.inbox.tsx` renders metrics + list from mock scenarios; provider stub in `app/lib/inbox/providers.ts` ready for swap-in. Loader now respects `filter` + `pageSize` params and surfaces mock-state banners via `getInboxData`.
+- Owner: Codex (Approval App UI agent)
+- Blockers: none; feedback telemetry backlog tracked separately.
+- Notes: `dashboard/app/routes/app.inbox.tsx` now wires channel/status/assignee filters via search params, renders timeline + attachment context from the updated mocks, and powers approve/edit/feedback actions with `useFetcher` + optimistic state. Draft persistence lives in `app/mocks/inbox-drafts.server.ts` (feedback history included) with smoke coverage under `dashboard/app/routes/__tests__/app.inbox.test.ts`. Fresh pass introduced `app/lib/inbox/events.server.ts` + `app/routes/app.inbox.stream.ts` to broadcast SSE updates, and the route subscribes via `EventSource` so feedback/draft changes land without reload. Vitest smoke coverage now includes `dashboard/app/routes/__tests__/app.inbox.stream.test.ts` to validate the handshake and live event bridge.
 - Reminder: Ensure privacy guardrails—never expose full PII in mock data.
-- Next: layer in filters, implement approve/edit actions using provider client + persist feedback metrics.
+- Immediate focus: align the SSE bridge with the live Assistants provider once credentials land, layer in a connection health indicator/toast fallback for EventSource failures, and map mock draft persistence onto the real provider-backed store (AiDraft model) behind a feature flag.

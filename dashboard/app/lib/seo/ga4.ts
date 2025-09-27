@@ -1,4 +1,6 @@
-import type { KeywordRow } from "../../mocks/seo";
+import type { MockScenario, SeoTrafficPoint } from "~/types/dashboard";
+
+import { getSeoCollections } from "../../mocks/seo";
 
 export type Ga4TrafficSummary = {
   totalUsers: number;
@@ -14,22 +16,48 @@ export interface Ga4Client {
     endDate: string;
   }): Promise<Ga4TrafficSummary>;
 
-  fetchKeywordTable(params: {
+  fetchTrafficTrend(params: {
     propertyId: string;
     startDate: string;
     endDate: string;
-  }): Promise<KeywordRow[]>;
+  }): Promise<SeoTrafficPoint[]>;
 }
 
+type MockOptions = {
+  scenario?: MockScenario;
+  seed?: number;
+};
+
 export class MockGa4Client implements Ga4Client {
+  private readonly options: MockOptions;
+
+  constructor(options: MockOptions = {}) {
+    this.options = options;
+  }
+
   async fetchTrafficSummary(): Promise<Ga4TrafficSummary> {
+    const scenario = this.options.scenario ?? "base";
+
+    if (scenario === "empty" || scenario === "error") {
+      return { totalUsers: 0, sessions: 0, conversions: 0, source: "ga4" };
+    }
+
+    if (scenario === "warning") {
+      return {
+        totalUsers: 16120,
+        sessions: 19842,
+        conversions: 712,
+        source: "ga4",
+      };
+    }
+
     return { totalUsers: 18452, sessions: 23120, conversions: 842, source: "ga4" };
   }
 
-  async fetchKeywordTable(): Promise<KeywordRow[]> {
-    const { keywords } = await import("../../mocks/seo");
-    return keywords;
+  async fetchTrafficTrend(): Promise<SeoTrafficPoint[]> {
+    const { traffic } = getSeoCollections(this.options);
+    return traffic;
   }
 }
 
-export const createGa4Client = () => new MockGa4Client();
+export const createGa4Client = (options?: MockOptions) => new MockGa4Client(options);

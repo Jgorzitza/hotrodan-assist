@@ -3,6 +3,11 @@ import { performance } from "node:perf_hooks";
 import { createBingClient } from "../seo/bing";
 import { createGa4Client } from "../seo/ga4";
 import { createGscClient } from "../seo/gsc";
+import {
+  createMcpClient,
+  resolveMcpConfigFromEnv,
+  type McpClientConfig,
+} from "../mcp";
 import type {
   ConnectionStatusState,
   SettingsProvider,
@@ -17,12 +22,14 @@ export type ConnectionTestResult = {
 type ConnectionTestInput = {
   provider: SettingsProvider;
   credential: string;
+  overrides?: Pick<McpClientConfig, "apiKey" | "endpoint" | "timeoutMs" | "maxRetries">;
 };
 
 const DURATION_BASELINE: Record<SettingsProvider, number> = {
   ga4: 360,
   gsc: 920,
   bing: 480,
+  mcp: 250,
 };
 
 const formatDuration = (value: number) => `${value}ms`;
@@ -169,6 +176,52 @@ export const runConnectionTest = async (
         "success",
         duration,
         `Bing returned ${metrics.length} pages; top URL ${topPage.url} (${formatDuration(duration)})`,
+      );
+    }
+    case "mcp": {
+      const envConfig = resolveMcpConfigFromEnv(input.overrides);
+      const forceMocks = ["1", "true", "yes", "on"].includes(
+        (process.env.MCP_FORCE_MOCKS ?? "").toLowerCase(),
+      );
+      const shouldMock = forceMocks || !envConfig.endpoint;
+      const client = createMcpClient({
+        ...envConfig,
+        apiKey: input.credential,
+        useMocks: shouldMock,
+      });
+
+      const pingOk = await client.ping();
+      const duration = Math.max(
+        Math.round(performance.now() - start),
+        durationFallback,
+      );
+
+      if (!pingOk) {
+        const reason = shouldMock
+          ? "Mock ping failed unexpectedly"
+          : "Verify MCP endpoint and API key";
+        return buildResult(
+          input.provider,
+          "error",
+          duration,
+          `MCP ping failed. ${reason} (${formatDuration(duration)})`,
+        );
+      }
+
+      if (shouldMock) {
+        return buildResult(
+          input.provider,
+          "warning",
+          duration,
+          `MCP ping succeeded in mock mode (${formatDuration(duration)}). Configure MCP_API_URL to validate live connectivity.`,
+        );
+      }
+
+      return buildResult(
+        input.provider,
+        "success",
+        duration,
+        `MCP ping succeeded (${formatDuration(duration)}).`,
       );
     }
     default: {

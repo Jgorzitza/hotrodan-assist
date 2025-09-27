@@ -106,10 +106,10 @@ describe("fetchOrdersFromSync", () => {
       "https://sync.test/sync/orders?tab=all&pageSize=12",
       expect.objectContaining({ headers: { "X-Shop-Domain": "test-shop" } }),
     );
-    expect(dataset.orders).toHaveLength(1);
-    expect(dataset.pageInfo.startCursor).toBe("ofs:0");
+    expect(dataset.orders.items).toHaveLength(1);
+    expect(dataset.orders.count).toBe(2);
+    expect(dataset.orders.pageInfo.startCursor).toBe("ofs:0");
     expect(dataset.shipments.trackingPending).toHaveLength(1);
     expect(dataset.returns.pending[0].refundAmount.amount).toBe(45);
   });
 });
-

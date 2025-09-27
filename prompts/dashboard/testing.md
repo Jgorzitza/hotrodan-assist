@@ -56,9 +56,11 @@ Comprehensive test strategy for the Remix dashboard covering UI flows, Remix loa
 - Link acceptance criteria: Figma Sales spec (TBD).
 
 ### Route: SEO
-- Keyword table sorts by traffic, CPC; filters by channel.
-- Recommendations accordion expands/collapses with persisted state per user.
-- Action buttons deep-link to Shopify admin; verify correct store + resource.
+- Keyword trend chart renders for base/warning mock states; verify tooltip + legend toggles and fallback banner when an adapter is disabled.
+- Severity sections (Now/Soon/Later) respect assignment + status chips; mutation stub returns optimistic UI with toast + revert on failure path.
+- Keyword + page tables honor search/filter params, drive CSV export (keywords/pages) with toast + TODO note for background job when >5k rows.
+- Adapter toggles (GA4/GSC/Bing) reflect loader health, show inline disabled copy, and preserve state across reloads via query params.
+- Negative: submit malformed query params to confirm Zod guardrails return 400 + banner; disable all adapters to ensure empty-state messaging surfaces.
 - Link acceptance criteria: Figma SEO spec (TBD).
 
 ### Route: Settings
@@ -107,6 +109,6 @@ Comprehensive test strategy for the Remix dashboard covering UI flows, Remix loa
 - [x] Publish smoke checklist for post-deploy verification.
 
 ## Status / Notes
-- Owner: _unassigned_
-- Blockers: _none_
-- Notes: Manual QA coverage outlined per dashboard route; Vitest/Playwright scaffolding landed in repo with placeholder specs. Inbox/Inventory mocks now seeded via faker; loaders expose `mockState` + URL params—ensure fixtures cover those permutations when real data arrives.
+- Owner: Codex (Approval App UI agent)
+- Blockers: Awaiting MCP + live GA4/GSC/Bing credentials to extend tests beyond mocks.
+- Notes: Manual QA coverage outlined per dashboard route; Vitest/Playwright scaffolding landed in repo with placeholder specs. SEO route cases now cover chart, action queue, adapter toggle, CSV export, and validation flows; keep an eye on EPERM warnings from `npx vitest run app/routes/__tests__/app.inbox.test.ts` (suite passes). Inbox SSE coverage now includes `app/routes/__tests__/app.inbox.stream.test.ts` validating the handshake + event forwarding; `npx vitest run --config vitest.config.ts app/routes/__tests__/app.inbox.test.ts app/routes/__tests__/app.inbox.stream.test.ts` succeeds with the expected Vite WebSocket EPERM warning. Lint pass recorded via `npx eslint app/routes/app.inbox.tsx app/routes/app.inbox.stream.ts`. Next UI smoke session will validate SEO happy-path once dev server slot opens.

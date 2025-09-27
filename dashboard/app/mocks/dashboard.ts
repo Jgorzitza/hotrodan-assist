@@ -1,5 +1,6 @@
 import type {
   DashboardMocks,
+  DashboardRangeKey,
   MockScenario,
   OrdersDataset,
   SalesDataset,
@@ -7,6 +8,11 @@ import type {
 
 import { buildDashboardMocks } from "./builder";
 import { createMoney, percentage } from "./shared";
+import {
+  DASHBOARD_RANGE_PRESETS,
+  DEFAULT_DASHBOARD_RANGE,
+  resolveDashboardRangeKey,
+} from "~/lib/date-range";
 
 export type DashboardMetric = {
   id: string;
@@ -44,7 +50,8 @@ export type SeoHighlight = {
 };
 
 export type DashboardOverview = {
-  range: string;
+  range: DashboardRangeKey;
+  rangeLabel: string;
   metrics: DashboardMetric[];
   sparkline: number[];
   orders: OrdersBucket[];
@@ -54,13 +61,12 @@ export type DashboardOverview = {
   mcpRecommendation: string;
 };
 
-const FALLBACK_RANGE = "28d";
-
-const RANGE_CONFIG: Record<string, { deltaPeriod: DashboardMetric["deltaPeriod"]; label: string }> = {
-  today: { deltaPeriod: "WoW", label: "today" },
-  "7d": { deltaPeriod: "WoW", label: "7d" },
-  "28d": { deltaPeriod: "MoM", label: "28d" },
-  "90d": { deltaPeriod: "YoY", label: "90d" },
+const RANGE_CONFIG: Record<DashboardRangeKey, { deltaPeriod: DashboardMetric["deltaPeriod"] }> = {
+  today: { deltaPeriod: "WoW" },
+  "7d": { deltaPeriod: "WoW" },
+  "14d": { deltaPeriod: "WoW" },
+  "28d": { deltaPeriod: "MoM" },
+  "90d": { deltaPeriod: "YoY" },
 };
 
 const scenarioMessages: Record<MockScenario, string> = {
@@ -203,14 +209,16 @@ const toSparkline = (sales: SalesDataset): number[] => {
 };
 
 export const getDashboardOverview = async (
-  range: string,
+  range: DashboardRangeKey | string,
   scenario: MockScenario = "base",
 ): Promise<DashboardOverview> => {
-  const config = RANGE_CONFIG[range] ?? RANGE_CONFIG[FALLBACK_RANGE];
+  const normalizedRange = resolveDashboardRangeKey(range, DEFAULT_DASHBOARD_RANGE);
+  const config = RANGE_CONFIG[normalizedRange] ?? RANGE_CONFIG[DEFAULT_DASHBOARD_RANGE];
   const mocks = buildDashboardMocks({ scenario });
 
   return {
-    range: config.label,
+    range: normalizedRange,
+    rangeLabel: DASHBOARD_RANGE_PRESETS[normalizedRange].label,
     metrics: toMetrics(mocks, config.deltaPeriod),
     sparkline: toSparkline(mocks.sales),
     orders: toOrderBuckets(mocks),

@@ -5,7 +5,7 @@ import { getInventoryScenario } from "./inventory.ts";
 import { getKpiScenario } from "./kpis.ts";
 import { getOrdersScenario } from "./orders.ts";
 import { getSalesScenario } from "./sales.ts";
-import { getSeoScenario } from "./seo.ts";
+import { getSeoCollections, getSeoScenario } from "./seo.ts";
 import { getMockSettings } from "./settings";
 import { scenarioFromSearchParams } from "./shared";
 
@@ -31,12 +31,19 @@ export const scenarioFromRequest = (request: Request): MockScenario => {
   return scenarioFromSearchParams(url.searchParams);
 };
 
-export { getInboxScenario };
+export {
+  getInboxScenario,
+  getInboxDraft,
+  updateInboxDraft,
+  approveInboxDraft,
+  submitInboxDraftFeedback,
+  listInboxDraftFeedback,
+} from "./inbox.ts";
 export { getInboxData } from "./inbox.ts";
 export { getInventoryScenario };
 export { getKpiScenario };
 export { getOrdersScenario };
 export { getSalesScenario };
-export { getSeoScenario };
+export { getSeoScenario, getSeoCollections };
 export { getMockSettings } from "./settings";
 export { resolveScenario, isMockScenario, scenarioFromSearchParams } from "./shared";

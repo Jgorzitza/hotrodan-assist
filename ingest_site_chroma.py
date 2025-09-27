@@ -8,7 +8,13 @@ from chromadb.config import Settings as ChromaSettings
 
 from llama_index.core import VectorStoreIndex, Document, StorageContext
 from llama_index.vector_stores.chroma import ChromaVectorStore
-from rag_config import INDEX_ID, CHROMA_PATH, PERSIST_DIR, COLLECTION  # sets Settings globally
+from rag_config import (
+    CHROMA_PATH,
+    COLLECTION,
+    INDEX_ID,
+    PERSIST_DIR,
+    configure_settings,
+)
 
 def batched(iterable, n=32):
     it = iter(iterable)
@@ -39,8 +45,9 @@ def load_urls(path="urls.txt") -> List[str]:
         return [x.strip() for x in f if x.strip()]
 
 def main():
-    if not os.getenv("OPENAI_API_KEY"):
-        raise SystemExit("Missing OPENAI_API_KEY in environment.")
+    mode = configure_settings()
+    if mode != "openai":
+        print("OPENAI_API_KEY missing; using FastEmbed fallback (retrieval-only mode).")
     if not os.path.exists("urls.txt"):
         raise SystemExit("Missing urls.txt. Run discover_urls.py first.")
 

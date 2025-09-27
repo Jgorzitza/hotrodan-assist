@@ -31,6 +31,12 @@ import {
   TextField,
   useIndexResourceState,
 } from "@shopify/polaris";
+import {
+  LineChart,
+  PolarisVizProvider,
+  SparkLineChart,
+  type DataSeries,
+} from "@shopify/polaris-viz";
 
 import { authenticate } from "../shopify.server";
 import { storeSettingsRepository } from "../lib/settings/repository.server";
@@ -40,12 +46,15 @@ import {
   shouldUseMcpMocks,
   type InventorySignal,
 } from "~/lib/mcp";
+import type { McpClientOverrides } from "~/lib/mcp/config.server";
+import { getMcpClientOverridesForShop } from "~/lib/mcp/config.server";
 import { getInventoryScenario, scenarioFromRequest } from "~/mocks";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
 import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
 import type {
   InventoryBucketId,
   InventoryDashboardPayload,
+  InventoryDemandTrendPoint,
   InventorySkuDemand,
   InventoryStatus,
   MockScenario,
@@ -102,6 +111,14 @@ type ActionResult = {
   message: string;
 } & Partial<PlannerExport>;
 
+type DetailTrendStats = {
+  average: number;
+  latest: InventoryDemandTrendPoint;
+  deltaPercentage: number | null;
+  highest: InventoryDemandTrendPoint;
+  lowest: InventoryDemandTrendPoint;
+};
+
 const clampCount = (value: unknown, fallback = 18): number => {
   const parsed = typeof value === "string" ? Number(value) : Number(value);
   if (!Number.isFinite(parsed)) return fallback;
@@ -156,14 +173,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   let mcpSignals: InventorySignal[] = [];
   let mcpSource: string | undefined;
   let mcpGeneratedAt: string | undefined;
+  let mcpOverrides: McpClientOverrides | undefined;
 
   if (shouldHydrateMcp) {
+    if (!usingMocks) {
+      mcpOverrides = await getMcpClientOverridesForShop(shopDomain);
+    }
+
     const response = await getMcpInventorySignals(
       {
         shopDomain,
         params: { limit: 5, bucket: selectedBucket },
       },
       toggles,
+      mcpOverrides,
     );
 
     mcpSignals = response.data;
@@ -395,6 +418,48 @@ export default function InventoryRoute() {
     setVendorNotes(nextNotes);
   }, [payload.vendors]);
 
+  const detailTrendDataset = useMemo<DataSeries[]>(() => {
+    if (!detailSku?.trend?.length) return [];
+
+    return [
+      {
+        name: "Weekly units",
+        data: detailSku.trend.map((point) => ({
+          key: point.label,
+          value: point.units,
+        })),
+      },
+    ];
+  }, [detailSku]);
+
+  const detailTrendStats = useMemo<DetailTrendStats | null>(() => {
+    if (!detailSku?.trend?.length) return null;
+
+    const points = detailSku.trend;
+    const units = points.map((point) => point.units);
+    const average = Math.round(
+      units.reduce((total, value) => total + value, 0) / points.length,
+    );
+    const latest = points[points.length - 1];
+    const prior = points.length > 1 ? points[points.length - 2] : null;
+    const deltaPercentage =
+      prior && prior.units > 0
+        ? Math.round(((latest.units - prior.units) / prior.units) * 100)
+        : null;
+    const highestUnits = Math.max(...units);
+    const lowestUnits = Math.min(...units);
+    const highest = points[units.indexOf(highestUnits)] ?? latest;
+    const lowest = points[units.indexOf(lowestUnits)] ?? latest;
+
+    return {
+      average,
+      latest,
+      deltaPercentage,
+      highest,
+      lowest,
+    };
+  }, [detailSku]);
+
   const filteredSkus = useMemo(
     () => payload.skus.filter((sku) => sku.bucketId === activeBucket),
     [payload.skus, activeBucket],
@@ -501,10 +566,11 @@ export default function InventoryRoute() {
   };
 
   return (
-    <Page
-      title="Inventory"
-      subtitle="Demand planning cockpit for replenishment, expediting, and overstock mitigation."
-    >
+    <PolarisVizProvider>
+      <Page
+        title="Inventory"
+        subtitle="Demand planning cockpit for replenishment, expediting, and overstock mitigation."
+      >
       <TitleBar
         title="Inventory"
         primaryAction={{ content: "New purchase order", url: "#" }}
@@ -636,6 +702,7 @@ export default function InventoryRoute() {
                       { title: "Inbound" },
                       { title: "Committed" },
                       { title: "Cover (days)" },
+                      { title: "Trend (6w)" },
                       { title: "Stockout" },
                       { title: "Recommended" },
                       { title: "" },
@@ -667,6 +734,9 @@ export default function InventoryRoute() {
                         <IndexTable.Cell>{formatNumber(sku.inbound)}</IndexTable.Cell>
                         <IndexTable.Cell>{formatNumber(sku.committed)}</IndexTable.Cell>
                         <IndexTable.Cell>{formatNumber(sku.coverDays)}</IndexTable.Cell>
+                        <IndexTable.Cell>
+                          <SkuTrendSparkline skuTitle={sku.title} trend={sku.trend} />
+                        </IndexTable.Cell>
                         <IndexTable.Cell>{formatDate(sku.stockoutDate)}</IndexTable.Cell>
                         <IndexTable.Cell>{formatNumber(sku.recommendedOrder)}</IndexTable.Cell>
                         <IndexTable.Cell>
@@ -814,81 +884,168 @@ export default function InventoryRoute() {
         </BlockStack>
       </BlockStack>
 
-      <Modal
-        open={detailSku !== null}
-        onClose={() => setDetailSku(null)}
-        title={detailSku?.title ?? "SKU details"}
-      >
-        {detailSku && (
-          <Modal.Section>
-            <BlockStack gap="300">
-              <BlockStack gap="100">
-                <Text variant="bodyMd" tone="subdued">
-                  {detailSku.sku} • {detailSku.vendorName}
-                </Text>
-                <InlineStack gap="200" blockAlign="center">
-                  <Badge tone={STATUS_TONE[detailSku.status]}>{detailSku.status}</Badge>
-                  <Text variant="bodyMd" as="span">
-                    Bucket: {detailSku.bucketId}
+        <Modal
+          open={detailSku !== null}
+          onClose={() => setDetailSku(null)}
+          title={detailSku?.title ?? "SKU details"}
+        >
+          {detailSku && (
+            <Modal.Section>
+              <BlockStack gap="300">
+                <BlockStack gap="100">
+                  <Text variant="bodyMd" tone="subdued">
+                    {detailSku.sku} • {detailSku.vendorName}
                   </Text>
-                </InlineStack>
+                  <InlineStack gap="200" blockAlign="center">
+                    <Badge tone={STATUS_TONE[detailSku.status]}>{detailSku.status}</Badge>
+                    <Text variant="bodyMd" as="span">
+                      Bucket: {detailSku.bucketId}
+                    </Text>
+                  </InlineStack>
+                </BlockStack>
+
+                <Divider />
+
+                <InlineGrid columns={{ xs: 1, sm: 2 }} gap="200">
+                  <Metric label="On hand" value={formatNumber(detailSku.onHand)} />
+                  <Metric label="Inbound" value={formatNumber(detailSku.inbound)} />
+                  <Metric label="Committed" value={formatNumber(detailSku.committed)} />
+                  <Metric label="Coverage" value={`${formatNumber(detailSku.coverDays)} days`} />
+                  <Metric
+                    label="Reorder point"
+                    value={formatNumber(detailSku.reorderPoint)}
+                  />
+                  <Metric
+                    label="Safety stock"
+                    value={formatNumber(detailSku.safetyStock)}
+                  />
+                  <Metric
+                    label="Stockout date"
+                    value={formatDate(detailSku.stockoutDate)}
+                  />
+                  <Metric
+                    label="Recommended order"
+                    value={formatNumber(detailSku.recommendedOrder)}
+                  />
+                </InlineGrid>
+
+                <BlockStack gap="200">
+                  <InlineStack align="space-between" blockAlign="center">
+                    <Text variant="headingSm" as="h3">
+                      Demand trend
+                    </Text>
+                    {detailTrendStats?.deltaPercentage !== null && (
+                      <Badge tone={detailTrendStats.deltaPercentage >= 0 ? "success" : "critical"}>
+                        {detailTrendStats.deltaPercentage >= 0 ? "+" : ""}
+                        {detailTrendStats.deltaPercentage}% WoW
+                      </Badge>
+                    )}
+                  </InlineStack>
+                  {detailTrendDataset.length ? (
+                    <div style={{ width: "100%", height: 240 }}>
+                      <LineChart
+                        data={detailTrendDataset}
+                        isAnimated={false}
+                        xAxisOptions={{ hide: true }}
+                        tooltipOptions={{
+                          keyFormatter: (value) => String(value ?? ""),
+                          valueFormatter: (value) => {
+                            const numeric =
+                              typeof value === "number"
+                                ? value
+                                : Number(value ?? 0);
+                            const safe = Number.isFinite(numeric) ? numeric : 0;
+                            return `${formatNumber(safe)} units`;
+                          },
+                        }}
+                        yAxisOptions={{
+                          labelFormatter: (value) => {
+                            const numeric =
+                              typeof value === "number"
+                                ? value
+                                : Number(value ?? 0);
+                            const safe = Number.isFinite(numeric) ? numeric : 0;
+                            return formatNumber(safe);
+                          },
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <Text variant="bodySm" tone="subdued">
+                      Demand trend data unavailable.
+                    </Text>
+                  )}
+
+                  {detailTrendStats && (
+                    <InlineGrid columns={{ xs: 1, sm: 3 }} gap="200">
+                      <Metric
+                        label={`Latest (${detailTrendStats.latest.label})`}
+                        value={`${formatNumber(detailTrendStats.latest.units)} units`}
+                      />
+                      <Metric
+                        label="6-week average"
+                        value={`${formatNumber(detailTrendStats.average)} units`}
+                      />
+                      <Metric
+                        label={`Range (${detailTrendStats.lowest.label}-${detailTrendStats.highest.label})`}
+                        value={`${formatNumber(detailTrendStats.lowest.units)}-${formatNumber(detailTrendStats.highest.units)} units`}
+                      />
+                    </InlineGrid>
+                  )}
+
+                  {useMockData && (
+                    <Text variant="bodySm" tone="subdued">
+                      Showing mock demand history. Live Shopify analytics will populate this chart once connected.
+                    </Text>
+                  )}
+                </BlockStack>
               </BlockStack>
+            </Modal.Section>
+          )}
+        </Modal>
+      </Page>
+    </PolarisVizProvider>
+  );
+}
 
-              <Divider />
+type SkuTrendSparklineProps = {
+  trend: InventoryDemandTrendPoint[];
+  skuTitle: string;
+};
 
-              <InlineGrid columns={{ xs: 1, sm: 2 }} gap="200">
-                <Metric label="On hand" value={formatNumber(detailSku.onHand)} />
-                <Metric label="Inbound" value={formatNumber(detailSku.inbound)} />
-                <Metric label="Committed" value={formatNumber(detailSku.committed)} />
-                <Metric label="Coverage" value={`${formatNumber(detailSku.coverDays)} days`} />
-                <Metric
-                  label="Reorder point"
-                  value={formatNumber(detailSku.reorderPoint)}
-                />
-                <Metric
-                  label="Safety stock"
-                  value={formatNumber(detailSku.safetyStock)}
-                />
-                <Metric
-                  label="Stockout date"
-                  value={formatDate(detailSku.stockoutDate)}
-                />
-                <Metric
-                  label="Recommended order"
-                  value={formatNumber(detailSku.recommendedOrder)}
-                />
-              </InlineGrid>
+function SkuTrendSparkline({ trend, skuTitle }: SkuTrendSparklineProps) {
+  if (!trend.length) {
+    return (
+      <Text variant="bodySm" tone="subdued" as="span">
+        --
+      </Text>
+    );
+  }
 
-              <BlockStack gap="150">
-                <Text variant="headingSm" as="h3">
-                  Demand trend (mock)
-                </Text>
-                <InlineStack gap="150" wrap>
-                  {detailSku.trend.map((point) => (
-                    <Box
-                      key={point.label}
-                      padding="150"
-                      borderRadius="200"
-                      background="bg-subdued"
-                    >
-                      <BlockStack gap="050" align="center">
-                        <Text variant="bodySm" tone="subdued">
-                          {point.label}
-                        </Text>
-                        <Text variant="headingSm" as="span">
-                          {formatNumber(point.units)}
-                        </Text>
-                      </BlockStack>
-                    </Box>
-                  ))}
-                </InlineStack>
-                {/* TODO: Replace the mock cards above with Polaris LineChart once sales history is wired. */}
-              </BlockStack>
-            </BlockStack>
-          </Modal.Section>
-        )}
-      </Modal>
-    </Page>
+  const data = trend.map((point, index) => ({
+    key: index,
+    value: point.units,
+  }));
+  const latest = trend[trend.length - 1];
+
+  return (
+    <BlockStack gap="050">
+      <div style={{ width: "100%", minWidth: 120, height: 60 }}>
+        <SparkLineChart
+          data={[
+            {
+              name: "Weekly units",
+              data,
+            },
+          ]}
+          isAnimated={false}
+          accessibilityLabel={`Weekly units sold for ${skuTitle}`}
+        />
+      </div>
+      <Text variant="bodySm" tone="subdued" as="span">
+        {latest.label}: {formatNumber(latest.units)}
+      </Text>
+    </BlockStack>
   );
 }
 

@@ -4,6 +4,8 @@ export type MockScenario = "base" | "empty" | "warning" | "error";
 
 export type DatasetState = "ok" | "empty" | "warning" | "error";
 
+export type DashboardRangeKey = "today" | "7d" | "14d" | "28d" | "90d";
+
 export type CurrencyCode = "USD" | "CAD" | "EUR" | "GBP";
 
 export type Money = {
@@ -46,6 +48,119 @@ export type SalesForecast = {
   varianceLabel: "ahead" | "behind" | "on_track";
 };
 
+export type SalesBreadcrumb = {
+  label: string;
+  href?: string;
+};
+
+export type SalesCollectionPerformance = {
+  id: string;
+  title: string;
+  handle: string;
+  gmv: Money;
+  orders: number;
+  conversionRate: number;
+  returningRate: number;
+  attachRate: number;
+  deltaPercentage: number;
+};
+
+export type SalesProductPerformance = {
+  id: string;
+  title: string;
+  gmv: Money;
+  orders: number;
+  attachRate: number;
+  returningRate: number;
+  refundRate: number;
+  skuCount: number;
+  inventoryStatus: "healthy" | "overstock" | "stockout_risk";
+};
+
+export type SalesVariantPerformance = {
+  id: string;
+  sku: string;
+  title: string;
+  gmv: Money;
+  unitsSold: number;
+  inventoryOnHand: number;
+  attachRate: number;
+  backorderRisk: "none" | "low" | "medium" | "high";
+};
+
+export type SalesAttachRateInsight = {
+  id: string;
+  primaryProduct: string;
+  attachmentProduct: string;
+  attachRate: number;
+  opportunity: string;
+};
+
+export type SalesInventoryRisk = {
+  id: string;
+  productId: string;
+  title: string;
+  status: "overstock" | "healthy" | "stockout_risk";
+  daysOnHand: number;
+  recommendedAction: string;
+};
+
+export type SalesCohortHighlight = {
+  id: string;
+  title: string;
+  value: string;
+  description: string;
+};
+
+export type SalesTopCustomer = {
+  id: string;
+  name: string;
+  email: string;
+  orders: number;
+  lifetimeValue: Money;
+  lastOrderAt: string;
+  firstOrderAt: string;
+};
+
+export type SalesDrilldownMetrics = {
+  gmv: Money;
+  orders: number;
+  attachRate: number;
+  returningRate: number;
+};
+
+export type SalesDrilldownCollections = {
+  level: "collections";
+  breadcrumbs: SalesBreadcrumb[];
+  metrics: SalesDrilldownMetrics;
+  rows: SalesCollectionPerformance[];
+  nextLevel: "products";
+};
+
+export type SalesDrilldownProducts = {
+  level: "products";
+  breadcrumbs: SalesBreadcrumb[];
+  metrics: SalesDrilldownMetrics;
+  rows: SalesProductPerformance[];
+  nextLevel: "variants";
+  selectedCollection: SalesCollectionPerformance;
+};
+
+export type SalesDrilldownVariants = {
+  level: "variants";
+  breadcrumbs: SalesBreadcrumb[];
+  metrics: SalesDrilldownMetrics;
+  rows: SalesVariantPerformance[];
+  nextLevel: null;
+  selectedCollection?: SalesCollectionPerformance;
+  selectedProduct: SalesProductPerformance;
+};
+
+export type SalesDrilldown =
+  | SalesDrilldownCollections
+  | SalesDrilldownProducts
+  | SalesDrilldownVariants;
+
 export type SalesDataset = {
   scenario: MockScenario;
   state: DatasetState;
@@ -55,6 +170,15 @@ export type SalesDataset = {
   trend: SalesTrendPoint[];
   channelBreakdown: SalesChannelBreakdown[];
   forecast: SalesForecast | null;
+  collections: SalesCollectionPerformance[];
+  productsByCollection: Record<string, SalesProductPerformance[]>;
+  variantsByProduct: Record<string, SalesVariantPerformance[]>;
+  bestSellers: SalesProductPerformance[];
+  laggards: SalesProductPerformance[];
+  attachRateInsights: SalesAttachRateInsight[];
+  overstockRisks: SalesInventoryRisk[];
+  cohortHighlights: SalesCohortHighlight[];
+  topCustomers: SalesTopCustomer[];
   alert?: string;
   error?: string;
 };
@@ -104,6 +228,7 @@ export type OrderOwner = "assistant" | "unassigned" | string;
 
 export type ShipmentTrackingPending = {
   id: string;
+  orderId: string;
   orderNumber: string;
   expectedShipDate: string;
   owner: OrderOwner;
@@ -111,6 +236,7 @@ export type ShipmentTrackingPending = {
 
 export type ShipmentDelayed = {
   id: string;
+  orderId: string;
   orderNumber: string;
   carrier: string;
   delayHours: number;
@@ -127,6 +253,7 @@ export type ReturnStage = "awaiting_label" | "in_transit" | "inspection";
 
 export type ReturnEntry = {
   id: string;
+  orderId: string;
   orderNumber: string;
   reason: string;
   stage: ReturnStage;
@@ -182,17 +309,31 @@ export type Order = {
   supportThread?: string;
 };
 
+export type OrdersPageInfo = {
+  cursor: string | null;
+  startCursor: string | null;
+  endCursor: string | null;
+  nextCursor: string | null;
+  previousCursor: string | null;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
+export type OrdersCollection = {
+  items: Order[];
+  count: number;
+  pageInfo: OrdersPageInfo;
+};
+
 export type OrdersDataset = {
   scenario: MockScenario;
   state: DatasetState;
   tab: "all" | "unfulfilled" | "overdue" | "refunded";
   period: DateRange;
-  orders: Order[];
-  count: number;
-  pageInfo: {
-    hasNextPage: boolean;
-    endCursor: string | null;
-  };
+  orders: OrdersCollection;
   metrics: OrdersMetrics;
   shipments: ShipmentsPanel;
   returns: ReturnsPanel;
@@ -214,6 +355,50 @@ export type InboxTicketPriority = "low" | "medium" | "high" | "urgent";
 
 export type InboxProvider = "email" | "shopify" | "instagram" | "tiktok";
 
+export type InboxAttachment = {
+  id: string;
+  name: string;
+  url: string;
+};
+
+export type InboxTimelineEntryType =
+  | "customer_message"
+  | "agent_reply"
+  | "note"
+  | "system";
+
+export type InboxTimelineEntry = {
+  id: string;
+  type: InboxTimelineEntryType;
+  actor: string;
+  timestamp: string;
+  body: string;
+  attachments?: InboxAttachment[];
+};
+
+export type InboxFeedbackVote = "up" | "down";
+
+export type InboxDraftFeedback = {
+  id: string;
+  draftId: string;
+  ticketId: string;
+  vote: InboxFeedbackVote;
+  comment?: string;
+  submittedAt: string;
+  submittedBy: string;
+};
+
+export type InboxDraft = {
+  id: string;
+  ticketId: string;
+  content: string;
+  approved: boolean;
+  updatedAt: string;
+  updatedBy: string;
+  revision: number;
+  feedback: InboxDraftFeedback[];
+};
+
 export type InboxTicket = {
   id: string;
   subject: string;
@@ -233,16 +418,27 @@ export type InboxTicket = {
   assignedTo?: string;
   lastMessagePreview: string;
   slaBreached?: boolean;
+  aiDraft: InboxDraft;
+  timeline: InboxTimelineEntry[];
+  attachments?: InboxAttachment[];
 };
 
 export type InboxDataset = {
   scenario: MockScenario;
   state: DatasetState;
   filter: "all" | "unassigned" | "priority" | "overdue";
+  channelFilter: "all" | InboxProvider;
+  statusFilter: "all" | InboxTicketStatus;
+  assignedFilter: "all" | "unassigned" | string;
   tickets: InboxTicket[];
   count: number;
   alert?: string;
   error?: string;
+  availableFilters: {
+    channels: InboxProvider[];
+    statuses: InboxTicketStatus[];
+    assignees: string[];
+  };
 };
 
 export type InboxMetrics = {
@@ -267,6 +463,24 @@ export type InboxData = {
   dataset: InboxDataset;
   metrics: InboxMetrics;
   conversations: InboxConversation[];
+};
+
+export type InboxActionEventType =
+  | "draft:approved"
+  | "draft:updated"
+  | "draft:feedback";
+
+export type InboxActionResponse = {
+  success: boolean;
+  message: string;
+  ticket?: InboxTicket;
+  draft?: InboxDraft;
+  feedback?: InboxDraftFeedback;
+  event?: {
+    type: InboxActionEventType;
+    timestamp: string;
+    payload: Record<string, unknown>;
+  };
 };
 
 export type InventoryStatus = "healthy" | "low" | "backorder" | "preorder";
@@ -397,6 +611,59 @@ export type KpiDataset = {
 export type SeoSource = "ga4" | "gsc" | "bing";
 export type SeoSeverity = "info" | "warning" | "critical";
 
+export type SeoKeywordIntent = "transactional" | "informational" | "navigational";
+
+export type SeoKeywordRow = {
+  id: string;
+  query: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  avgPosition: number;
+  delta: number;
+  topPage?: string;
+  intent: SeoKeywordIntent;
+  source: SeoSource;
+};
+
+export type SeoCanonicalStatus = "ok" | "issue";
+
+export type SeoPageRow = {
+  id: string;
+  url: string;
+  title: string;
+  entrances: number;
+  exits: number;
+  conversionRate: number;
+  canonicalStatus: SeoCanonicalStatus;
+  canonicalIssue?: string;
+  source: SeoSource;
+};
+
+export type SeoActionPriority = "now" | "soon" | "later";
+export type SeoActionStatus = "not_started" | "in_progress" | "done";
+
+export type SeoAction = {
+  id: string;
+  title: string;
+  description: string;
+  priority: SeoActionPriority;
+  status: SeoActionStatus;
+  assignedTo: string;
+  source: SeoSource;
+  metricLabel?: string;
+  metricValue?: string;
+  dueAt?: string;
+  lastUpdatedAt: string;
+};
+
+export type SeoTrafficPoint = {
+  date: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+};
+
 export type SeoInsight = {
   id: string;
   source: SeoSource;
@@ -423,6 +690,10 @@ export type SeoDataset = {
   range: DateRange;
   scorecard: SeoScorecard;
   insights: SeoInsight[];
+  keywords: SeoKeywordRow[];
+  pages: SeoPageRow[];
+  actions: SeoAction[];
+  traffic: SeoTrafficPoint[];
   alert?: string;
   error?: string;
 };

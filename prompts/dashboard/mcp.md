@@ -58,7 +58,7 @@ app/lib/mcp/
 
 ## Status / Notes
 - Owner: Codex (Section 0 bootstrap)
-- Progress: Environment toggle helper + config resolver live in `dashboard/app/lib/mcp/index.ts`; dashboard home, inventory, and SEO loaders now hydrate via `getMcpClient` while honoring `ENABLE_MCP`/`USE_MOCK_DATA`.
-- Tests: Vitest coverage for toggles + client mocks lives under `dashboard/app/lib/mcp/__tests__`.
+- Progress: Settings UI now surfaces per-shop MCP endpoint/timeout/retry inputs with validation; saving feeds the repository overrides that `resolveMcpConfigFromEnv` and the route loaders consume for live fetch prep.
+- Tests: Vitest suites cover override precedence (`dashboard/app/lib/mcp/__tests__/index.test.ts`), the override loader (`dashboard/app/lib/mcp/__tests__/config.server.test.ts`), and the settings loader/action path (`dashboard/app/routes/__tests__/app.settings.test.ts`) to guard the new form plumbing.
 - Blockers: Awaiting real Storefront MCP endpoint + credentials to swap off mock mode.
-- Next: Hook MCP responses into persistence + connection tests once credentials land; finalize telemetry payloads with live endpoint contract.
+- Immediate focus: document secure persistence migration notes, align on production-ready MCP creds, and chase the remaining Vitest flake owners (mock scenario regressions + missing Prisma/Shopify env vars) so the suite runs green once we flip off mock mode.
