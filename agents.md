@@ -18,12 +18,12 @@
 - `ingest_incremental_chroma.py` → compares sitemap last-mod times, deletes stale docs, reingests updates (tracks `ingest_state.json`).
 - `rag_config.py` → shared Settings (chunk size 1500/overlap 150, OpenAI defaults with FastEmbed + mock LLM fallback when `OPENAI_API_KEY` missing/placeholder).
 
-#### Status / Notes (2025-09-26)
 - `rag_config.py` honors `RAG_FORCE_MOCK_EMBED` and falls back to a deterministic MockEmbedding when FastEmbed cannot download (prints a single warning instead of stalling for 60s+).
 - `run_goldens.py` exports `RAG_FORCE_MOCK_EMBED=1`; offline goldens finish in ~5s and still pass with current corrections stub (no OpenAI key required).
 - Both ingest scripts now try persistent Chroma first and fall back to an ephemeral client when sqlite code 14 (`unable to open database file`) fires; logs mark these runs as "non-persistent" so ops knows nothing hit disk.
 - Full bootstrap completed (133 URLs) with FastEmbed embeddings; `ingest_state.json` synced to sitemap timestamps and Chroma writes persist locally.
 - Incremental ingest now runs clean (`Changed: 0 | Deleted: 0` after second pass) and reuses the new `index.insert` path in LlamaIndex 0.14.
+- CI adds a nightly "RAG Refresh" workflow plus failure monitor—watch the first couple of runs and triage any issues they file automatically.
 
 ### Query & Routing
 - `query_chroma_router.py` → primary CLI; applies corrections, model routing (`gpt-4o-mini` default, escalates to GPT-5 family), adds dynamic context.
@@ -89,6 +89,7 @@
 - Add retries/queueing for Zoho & Shopify deliveries (currently single-shot).
 - Extend Approval App with auth, filtering, and real-time updates.
 - No automatic confidence gating yet; define retrieval thresholds once metrics are available.
+- Land the refreshed `ingest_incremental_chroma.py` in every active feature branch (route-* worktrees) so merges don’t regress the LlamaIndex 0.14 API fix.
 
 ## Reference Docs
 - `HANDOVER_ALL_IN_ONE.md` → canonical spec and embedded file copies.
