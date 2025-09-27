@@ -1,32 +1,26 @@
 # Session Summary
 
 ## What we did
-- Wired up Shopify CLI; dev preview is running.
-- Clarified webhook testing flow; localhost vs https tunnel.
-- Decided to keep Codex brief in `prompts/` inside app root.
-- Introduced app scaffolding for embedded Remix “Dashboard”.
+- Reconciled dashboard route prompts (sales + orders) with the latest implementation, marking tasks complete and refreshing immediate focus.
+- Verified the `dashboard` workspace lint (`npm run lint`) passes after recent TypeScript cleanup.
+- Captured cross-team next steps in program-manager status notes so Orders/Sales agents can coordinate with Sync, data-layer, and Polaris Viz owners.
 
 ## Current state
-- On branch `feature/dashboard-setup`.
-- New untracked app files present (dashboard/, prompts/, shopify.app.toml, package.json, etc.).
-- Receiver on :3000 not running yet (curl failed) — next to start it and re-trigger webhook.
+- On branch `feature/route-sales-drilldown` with all Section 0 dashboard routes checked in.
+- Shared date-range helper drives `/app`, `/app/sales`, and `/app/orders`; SSE bridge for inbox + sync stubs ready behind feature flags.
+- `npm run lint` from `dashboard/` passes; Vitest suites last ran on previous dashboard handoff (refresh pending once live adapters land).
+- Shopify CLI/dev server not launched this session; credentials + tunnel setup still tracked in route prompts.
 
 ## Immediate focus
-1) Keep the webhook receiver running on `http://localhost:3000` and re-test with `shopify app webhook trigger` after config changes.
-2) Land the UI route skeletons with mock loaders for `/`, `/sales`, `/orders`, `/inbox`, `/inventory`, `/seo` and run lint/tests before handoff.
-3) Freeze contracts under `app/lib/contracts/*` so adapters continue in parallel without schema churn.
+1) Coordinate with Sync on write API enablement so the Orders optimistic flows can run end-to-end (log in `coordination/2025-09-27_orders-sync-contract.md`).
+2) Prepare the Sales route for the Polaris Viz package upgrade + background export design while keeping mocks deterministic.
+3) Plan the next dashboard QA pass (screenshots, smoke run) once credentials and dev server are ready.
 
-## 2025-09-26 RAG Refresh
-- `.venv/bin/python discover_urls.py` refreshed sitemap inputs (133 URLs after filters).
-- `.venv/bin/python ingest_incremental_chroma.py` completed in FastEmbed fallback (OpenAI key absent); `ingest_state.json` now reflects 2025-09-26 crawl.
-- `.venv/bin/python run_goldens.py` passing (correction paths exercised; FastEmbed cache warmed at `/tmp/fastembed_cache`).
-
-## 2025-09-26 RAG Spot Check (PM)
-- Compared `urls_with_lastmod.tsv` vs `ingest_state.json`; no deltas so incremental ingest skipped.
-- `.venv/bin/python run_goldens.py` ✅ (2/2); output unchanged from morning pass.
-- `.venv/bin/python query_chroma_router.py "Need fueling guidance for 600 hp LS swap on E85"` hit retrieval-only mode and cited latest guides/products correctly.
+## RAG status
+- No new ingest/run steps today; last successful refresh remains the 2025-09-26 FastEmbed fallback run (discover → ingest incremental → goldens ✅).
+- Retrieval spot check (`query_chroma_router.py` for LS swap guidance) from 2025-09-26 still stands; schedule the next crawl when Shopify sitemap timestamps advance.
 
 ## Follow-ups
 1) Expand `corrections/corrections.yaml` beyond the current EFI micron/returnless coverage (target dual-tank, surge, and vapor management FAQs).
 2) Add matching golden cases for each new correction so regressions surface offline.
-3) Monitor Shopify sitemap timestamps; rerun `discover_urls.py` + incremental ingest on the next >2025-09-26 delta.
+3) Monitor Shopify sitemap timestamps; rerun `discover_urls.py` + incremental ingest when a post-2025-09-26 delta appears.

@@ -33,12 +33,12 @@ Deliver a deep-dive analytics surface focused on sales trends, product performan
 - [x] Implement drilldown tables with persisted params + `Link` wrappers.
 - [x] Wire CSV export action and document TODO for async job.
 - [x] Hook into overview widget to prefetch `/sales` data on click.
-- [ ] Update `overview.md` once skeleton + export stub ship.
-- [ ] Adopt shared dashboard filter helpers (range/query contract) alongside `/app` + `/orders` once extracted.
+- [x] Update `overview.md` once skeleton + export stub ship.
+- [x] Adopt shared dashboard filter helpers (range/query contract) alongside `/app` + `/orders` once extracted.
 
 ## Status / Notes
 - Owner: Sales analytics agent (Codex)
-- Blockers: Waiting on shared range helper + `@shopify/polaris-viz` package before swapping DataTable trend/channel views for charts; CSV export path depends on background job design.
-- Notes: Loader now parses `period`, `compare`, and drilldown params via zod and hydrates nested collection/product/variant datasets; breadcrumbs + drilldown tables persist selection through search params and expose best sellers/laggards/attach-rate/overstock insights. CSV export action returns the current drilldown view with TODO to stream via background worker when payloads grow. Dashboard overview prefetches the `/app/sales` route so the drilldown data is warm when navigating from "View sales".
-- Tests: Previous dashboard run used `npm exec vitest run --root dashboard --config ../vitest.config.ts` after linting.
-- Immediate focus: clear parse errors in settings/webhooks modules so `npm run lint --workspace dashboard` succeeds again, adopt shared dashboard filter helpers once extracted, and refresh overview/testing docs when the skeleton + export stub ship.
+- Blockers: Waiting on `@shopify/polaris-viz` bump + background export design before swapping DataTable trend/channel views for charts and streaming large CSV payloads.
+- Notes: Loader now parses `period`, `compare`, and drilldown params via zod and hydrates nested collection/product/variant datasets; breadcrumbs + drilldown tables persist selection through search params and expose best sellers/laggards/attach-rate/overstock insights. CSV export action returns the current drilldown view with TODO to stream via background worker when payloads grow. Dashboard overview prefetches the `/app/sales` route so the drilldown data is warm when navigating from "View sales". Shared date-range helpers are live across `/app`, `/app/orders`, and `/app/sales`. `npm run lint` from `dashboard/` passed 2025-10-04.
+- Tests: Previous dashboard run used `npm exec vitest run --root dashboard --config ../vitest.config.ts` after linting; refresh coverage when live Admin adapters land.
+- Immediate focus: prep the Polaris Viz swap once the dependency lands, backfill Vitest coverage for drilldown actions with Prisma toggled on, and align with the data-layer team on the live analytics query contract so CSV/background jobs stay in sync.

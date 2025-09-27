@@ -91,13 +91,13 @@ Build an operational workspace for fulfillment leads handling pick/pack/ship, st
 - `route-inventory.md` — shared inventory block callouts + thresholds.
 
 ## Tasks
-- [ ] Loader with param validation, aggregation, and paginated order fetch.
-- [ ] Fulfillment Pulse summary tiles + SLA callouts.
-- [ ] Orders table + detail drawer with inline actions.
-- [ ] Shipments + returns panels with optimistic mutations.
-- [ ] Inventory hold callouts linking to `/inventory`.
-- [ ] Wire toast/banner system for alerts + data gaps.
-- [ ] Update overview/testing docs once skeleton loads with mocks.
+- [x] Loader with param validation, aggregation, and paginated order fetch.
+- [x] Fulfillment Pulse summary tiles + SLA callouts.
+- [x] Orders table + detail drawer with inline actions.
+- [x] Shipments + returns panels with optimistic mutations.
+- [x] Inventory hold callouts linking to `/inventory`.
+- [x] Wire toast/banner system for alerts + data gaps.
+- [x] Update overview/testing docs once skeleton loads with mocks.
 
 ## Observability & Alerts
 - Emit metric counters for backlog buckets, SLA breaches, delayed shipments, and refunds awaiting approval (export via StatsD → Datadog dashboards).
@@ -115,5 +115,5 @@ Build an operational workspace for fulfillment leads handling pick/pack/ship, st
 - Owner: Orders Control Tower agent (Codex)
 - Blockers: Awaiting Sync write API handshake for returns + inventory escalations before removing mock fallbacks.
 - Sync dependency: `/sync/orders` loader + `/sync/orders/alerts` SSE are live; assign/fulfill/support/returns actions proxy to Sync when mocks disabled.
-- Notes: Loader now carries range/channel/tag/owner filters and ships IDs through shipments/returns; UI wires those filters, bulk follow-ups, and optimistic shipment/return actions with updated support modal. Prompts/testing docs refreshed with the new flow.
-- Immediate focus: resolve the lingering lint errors in settings/tests before rerunning `npm run lint --workspace dashboard`, and verify the optimistic flows against live Sync data once the write APIs land.
+- Notes: Loader now carries range/channel/tag/owner filters and ships IDs through shipments/returns; UI wires those filters, bulk follow-ups, and optimistic shipment/return actions with updated support modal. Prompts/testing docs refreshed with the new flow. `npm run lint` from `dashboard/` passed 2025-10-04, confirming the latest TypeScript + ESLint fixes landed.
+- Immediate focus: stage the live Sync handshake once write APIs flip on (capture gaps in `coordination/2025-09-27_orders-sync-contract.md`), extend Vitest coverage for assign/fulfill/support actions under `USE_MOCK_DATA=false`, and pair with Inventory to keep blocker callouts aligned when thresholds shift.

@@ -26,3 +26,4 @@ Keep this document updated as scopes evolve. Before launching a session, confirm
 - Coordinate cross-service changes via docs before touching another agent’s surface; never overwrite someone else’s WIP.
 - Default to executing the next planned task without asking for direction; only pause for credentials, legal/feature ambiguity, or destructive operations explicitly requiring user consent.
 - When a session gets long, run the Codex `/compact` command to summarize and reclaim context before resuming work.
+- Web/remote collaborator: end every shift by refreshing `agents.md` (status, immediate focus, last refresh timestamp) so the on-call agent can pick up without re-sweeping prompts.
