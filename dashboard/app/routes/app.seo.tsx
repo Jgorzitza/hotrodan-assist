@@ -5,6 +5,7 @@ import {
   Badge,
   Banner,
   BlockStack,
+  Box,
   Card,
   InlineStack,
   Layout,
@@ -14,27 +15,78 @@ import {
 import { TitleBar } from "@shopify/app-bridge-react";
 
 import { authenticate } from "../shopify.server";
+import { storeSettingsRepository } from "../lib/settings/repository.server";
+import {
+  getMcpSeoOpportunities,
+  isMcpFeatureEnabled,
+  shouldUseMcpMocks,
+  type SeoOpportunity,
+} from "~/lib/mcp";
 import { getSeoScenario, scenarioFromRequest } from "~/mocks";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
+import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
 import type { MockScenario, SeoDataset } from "~/types/dashboard";
 
 type LoaderData = {
   dataset: SeoDataset;
   scenario: MockScenario;
   useMockData: boolean;
+  mcp: {
+    enabled: boolean;
+    usingMocks: boolean;
+    opportunities: SeoOpportunity[];
+    source?: string;
+    generatedAt?: string;
+  };
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const scenario = scenarioFromRequest(request);
+  let shopDomain = BASE_SHOP_DOMAIN;
 
   if (!USE_MOCK_DATA) {
-    await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
+    shopDomain = session.shop;
   }
+
+  const settings = await storeSettingsRepository.getSettings(shopDomain);
+  const toggles = settings.toggles;
+  const featureEnabled = isMcpFeatureEnabled(toggles);
+  const usingMocks = shouldUseMcpMocks(toggles);
 
   const dataset = getSeoScenario({ scenario });
 
+  const shouldHydrateMcp = featureEnabled || USE_MOCK_DATA;
+  let opportunities: SeoOpportunity[] = [];
+  let mcpSource: string | undefined;
+  let mcpGeneratedAt: string | undefined;
+
+  if (shouldHydrateMcp) {
+    const response = await getMcpSeoOpportunities(
+      {
+        shopDomain,
+        params: { limit: 5 },
+      },
+      toggles,
+    );
+    opportunities = response.data;
+    mcpSource = response.source;
+    mcpGeneratedAt = response.generatedAt;
+  }
+
   return json<LoaderData>(
-    { dataset, scenario, useMockData: USE_MOCK_DATA },
+    {
+      dataset,
+      scenario,
+      useMockData: USE_MOCK_DATA,
+      mcp: {
+        enabled: featureEnabled,
+        usingMocks,
+        opportunities,
+        source: mcpSource,
+        generatedAt: mcpGeneratedAt,
+      },
+    },
     {
       headers: {
         "Cache-Control": "private, max-age=0, must-revalidate",
@@ -55,7 +107,8 @@ const severityTone = (severity: "critical" | "warning" | "info") => {
 };
 
 export default function SeoRoute() {
-  const { dataset, scenario, useMockData } = useLoaderData<typeof loader>();
+  const { dataset, scenario, useMockData, mcp } =
+    useLoaderData<typeof loader>();
 
   return (
     <Page
@@ -145,6 +198,61 @@ export default function SeoRoute() {
             </Card>
           </Layout.Section>
         </Layout>
+
+        <Card title="MCP keyword opportunities" sectioned>
+          <BlockStack gap="200">
+            {mcp.opportunities.map((opportunity) => (
+              <Box
+                key={opportunity.handle}
+                background="bg-subdued"
+                padding="200"
+                borderRadius="200"
+              >
+                <BlockStack gap="150">
+                  <InlineStack align="space-between" blockAlign="center">
+                    <BlockStack gap="050">
+                      <Text variant="bodyMd" as="span">
+                        {opportunity.handle}
+                      </Text>
+                      <Text variant="bodySm" tone="subdued" as="span">
+                        {opportunity.notes ?? "Prioritize optimization to unlock incremental traffic."}
+                      </Text>
+                    </BlockStack>
+                    <Badge tone="info">
+                      Impact +{opportunity.projectedImpact.toFixed(1)}%
+                    </Badge>
+                  </InlineStack>
+                  {opportunity.keywordCluster.length > 0 && (
+                    <InlineStack gap="150" wrap>
+                      {opportunity.keywordCluster.map((keyword) => (
+                        <Badge key={keyword} tone="subdued">
+                          {keyword}
+                        </Badge>
+                      ))}
+                    </InlineStack>
+                  )}
+                </BlockStack>
+              </Box>
+            ))}
+            {mcp.opportunities.length === 0 && (
+              <Text variant="bodySm" tone="subdued" as="p">
+                {mcp.enabled
+                  ? "No MCP SEO opportunities available yet. Check again after the next crawl."
+                  : "Enable the MCP integration in Settings to populate keyword opportunities."}
+              </Text>
+            )}
+            {mcp.generatedAt && (
+              <Text variant="bodySm" tone="subdued" as="p">
+                Last updated {new Date(mcp.generatedAt).toLocaleString()} • {mcp.source ?? "mock"}
+              </Text>
+            )}
+            {mcp.usingMocks && (
+              <Text variant="bodySm" tone="subdued" as="p">
+                Showing mock MCP data while `USE_MOCK_DATA` is enabled.
+              </Text>
+            )}
+          </BlockStack>
+        </Card>
       </BlockStack>
     </Page>
   );

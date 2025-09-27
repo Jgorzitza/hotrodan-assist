@@ -1,4 +1,4 @@
-import type { SeoAction, KeywordRow } from "../../mocks/seo";
+import type { KeywordRow } from "../../mocks/seo";
 
 export type Ga4TrafficSummary = {
   totalUsers: number;

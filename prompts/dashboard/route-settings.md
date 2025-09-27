@@ -30,14 +30,17 @@ Administrative control center for store-level configuration and integrations:
 - `testing.md`: outline form/action tests (loader/action unit tests + Playwright happy path).
 
 ## Tasks
-- [ ] Scaffold `StoreSettingsRepository` (mock) with typed payload + secret helper integration.
-- [ ] Implement loader/action pair with Zod validation, optimistic toggles, and toast feedback wiring.
-- [ ] Build Polaris form layout covering thresholds, credentials, toggles, and connection test buttons.
-- [ ] Add mock connection test handlers hitting SEO adapters and surfacing badge/banner states.
-- [ ] Document security + production migration TODOs (encryption, rotation, audit logging).
-- [ ] Update `overview.md` + cross-link relevant routes once skeleton lands.
+- [x] Scaffold `StoreSettingsRepository` (mock) with typed payload + secret helper integration.
+- [x] Implement loader/action pair with Zod validation, optimistic toggles, and toast feedback wiring.
+- [x] Build Polaris form layout covering thresholds, credentials, toggles, and connection test buttons.
+- [x] Add mock connection test handlers hitting SEO adapters and surfacing badge/banner states.
+- [x] Document security + production migration TODOs (encryption, rotation, audit logging).
+- [x] Update `overview.md` + cross-link relevant routes once skeleton lands.
 
 ## Status / Notes
-- Owner: _unassigned_
-- Blockers: _none_
-- Coordinate with seed + Prisma workstreams before wiring to real persistence.
+- Owner: Settings Admin UI agent (Codex)
+- Blockers: Awaiting Prisma `StoreSettings` schema to replace in-memory mocks; coordinate before swapping persistence.
+- Connection tests now run through `runConnectionTest` helper to exercise GA4/GSC/Bing adapters and persist capped history.
+- Secrets stored via mock encryptor; TODO hooks in place for Shopify-hosted storage + audit logging before production cutover.
+- MCP toggle now controls the dashboard/inventory/SEO MCP surfaces; keep copy aligned with `mcp.md` and add a ping stub once the live endpoint is available.
+- MCP toggle now controls the new dashboard/inventory/SEO MCP surfaces; keep copy aligned with `mcp.md` and ensure future connection tests call `McpClient.ping()` once the live endpoint is wired.

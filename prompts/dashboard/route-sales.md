@@ -29,13 +29,15 @@ Deliver a deep-dive analytics surface focused on sales trends, product performan
 
 ## Tasks
 - [ ] Define loader with param validation (zod) and mock data fetch.
-- [ ] Compose KPI header + filters (date range, channel, compare).
+- [x] Compose KPI header + filters (date range, channel, compare).
 - [ ] Implement drilldown tables with persisted params + `Link` wrappers.
 - [ ] Wire CSV export action and document TODO for async job.
 - [ ] Hook into overview widget to prefetch `/sales` data on click.
 - [ ] Update `overview.md` once skeleton + export stub ship.
+- [ ] Adopt shared dashboard filter helpers (range/query contract) alongside `/app` + `/orders` once extracted.
 
 ## Status / Notes
-- Owner: _unassigned_
-- Blockers: _none_
-- Notes: Coordinate with data layer owner for query naming + types.
+- Owner: Sales analytics agent (Codex)
+- Blockers: Waiting on shared range helper + `@shopify/polaris-viz` package before swapping DataTable trend/channel views for charts; CSV export path depends on background job design.
+- Notes: Loader reads `granularity` + `days` search params and returns scenario datasets via `getSalesScenario`; banner surfaces mock/alert states; KPI grid + selects cover current/previous totals. Trend + channel sections currently render as tables until Polaris Viz lands. Drilldowns/export still TODO; align query naming with data-layer once Admin adapter available.
+- Tests: Previous dashboard run used `npm exec vitest run --root dashboard --config ../vitest.config.ts` after linting.

@@ -30,7 +30,7 @@ import {
   useIndexResourceState,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   assignOrders,
@@ -41,6 +41,7 @@ import {
   updateReturnAction,
 } from "~/mocks";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
+import { fetchOrdersFromSync } from "~/lib/orders/sync.server";
 import type {
   Order,
   OrderOwner,
@@ -73,13 +74,44 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const tab = (url.searchParams.get("tab") as OrdersDataset["tab"]) ?? "all";
   const pageSize = clampPageSize(Number(url.searchParams.get("pageSize") ?? "12"));
   const scenario = scenarioFromRequest(request);
+  const cursor = url.searchParams.get("cursor");
+  const direction = url.searchParams.get("direction") === "before" ? "before" : "after";
+  const status = url.searchParams.get("status") ?? undefined;
+  const priority = url.searchParams.get("priority") ?? undefined;
+  const assignedTo = url.searchParams.get("assigned_to") ?? undefined;
+  const dateStart = url.searchParams.get("date_start") ?? undefined;
+  const dateEnd = url.searchParams.get("date_end") ?? undefined;
+
+  let dataset: OrdersDataset;
 
   if (!USE_MOCK_DATA) {
     const { authenticate } = await import("../shopify.server");
-    await authenticate.admin(request);
+    const auth = await authenticate.admin(request);
+    try {
+      dataset = await fetchOrdersFromSync({
+        shopDomain: auth?.session?.shop,
+        signal: request.signal,
+        search: {
+          tab,
+          pageSize,
+          cursor,
+          direction,
+          status,
+          priority,
+          assigned_to: assignedTo,
+          date_start: dateStart,
+          date_end: dateEnd,
+        },
+      });
+    } catch (error) {
+      console.error("orders loader: sync fetch failed", error);
+      dataset = getOrdersScenario({ scenario, tab, pageSize });
+      dataset.alerts = ["Sync temporarily unavailable — showing mock data", ...dataset.alerts];
+      dataset.state = "warning";
+    }
+  } else {
+    dataset = getOrdersScenario({ scenario, tab, pageSize });
   }
-
-  const dataset = getOrdersScenario({ scenario, tab, pageSize });
 
   return json<LoaderData>(
     { dataset, scenario, useMockData: USE_MOCK_DATA },
@@ -104,15 +136,39 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
+  let syncCall: (<T>(path: string, payload: Record<string, unknown>) => Promise<{ success?: boolean; message?: string; updatedOrders?: T }>) | null = null;
+
   if (!USE_MOCK_DATA) {
-    return json<OrdersActionResponse>(
-      {
-        success: false,
-        message: "Live mode not implemented for this action yet.",
-        updatedOrders: [],
-      },
-      { status: 501 },
-    );
+    const { authenticate } = await import("../shopify.server");
+    const auth = await authenticate.admin(request);
+    const shopDomain = auth?.session?.shop;
+    const baseUrl = process.env.SYNC_SERVICE_URL;
+
+    if (!baseUrl) {
+      return json<OrdersActionResponse>(
+        { success: false, message: "Missing SYNC_SERVICE_URL configuration.", updatedOrders: [] },
+        { status: 500 },
+      );
+    }
+
+    syncCall = async <T,>(path: string, payload: Record<string, unknown>) => {
+      const response = await fetch(new URL(path, baseUrl).toString(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(shopDomain ? { "X-Shop-Domain": shopDomain } : {}),
+        },
+        body: JSON.stringify({ ...payload, shop_domain: shopDomain }),
+        signal: request.signal,
+      });
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        throw new Error(`Sync request failed (${response.status}): ${text}`);
+      }
+
+      return (await response.json()) as { success?: boolean; message?: string; updatedOrders?: T };
+    };
   }
 
   const parseIds = () => {
@@ -130,6 +186,25 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     case "assign": {
       const assignee = (formData.get("assignee") as string) ?? "unassigned";
       const ids = parseIds();
+      if (syncCall) {
+        try {
+          const result = await syncCall<Order[]>("/sync/orders/assign", {
+            orderIds: ids,
+            assignee,
+          });
+          return json<OrdersActionResponse>({
+            success: result.success ?? true,
+            message: result.message ?? `Assigned ${ids.length} order(s) to ${assignee}.`,
+            updatedOrders: result.updatedOrders ?? [],
+          });
+        } catch (error) {
+          console.error("orders assign sync error", error);
+          return json<OrdersActionResponse>(
+            { success: false, message: "Failed to assign orders via Sync.", updatedOrders: [] },
+            { status: 502 },
+          );
+        }
+      }
       const updated = assignOrders(scenario, seed, ids, assignee);
       return json<OrdersActionResponse>({
         success: true,
@@ -156,6 +231,27 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           // swallow parsing error, optional field
         }
       }
+      if (syncCall) {
+        try {
+          const result = await syncCall<Order[]>("/sync/orders/fulfill", {
+            orderIds: ids,
+            tracking,
+          });
+          return json<OrdersActionResponse>({
+            success: result.success ?? true,
+            message:
+              result.message ??
+              `Marked ${ids.length} order(s) fulfilled${tracking ? ` with tracking ${tracking.number}` : ""}.`,
+            updatedOrders: result.updatedOrders ?? [],
+          });
+        } catch (error) {
+          console.error("orders fulfill sync error", error);
+          return json<OrdersActionResponse>(
+            { success: false, message: "Failed to mark orders fulfilled via Sync.", updatedOrders: [] },
+            { status: 502 },
+          );
+        }
+      }
       const updated = markOrdersFulfilled(scenario, seed, ids, tracking);
       return json<OrdersActionResponse>({
         success: true,
@@ -176,6 +272,27 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         conversationId?: string;
         note: string;
       };
+      if (syncCall) {
+        try {
+          const result = await syncCall<Order | null>("/sync/orders/support", payload);
+          const updated = result.updatedOrders
+            ? Array.isArray(result.updatedOrders)
+              ? result.updatedOrders
+              : [result.updatedOrders]
+            : [];
+          return json<OrdersActionResponse>({
+            success: result.success ?? true,
+            message: result.message ?? `Support requested for ${payload.orderId}.`,
+            updatedOrders: updated,
+          });
+        } catch (error) {
+          console.error("orders support sync error", error);
+          return json<OrdersActionResponse>(
+            { success: false, message: "Failed to request support via Sync.", updatedOrders: [] },
+            { status: 502 },
+          );
+        }
+      }
       const result = requestSupport(scenario, seed, payload);
       return json<OrdersActionResponse>({
         success: Boolean(result),
@@ -196,6 +313,23 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         action: "approve_refund" | "deny" | "request_inspection";
         note?: string;
       };
+      if (syncCall) {
+        try {
+          const result = await syncCall<null>("/sync/orders/returns", payload);
+          return json<OrdersActionResponse>({
+            success: result.success ?? true,
+            message:
+              result.message ?? `Return updated (${payload.action}) for ${payload.orderId}.`,
+            updatedOrders: [],
+          });
+        } catch (error) {
+          console.error("orders return sync error", error);
+          return json<OrdersActionResponse>(
+            { success: false, message: "Failed to update return via Sync.", updatedOrders: [] },
+            { status: 502 },
+          );
+        }
+      }
       const result = updateReturnAction(scenario, seed, payload);
       return json<OrdersActionResponse>({
         success: Boolean(result),
@@ -227,6 +361,10 @@ export default function OrdersRoute() {
   const [toast, setToast] = useState<string | null>(null);
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const { mdUp } = useBreakpoints();
+  const [alerts, setAlerts] = useState<string[]>(dataset.alerts);
+  const [dataGaps, setDataGaps] = useState<string[]>(dataset.dataGaps);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedIndex = Math.max(
     TAB_OPTIONS.findIndex((tab) => tab.id === dataset.tab),
@@ -252,6 +390,68 @@ export default function OrdersRoute() {
     },
     [navigate, searchParams],
   );
+
+  useEffect(() => {
+    setAlerts(dataset.alerts);
+    setDataGaps(dataset.dataGaps);
+  }, [dataset.alerts, dataset.dataGaps]);
+
+  useEffect(() => {
+    if (useMockData || typeof window === "undefined") {
+      return;
+    }
+
+    let cancelled = false;
+
+    const connect = () => {
+      if (cancelled) return;
+      const source = new EventSource("/sync/orders/alerts");
+      eventSourceRef.current = source;
+
+      source.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data ?? "{}");
+          if (payload?.message) {
+            setAlerts((current) =>
+              current.includes(payload.message)
+                ? current
+                : [payload.message as string, ...current],
+            );
+            setToast(payload.message);
+          }
+          if (payload?.type === "data_gap" && payload?.message) {
+            setDataGaps((current) =>
+              current.includes(payload.message)
+                ? current
+                : [payload.message as string, ...current],
+            );
+          }
+        } catch (error) {
+          console.warn("orders alerts stream parse error", error);
+        }
+        revalidator.revalidate();
+      };
+
+      source.onerror = () => {
+        source.close();
+        if (cancelled) return;
+        if (reconnectRef.current) {
+          clearTimeout(reconnectRef.current);
+        }
+        reconnectRef.current = setTimeout(connect, 5000);
+      };
+    };
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      eventSourceRef.current?.close();
+      if (reconnectRef.current) {
+        clearTimeout(reconnectRef.current);
+      }
+    };
+  }, [revalidator, useMockData]);
 
   useEffect(() => {
     if (!fetcher.data) return;
@@ -299,19 +499,19 @@ export default function OrdersRoute() {
       <Layout>
         <Layout.Section>
           <BlockStack gap="400">
-            {(dataset.alerts.length || dataset.dataGaps.length || useMockData) && (
+            {(alerts.length || dataGaps.length || useMockData) && (
               <BlockStack gap="200">
                 {useMockData && (
                   <Banner tone={scenario === "warning" ? "warning" : "info"} title={`Mock state: ${scenario}`}>
                     <p>Append `mockState=warning` (etc) to preview additional states.</p>
                   </Banner>
                 )}
-                {dataset.alerts.map((alert, index) => (
+                {alerts.map((alert, index) => (
                   <Banner tone="warning" title="Fulfillment alert" key={`alert-${index}`}>
                     <p>{alert}</p>
                   </Banner>
                 ))}
-                {dataset.dataGaps.map((gap, index) => (
+                {dataGaps.map((gap, index) => (
                   <Banner tone="attention" title="Data gap" key={`gap-${index}`}>
                     <p>{gap}</p>
                   </Banner>
@@ -430,7 +630,7 @@ export default function OrdersRoute() {
               </Grid.Cell>
             </Grid>
 
-            <OperationalNotes inventory={dataset.inventory} alerts={dataset.alerts} />
+            <OperationalNotes inventory={dataset.inventory} alerts={alerts} />
           </BlockStack>
         </Layout.Section>
       </Layout>

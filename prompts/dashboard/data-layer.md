@@ -33,12 +33,12 @@ Define typed modules powering queries, adapters, utilities, and configuration pe
 - [ ] Enumerate GraphQL queries (sales, orders, inventory, customer repeat stats) with TypeScript types.
 - [ ] Draft SEO adapter interfaces + mock implementations reading from `seed-data`.
 - [ ] Draft inbox provider + inventory math modules.
-- [ ] Flesh MCP types + client stub; include sample call used in dashboard widget.
+- [x] Flesh MCP types + client stub; include sample call used in dashboard widget.
 - [ ] Implement `StoreSettingsRepository` contract + mock in-memory store.
 - [ ] Implement `secrets.server.ts` helper with encryption TODO + masking utilities.
 - [ ] Update `overview.md` referencing module completion status.
 
 ## Status / Notes
 - Owner: _unassigned_
-- Blockers: _none_
-- Relates to: `mcp.md`, `seed-data.md`, `database.md`, `route-settings.md`.
+- Blockers: Need final Admin API scaffolding + live SEO/MCP endpoints before flipping mocks off.
+- Notes: MCP module now exposes typed enums, mock data, env-driven client factory, and Vitest coverage; dashboard loaders call into `getMcpClient` while respecting `ENABLE_MCP`/`USE_MOCK_DATA`. Relates to: `mcp.md`, `seed-data.md`, `database.md`, `route-settings.md`.

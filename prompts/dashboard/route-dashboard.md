@@ -27,13 +27,16 @@ Build the embedded Polaris experience for the main dashboard landing page. It mu
 - Shared date utils (ensure `data-layer.md` exposes helper signature).
 
 ## Tasks
-- [ ] Define loader returning typed mock response and URL param parsing.
-- [ ] Build Polaris layout with navigation breadcrumbs + range picker.
-- [ ] Implement widget components with mock content and click handlers.
-- [ ] Document integration points (Admin GraphQL queries, MCP call for recommendations).
-- [ ] Update `overview.md` status once UI skeleton renders with mocks.
+- [x] Define loader returning typed mock response and URL param parsing (`dashboard/app/routes/app._index.tsx`).
+- [x] Build Polaris layout with navigation breadcrumbs + range picker.
+- [x] Implement widget components with mock content and click handlers (orders, inbox, inventory, SEO).
+- [x] Document integration points (Admin GraphQL queries, MCP call for recommendations).
+- [x] Update `overview.md` status once UI skeleton renders with mocks.
+- [ ] Swap sparkline placeholder to `@shopify/polaris-viz` once the dependency is available.
 
 ## Status / Notes
-- Owner: _unassigned_
-- Blockers: _none_
-- Links: Add code references once implemented.
+- Owner: Dashboard Home agent (Codex)
+- Blockers: Waiting on `@shopify/polaris-viz` adoption to render the sales sparkline; real Admin adapters pending data layer contract.
+- Links: `dashboard/app/routes/app._index.tsx`, `dashboard/app/mocks/dashboard.ts`.
+- Notes: Loader shares the `range` query param with other routes and respects `USE_MOCK_DATA`; orders buckets preserve deep-link filters via `href` targets. When `ENABLE_MCP` and the settings toggle are on, the loader hydrates the MCP insight card; otherwise it coaches users to enable the integration. Sparkline still placeholder text—replace with Polaris Viz once package lands and confirm shared range helper lives alongside `/sales` + `/orders` filters.
+- Tests: Previous session validated with `npm run lint --workspace dashboard` and `npm exec vitest run --root dashboard --config ../vitest.config.ts`.

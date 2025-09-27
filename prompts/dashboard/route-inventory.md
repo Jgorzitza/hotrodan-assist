@@ -39,5 +39,5 @@ Deliver a cockpit for demand planning and PO drafting:
 ## Status / Notes
 - Owner: Codex (Section 0 bootstrap)
 - Blockers: pending live analytics + persistence layer to replace mock CSV + trend placeholder.
-- Notes: `dashboard/app/routes/app.inventory.tsx` now renders bucket tabs, SKU table, detail modal, and vendor planner; `dashboard/app/mocks/inventory.ts` supplies deterministic payloads per `mockState`. CSV export generates client-side download; TODO to stream once real data size known.
-- Next: instrument chart visualization, hook real Shopify data, and fold route into end-to-end testing once Admin credentials available.
+- Notes: `dashboard/app/routes/app.inventory.tsx` now renders bucket tabs, SKU table, detail modal, vendor planner, and an MCP signals card. Signals hydrate via `getMcpClient` when `ENABLE_MCP` and the settings toggle are enabled; otherwise copy nudges users to configure credentials. `dashboard/app/mocks/inventory.ts` supplies deterministic payloads per `mockState`. CSV export generates client-side download; TODO to stream once real data size known.
+- Next: instrument chart visualization, hook real Shopify data, swap MCP mocks for the live endpoint once credentials land, and fold route into end-to-end testing once Admin credentials available.

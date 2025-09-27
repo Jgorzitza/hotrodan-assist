@@ -49,13 +49,16 @@ app/lib/mcp/
 - Provide fallback behavior when MCP disabled (hide sections or show informative empty states).
 
 ## Tasks
-- [ ] Define types + enums in `app/lib/mcp/types.ts`.
-- [ ] Implement client stub + mock data wiring.
-- [ ] Expose environment toggle + helper to detect availability.
-- [ ] Update relevant route docs (`route-dashboard`, `route-inventory`, `route-seo`) with integration hooks.
-- [ ] Add placeholder unit tests verifying mocks + client configuration.
-- [ ] Document enablement steps in `README`/`route-settings`.
+- [x] Define types + enums in `app/lib/mcp/types.ts`.
+- [x] Implement client stub + mock data wiring.
+- [x] Expose environment toggle + helper to detect availability.
+- [x] Update relevant route docs (`route-dashboard`, `route-inventory`, `route-seo`) with integration hooks.
+- [x] Add placeholder unit tests verifying mocks + client configuration.
+- [x] Document enablement steps in `README`/`route-settings`.
 
 ## Status / Notes
-- Owner: _unassigned_
-- Blockers: Awaiting Shopify MCP access details; proceed with mocks until confirmed.
+- Owner: Codex (Section 0 bootstrap)
+- Progress: Environment toggle helper + config resolver live in `dashboard/app/lib/mcp/index.ts`; dashboard home, inventory, and SEO loaders now hydrate via `getMcpClient` while honoring `ENABLE_MCP`/`USE_MOCK_DATA`.
+- Tests: Vitest coverage for toggles + client mocks lives under `dashboard/app/lib/mcp/__tests__`.
+- Blockers: Awaiting real Storefront MCP endpoint + credentials to swap off mock mode.
+- Next: Hook MCP responses into persistence + connection tests once credentials land; finalize telemetry payloads with live endpoint contract.

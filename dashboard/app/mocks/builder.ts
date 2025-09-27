@@ -7,11 +7,7 @@ import { getOrdersScenario } from "./orders.ts";
 import { getSalesScenario } from "./sales.ts";
 import { getSeoScenario } from "./seo.ts";
 import { getMockSettings } from "./settings";
-import {
-  isMockScenario,
-  resolveScenario,
-  scenarioFromSearchParams,
-} from "./shared";
+import { scenarioFromSearchParams } from "./shared";
 
 export const buildDashboardMocks = (
   options: ScenarioOptions = {},

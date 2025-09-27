@@ -27,10 +27,11 @@ import {
   Text,
   TextField,
 } from "@shopify/polaris";
-import { useAppBridge } from "@shopify/app-bridge-react";
+import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { z } from "zod";
 
 import { authenticate } from "../shopify.server";
+import { runConnectionTest } from "../lib/settings/connection-tests.server";
 import { storeSettingsRepository } from "../lib/settings/repository.server";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
 import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
@@ -354,7 +355,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         });
       }
 
-      const { status, durationMs, message } = simulateConnection(provider);
+      const { status, durationMs, message } = await runConnectionTest({
+        provider,
+        credential: secret,
+      });
       const updated = await storeSettingsRepository.recordConnectionTest(
         shopDomain,
         {
@@ -384,30 +388,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         formErrors: ["Unsupported intent"],
         meta: { intent },
       });
-  }
-};
-
-const simulateConnection = (provider: SettingsProvider) => {
-  switch (provider) {
-    case "ga4":
-      return {
-        status: "success" as const,
-        durationMs: 360,
-        message: "GA4 ping responded in 360ms",
-      };
-    case "gsc":
-      return {
-        status: "warning" as const,
-        durationMs: 920,
-        message: "Slow response (920ms). Verify service account permissions.",
-      };
-    case "bing":
-    default:
-      return {
-        status: "success" as const,
-        durationMs: 480,
-        message: "Bing API acknowledged test payload",
-      };
   }
 };
 
@@ -708,6 +688,9 @@ export default function SettingsRoute() {
                             <Text as="p" variant="bodySm" tone="subdued">
                               Last {connection.history[0]?.status ?? "n/a"} test at {" "}
                               {connection.history[0]?.timestamp ?? "n/a"}
+                              {connection.history[0]?.message
+                                ? ` — ${connection.history[0]?.message}`
+                                : ""}
                             </Text>
                           </InlineStack>
                         </Form>

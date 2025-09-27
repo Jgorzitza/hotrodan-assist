@@ -1,281 +1,362 @@
-"""Assistants service: manage drafts with persistent storage and channel delivery."""
+"""Assistants service: inbox API with persistent storage and delivery adapters."""
 from __future__ import annotations
 
 import os
-import time
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
-import httpx
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from sqlalchemy import DateTime, String, Text, select, func
-from sqlalchemy import JSON
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from fastapi import HTTPException
+from fastapi.applications import FastAPI
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field, field_validator
+from sqlalchemy import JSON, Boolean, DateTime, Float, Integer, String, Text, create_engine, select
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
+
+from .adapters import DeliveryAdapterRegistry
+
 
 # ---------------------------------------------------------------------------
 # Database setup
 # ---------------------------------------------------------------------------
 
+
 def _database_url() -> str:
-    raw = os.getenv("POSTGRES_URL", "sqlite+aiosqlite:///./assistants.db")
-    if raw.startswith("postgresql+psycopg2://"):
-        return raw.replace("postgresql+psycopg2://", "postgresql+asyncpg://", 1)
-    if raw.startswith("postgresql://"):
-        return raw.replace("postgresql://", "postgresql+asyncpg://", 1)
-    return raw
+    return os.getenv("ASSISTANTS_DB_URL", "sqlite:///./assistants.db")
 
 
 DATABASE_URL = _database_url()
-ENGINE = create_async_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
-SESSION: async_sessionmaker[AsyncSession] = async_sessionmaker(
-    ENGINE, expire_on_commit=False
+IS_SQLITE = DATABASE_URL.startswith("sqlite")
+ENGINE = create_engine(
+    DATABASE_URL,
+    future=True,
+    echo=False,
+    connect_args={"check_same_thread": False} if IS_SQLITE else {},
 )
+SessionLocal = sessionmaker(bind=ENGINE, autoflush=False, autocommit=False, expire_on_commit=False)
 
 
 class Base(DeclarativeBase):
     pass
 
 
-class Draft(Base):
+class DraftModel(Base):
     __tablename__ = "drafts"
 
-    id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: f"d{uuid4().hex}")
     channel: Mapped[str] = mapped_column(String(16), nullable=False)
     conversation_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    customer_display: Mapped[Optional[str]] = mapped_column(String(255))
+    subject: Mapped[Optional[str]] = mapped_column(String(255))
+    chat_topic: Mapped[Optional[str]] = mapped_column(String(255))
     incoming_text: Mapped[str] = mapped_column(Text, nullable=False)
-    suggested_text: Mapped[str] = mapped_column(Text, nullable=False)
-    sources: Mapped[List[str]] = mapped_column(JSON, default=list)
-    customer_email: Mapped[Optional[str]] = mapped_column(String(255))
-    context: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
-    status: Mapped[str] = mapped_column(String(24), default="draft", nullable=False)
-    final_text: Mapped[Optional[str]] = mapped_column(Text)
-    approved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    approved_by: Mapped[Optional[str]] = mapped_column(String(64))
-    edited_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    edited_by: Mapped[Optional[str]] = mapped_column(String(64))
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
-    )
-    audit_trail: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
-    delivery_status: Mapped[str] = mapped_column(String(24), default="pending", nullable=False)
-    delivery_metadata: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
-    delivery_error: Mapped[Optional[str]] = mapped_column(Text)
+    draft_text: Mapped[Optional[str]] = mapped_column(Text)
+    incoming_excerpt: Mapped[Optional[str]] = mapped_column(String(255))
+    draft_excerpt: Mapped[Optional[str]] = mapped_column(String(255))
+    confidence: Mapped[Optional[float]] = mapped_column(Float)
+    llm_model: Mapped[Optional[str]] = mapped_column(String(64))
+    estimated_tokens_in: Mapped[Optional[int]] = mapped_column(Integer)
+    estimated_tokens_out: Mapped[Optional[int]] = mapped_column(Integer)
+    usd_cost: Mapped[Optional[float]] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False, default=lambda: utc_now())
+    sla_deadline: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=False))
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending")
+    tags: Mapped[List[str]] = mapped_column(JSON, default=list)
+    source_snippets: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
+    conversation_summary: Mapped[List[str]] = mapped_column(JSON, default=list)
+    order_context: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
+    model_latency_ms: Mapped[Optional[int]] = mapped_column(Integer)
+    auto_escalated: Mapped[bool] = mapped_column(Boolean, default=False)
+    auto_escalation_reason: Mapped[Optional[str]] = mapped_column(String(255))
+    extra_metadata: Mapped[Dict[str, Any]] = mapped_column("metadata", JSON, default=dict)
+    notes: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
+    learning_notes: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
+    assigned_to: Mapped[Optional[str]] = mapped_column(String(255))
+    escalation_reason: Mapped[Optional[str]] = mapped_column(Text)
+    audit_log: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
+    sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=False))
+    usd_sent_copy: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+Base.metadata.create_all(ENGINE)
 
 
 # ---------------------------------------------------------------------------
-# Pydantic representations
+# Constants
 # ---------------------------------------------------------------------------
+
+
+VALID_STATUSES = {"pending", "needs_review", "escalated", "sent"}
+DEFAULT_CHANNELS = {"email", "chat", "sms", "social"}
+MAX_EXCERPT_LEN = 160
+DEFAULT_REFRESH_SECONDS = 30
+
+
+# ---------------------------------------------------------------------------
+# Pydantic schemas
+# ---------------------------------------------------------------------------
+
+
+class SourceSnippet(BaseModel):
+    title: str
+    url: str
+    relevance_score: Optional[float] = None
 
 
 class DraftCreate(BaseModel):
-    channel: str = Field(..., pattern="^(email|chat)$")
-    conversation_id: str
-    incoming_text: str
-    customer_email: Optional[str] = None
-    context: Dict[str, Any] = Field(default_factory=dict)
-    top_k: Optional[int] = None
-
-
-class DraftRecord(BaseModel):
-    id: str
     channel: str
     conversation_id: str
     incoming_text: str
-    suggested_text: str
-    sources: List[str]
-    customer_email: Optional[str]
-    context: Dict[str, Any]
-    status: str
-    created_at: datetime
-    updated_at: datetime
-    final_text: Optional[str]
-    approved_at: Optional[datetime]
-    approved_by: Optional[str]
-    edited_at: Optional[datetime]
-    edited_by: Optional[str]
-    delivery_status: str
-    delivery_metadata: Dict[str, Any]
-    delivery_error: Optional[str]
-    audit_trail: List[Dict[str, Any]]
+    draft_text: Optional[str] = None
+    customer_display: Optional[str] = None
+    subject: Optional[str] = None
+    chat_topic: Optional[str] = None
+    confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    llm_model: Optional[str] = None
+    estimated_tokens_in: Optional[int] = Field(default=None, ge=0)
+    estimated_tokens_out: Optional[int] = Field(default=None, ge=0)
+    usd_cost: Optional[float] = Field(default=None, ge=0.0)
+    sla_deadline: Optional[str] = None
+    tags: List[str] = Field(default_factory=list)
+    source_snippets: List[SourceSnippet] = Field(default_factory=list)
+    conversation_summary: List[str] = Field(default_factory=list)
+    order_context: Dict[str, Any] = Field(default_factory=dict)
+    model_latency_ms: Optional[int] = Field(default=None, ge=0)
+    auto_escalated: bool = False
+    auto_escalation_reason: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
+    @field_validator("channel")
+    @classmethod
+    def validate_channel(cls, value: str) -> str:
+        lowered = value.lower()
+        if lowered not in DEFAULT_CHANNELS:
+            raise ValueError(f"Unsupported channel '{value}'")
+        return lowered
 
-class DraftListResponse(BaseModel):
-    drafts: List[DraftRecord]
+    @field_validator("tags")
+    @classmethod
+    def strip_tags(cls, value: List[str]) -> List[str]:
+        return [tag.strip() for tag in value if tag and tag.strip()]
 
 
 class Approve(BaseModel):
     draft_id: str
     approver_user_id: str
+    send_copy_to_customer: bool = False
+    escalate_to_specialist: bool = False
+    escalation_reason: Optional[str] = None
+    assign_to: Optional[str] = None
 
 
 class Edit(BaseModel):
     draft_id: str
     editor_user_id: str
     final_text: str
+    learning_notes: Optional[str] = None
+    send_copy_to_customer: bool = False
 
 
-@dataclass
-class DeliveryResult:
-    status: str
-    metadata: Dict[str, Any]
-    error: Optional[str] = None
+class Escalate(BaseModel):
+    draft_id: str
+    requester_user_id: str
+    reason: str
+    assigned_to: Optional[str] = None
+
+
+class NoteCreate(BaseModel):
+    draft_id: str
+    author_user_id: str
+    text: str
 
 
 # ---------------------------------------------------------------------------
-# Channel adapters
+# Utilities
 # ---------------------------------------------------------------------------
 
 
-class ZohoOAuthClient:
-    def __init__(self, http: httpx.AsyncClient) -> None:
-        self._http = http
-        self._client_id = os.getenv("ZOHO_CLIENT_ID")
-        self._client_secret = os.getenv("ZOHO_CLIENT_SECRET")
-        self._refresh_token = os.getenv("ZOHO_REFRESH_TOKEN")
-        self._auth_base = os.getenv("ZOHO_AUTH_BASE", "https://accounts.zoho.com")
-        self._token: Optional[str] = None
-        self._expiry_ts: float = 0.0
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
-    def configured(self) -> bool:
-        return bool(self._client_id and self._client_secret and self._refresh_token)
 
-    async def access_token(self) -> Optional[str]:
-        if not self.configured():
-            return None
-        now = time.time()
-        if self._token and now < self._expiry_ts - 60:
-            return self._token
-        url = f"{self._auth_base}/oauth/v2/token"
-        data = {
-            "refresh_token": self._refresh_token,
-            "client_id": self._client_id,
-            "client_secret": self._client_secret,
-            "grant_type": "refresh_token",
+def to_iso(dt: Optional[datetime]) -> Optional[str]:
+    if not dt:
+        return None
+    dt = dt.replace(tzinfo=timezone.utc)
+    return dt.isoformat().replace("+00:00", "Z")
+
+
+def parse_iso8601(value: Optional[str]) -> Optional[datetime]:
+    if not value:
+        return None
+    if value.endswith("Z"):
+        value = value[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed
+    return parsed.astimezone(timezone.utc).replace(tzinfo=None)
+
+
+def clean_excerpt(value: str) -> Optional[str]:
+    if not value:
+        return None
+    normalized = " ".join(value.strip().split())
+    if not normalized:
+        return None
+    if len(normalized) <= MAX_EXCERPT_LEN:
+        return normalized
+    return normalized[:MAX_EXCERPT_LEN]
+
+
+def parse_statuses_param(value: Optional[str]) -> set[str]:
+    if value:
+        tokens = [tok.strip().lower() for tok in value.split(",") if tok.strip()]
+        statuses = VALID_STATUSES if "all" in tokens else set(tokens)
+    else:
+        statuses = {"pending"}
+    unknown = statuses - VALID_STATUSES
+    if unknown:
+        raise HTTPException(status_code=400, detail=f"Unsupported status filter: {sorted(unknown)}")
+    return statuses
+
+
+def parse_channels_param(value: Optional[str]) -> Optional[set[str]]:
+    if not value:
+        return None
+    channels = {tok.strip().lower() for tok in value.split(",") if tok.strip()}
+    unknown = channels - DEFAULT_CHANNELS
+    if unknown:
+        raise HTTPException(status_code=400, detail=f"Unsupported channel filter: {sorted(unknown)}")
+    return channels
+
+
+def _session() -> Session:
+    return SessionLocal()
+
+
+def append_audit(record: DraftModel, actor: str, action: str, payload: Optional[Dict[str, Any]] = None) -> None:
+    payload = payload or {}
+    log = list(record.audit_log or [])
+    log.append({"timestamp": to_iso(utc_now()), "actor": actor, "action": action, "payload": payload})
+    record.audit_log = log
+
+
+def compute_time_fields(record: DraftModel) -> Dict[str, Any]:
+    if not record.sla_deadline:
+        return {"time_remaining_seconds": None, "overdue": False}
+    delta = record.sla_deadline - utc_now()
+    seconds = int(delta.total_seconds())
+    return {"time_remaining_seconds": seconds, "overdue": seconds < 0}
+
+
+def _source_urls(snippets: Optional[List[Any]]) -> List[str]:
+    urls: List[str] = []
+    for snippet in snippets or []:
+        if isinstance(snippet, dict):
+            url = snippet.get("url") or snippet.get("href")
+            if url:
+                urls.append(str(url))
+        elif isinstance(snippet, str):
+            urls.append(snippet)
+    return urls
+
+
+def _draft_sort_key(record: DraftModel) -> Tuple[datetime, datetime]:
+    deadline = record.sla_deadline or record.created_at
+    return (deadline, record.created_at)
+
+
+def _paginate_records(records: List[DraftModel], cursor: int, limit: int) -> Tuple[List[DraftModel], Optional[str], int]:
+    start = max(cursor, 0)
+    page_size = max(limit, 1)
+    end = start + page_size
+    page = records[start:end]
+    next_cursor = str(end) if end < len(records) else None
+    return page, next_cursor, len(records)
+
+
+def load_drafts(
+    statuses: Optional[set[str]] = None,
+    channels: Optional[set[str]] = None,
+    *,
+    sort: bool = False,
+) -> List[DraftModel]:
+    with _session() as session:
+        records = session.scalars(select(DraftModel)).all()
+    if statuses:
+        records = [r for r in records if r.status in statuses]
+    if channels:
+        records = [r for r in records if r.channel in channels]
+    if sort:
+        records.sort(key=_draft_sort_key)
+    return records
+
+
+def serialize_list(record: DraftModel) -> Dict[str, Any]:
+    timing = compute_time_fields(record)
+    return {
+        "id": record.id,
+        "draft_id": record.id,
+        "channel": record.channel,
+        "conversation_id": record.conversation_id,
+        "customer_display": record.customer_display,
+        "subject": record.subject,
+        "chat_topic": record.chat_topic,
+        "incoming_excerpt": record.incoming_excerpt,
+        "draft_excerpt": record.draft_excerpt,
+        "confidence": record.confidence,
+        "llm_model": record.llm_model,
+        "estimated_tokens_in": record.estimated_tokens_in,
+        "estimated_tokens_out": record.estimated_tokens_out,
+        "usd_cost": record.usd_cost,
+        "created_at": to_iso(record.created_at),
+        "sla_deadline": to_iso(record.sla_deadline) if record.sla_deadline else None,
+        "status": record.status,
+        "tags": record.tags or [],
+        "auto_escalated": record.auto_escalated,
+        "auto_escalation_reason": record.auto_escalation_reason,
+        "assigned_to": record.assigned_to,
+        "escalation_reason": record.escalation_reason,
+        "time_remaining_seconds": timing["time_remaining_seconds"],
+        "overdue": timing["overdue"],
+    }
+
+
+def serialize_detail(record: DraftModel) -> Dict[str, Any]:
+    detail = serialize_list(record)
+    detail.update(
+        {
+            "incoming_text": record.incoming_text,
+            "draft_text": record.draft_text,
+            "suggested_text": record.draft_text,
+            "final_text": record.draft_text if record.status == "sent" else None,
+            "sources": _source_urls(record.source_snippets),
+            "source_snippets": record.source_snippets or [],
+            "conversation_summary": record.conversation_summary or [],
+            "order_context": record.order_context or {},
+            "audit_log": record.audit_log or [],
+            "notes": record.notes or [],
+            "learning_notes": record.learning_notes or [],
+            "metadata": record.extra_metadata or {},
+            "model_latency_ms": record.model_latency_ms,
+            "sent_at": to_iso(record.sent_at) if record.sent_at else None,
+            "usd_sent_copy": record.usd_sent_copy,
         }
-        resp = await self._http.post(url, data=data, timeout=15.0)
-        resp.raise_for_status()
-        payload = resp.json()
-        self._token = payload.get("access_token")
-        expires_in = payload.get("expires_in", 3600)
-        self._expiry_ts = now + float(expires_in)
-        return self._token
+    )
+    return detail
 
 
-class ZohoMailAdapter:
-    def __init__(self, http: httpx.AsyncClient, oauth_client: ZohoOAuthClient) -> None:
-        self._http = http
-        self._oauth = oauth_client
-        self._account_id = os.getenv("ZOHO_ACCOUNT_ID")
-        self._default_from = os.getenv("ZOHO_DEFAULT_FROM")
-        self._mail_base = os.getenv("ZOHO_MAIL_BASE", "https://www.mail.zoho.com").rstrip("/")
-
-    def configured(self) -> bool:
-        return bool(self._account_id and self._oauth.configured())
-
-    async def send_email(
-        self,
-        to_address: str,
-        subject: str,
-        body: str,
-        conversation_id: Optional[str] = None,
-        ccaddresses: Optional[List[str]] = None,
-        bccaddresses: Optional[List[str]] = None,
-    ) -> DeliveryResult:
-        if not self.configured():
-            return DeliveryResult("skipped", {"reason": "Zoho configuration incomplete"})
-        token = await self._oauth.access_token()
-        if not token:
-            return DeliveryResult("queued", {"reason": "unable to obtain Zoho token"}, error="token")
-        endpoint = f"{self._mail_base}/api/accounts/{self._account_id}/messages"
-        from_address = self._default_from or to_address
-        payload = {
-            "fromAddress": from_address,
-            "toAddress": to_address,
-            "subject": subject or "Hot Rod AN Support",
-            "content": body,
-        }
-        if ccaddresses:
-            payload["ccAddress"] = ",".join(ccaddresses)
-        if bccaddresses:
-            payload["bccAddress"] = ",".join(bccaddresses)
-        if conversation_id:
-            payload["inReplyTo"] = conversation_id
-        headers = {"Authorization": f"Zoho-oauthtoken {token}"}
-        try:
-            resp = await self._http.post(endpoint, json=payload, headers=headers, timeout=20.0)
-            if resp.status_code >= 400:
-                return DeliveryResult(
-                    "failed",
-                    {"request_id": resp.headers.get("x-request-id")},
-                    error=resp.text,
-                )
-            data = resp.json()
-            return DeliveryResult("sent", data)
-        except httpx.HTTPError as exc:
-            return DeliveryResult("failed", {}, error=str(exc))
-
-
-class ShopifyChatAdapter:
-    def __init__(self, http: httpx.AsyncClient) -> None:
-        self._http = http
-        self._shop = os.getenv("SHOPIFY_SHOP")
-        self._token = os.getenv("SHOPIFY_ACCESS_TOKEN")
-        version = os.getenv("SHOPIFY_API_VERSION", "2024-10")
-        if self._shop:
-            self._endpoint = f"https://{self._shop}/admin/api/{version}/graphql.json"
-        else:
-            self._endpoint = None
-
-    def configured(self) -> bool:
-        return bool(self._endpoint and self._token)
-
-    async def send_message(self, conversation_id: str, body: str) -> DeliveryResult:
-        if not self.configured():
-            return DeliveryResult("skipped", {"reason": "Shopify configuration incomplete"})
-        mutation = (
-            "mutation conversationReply($conversationId: ID!, $message: String!) {"
-            "  conversationReply(conversationId: $conversationId, message: { body: $message }) {"
-            "    reply { id }"
-            "    userErrors { field message }"
-            "  }"
-            "}"
-        )
-        variables = {"conversationId": conversation_id, "message": body}
-        headers = {
-            "X-Shopify-Access-Token": self._token,
-            "Content-Type": "application/json",
-        }
-        try:
-            resp = await self._http.post(
-                self._endpoint,
-                json={"query": mutation, "variables": variables},
-                headers=headers,
-                timeout=20.0,
-            )
-            data = resp.json()
-            errors = data.get("errors")
-            user_errors = (
-                data.get("data", {})
-                .get("conversationReply", {})
-                .get("userErrors", [])
-            )
-            if resp.status_code >= 400 or errors or user_errors:
-                return DeliveryResult(
-                    "failed",
-                    {"errors": errors, "userErrors": user_errors},
-                    error=resp.text,
-                )
-            reply = data.get("data", {}).get("conversationReply", {}).get("reply", {})
-            return DeliveryResult("sent", reply or {})
-        except httpx.HTTPError as exc:
-            return DeliveryResult("failed", {}, error=str(exc))
+def delivery_metadata(record: DraftModel) -> Dict[str, Any]:
+    return {
+        "draft_id": record.id,
+        "channel": record.channel,
+        "conversation_id": record.conversation_id,
+        "draft_text": record.draft_text,
+        "customer_display": record.customer_display,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -283,223 +364,202 @@ class ShopifyChatAdapter:
 # ---------------------------------------------------------------------------
 
 
-app = FastAPI(title="Assistants Service", version="0.2.0")
-RAG_API_URL = os.getenv("RAG_API_URL", "http://rag-api:8001/query")
-DEFAULT_TOP_K = int(os.getenv("RAG_TOP_K", "10"))
+app = FastAPI(title="Assistants Service", version="0.3.0")
+registry = DeliveryAdapterRegistry()
 
 
-def _serialize(draft: Draft) -> DraftRecord:
-    return DraftRecord(
-        id=draft.id,
-        channel=draft.channel,
-        conversation_id=draft.conversation_id,
-        incoming_text=draft.incoming_text,
-        suggested_text=draft.suggested_text,
-        sources=list(draft.sources or []),
-        customer_email=draft.customer_email,
-        context=dict(draft.context or {}),
-        status=draft.status,
-        created_at=draft.created_at,
-        updated_at=draft.updated_at,
-        final_text=draft.final_text,
-        approved_at=draft.approved_at,
-        approved_by=draft.approved_by,
-        edited_at=draft.edited_at,
-        edited_by=draft.edited_by,
-        delivery_status=draft.delivery_status,
-        delivery_metadata=dict(draft.delivery_metadata or {}),
-        delivery_error=draft.delivery_error,
-        audit_trail=list(draft.audit_trail or []),
-    )
-
-
-async def _fetch_rag_answer(http: httpx.AsyncClient, question: str, top_k: int) -> Dict[str, Any]:
-    payload = {"question": question, "top_k": top_k}
-    try:
-        resp = await http.post(RAG_API_URL, json=payload, timeout=20.0)
-        resp.raise_for_status()
-        data = resp.json()
-        return {
-            "answer": data.get("answer", ""),
-            "sources": data.get("sources", []),
-        }
-    except httpx.HTTPError as exc:
-        return {
-            "answer": "Draft queued for human review; retrieval unavailable.",
-            "sources": [],
-            "error": str(exc),
-        }
-
-
-async def _dispatch_delivery(record: DraftRecord) -> DeliveryResult:
-    if record.channel == "email":
-        if not record.customer_email:
-            return DeliveryResult("failed", {}, error="missing customer_email")
-        subject = record.context.get("subject") if record.context else ""
-        return await app.state.zoho_adapter.send_email(
-            to_address=record.customer_email,
-            subject=subject or "Hot Rod AN Support",
-            body=record.final_text or record.suggested_text,
-            conversation_id=record.conversation_id,
-        )
-    if record.channel == "chat":
-        return await app.state.shopify_adapter.send_message(
-            conversation_id=record.conversation_id,
-            body=record.final_text or record.suggested_text,
-        )
-    return DeliveryResult("skipped", {"reason": f"unknown channel {record.channel}"})
-
-
-@app.on_event("startup")
-async def startup() -> None:
-    async with ENGINE.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(20.0, connect=5.0))
-    oauth_client = ZohoOAuthClient(app.state.http)
-    app.state.zoho_adapter = ZohoMailAdapter(app.state.http, oauth_client)
-    app.state.shopify_adapter = ShopifyChatAdapter(app.state.http)
-
-
-@app.on_event("shutdown")
-async def shutdown() -> None:
-    await app.state.http.aclose()
-    await ENGINE.dispose()
-
-
-@app.get("/assistants/drafts", response_model=DraftListResponse)
-async def list_drafts() -> DraftListResponse:
-    async with SESSION() as session:
-        result = await session.execute(select(Draft).order_by(Draft.created_at.desc()).limit(200))
-        drafts = [_serialize(d) for d in result.scalars().all()]
-        return DraftListResponse(drafts=drafts)
-
-
-@app.get("/assistants/drafts/{draft_id}", response_model=DraftRecord)
-async def get_draft(draft_id: str) -> DraftRecord:
-    async with SESSION() as session:
-        draft = await session.get(Draft, draft_id)
-        if not draft:
-            raise HTTPException(status_code=404, detail="Draft not found")
-        return _serialize(draft)
-
-
-@app.post("/assistants/draft", response_model=DraftRecord)
-async def draft(body: DraftCreate) -> DraftRecord:
-    top_k = body.top_k or DEFAULT_TOP_K
-    rag_data = await _fetch_rag_answer(app.state.http, body.incoming_text, top_k)
-    now = datetime.utcnow()
-    draft_id = f"d-{uuid4().hex[:10]}"
-    audit = [{"event": "created", "timestamp": now.isoformat()}]
-    if rag_data.get("error"):
-        audit.append({"event": "rag_error", "detail": rag_data["error"], "timestamp": now.isoformat()})
-    new_draft = Draft(
-        id=draft_id,
+@app.post("/assistants/draft")
+async def draft(body: DraftCreate) -> Dict[str, str]:
+    record = DraftModel(
         channel=body.channel,
         conversation_id=body.conversation_id,
+        customer_display=body.customer_display,
+        subject=body.subject,
+        chat_topic=body.chat_topic,
         incoming_text=body.incoming_text,
-        suggested_text=rag_data.get("answer", ""),
-        sources=list(rag_data.get("sources", [])),
-        customer_email=body.customer_email,
-        context=body.context,
-        status="draft",
-        audit_trail=audit,
-        delivery_status="pending",
+        draft_text=body.draft_text,
+        incoming_excerpt=clean_excerpt(body.incoming_text),
+        draft_excerpt=clean_excerpt(body.draft_text or ""),
+        confidence=body.confidence if body.confidence is not None else 0.75,
+        llm_model=body.llm_model or "gpt-4o-mini",
+        estimated_tokens_in=body.estimated_tokens_in,
+        estimated_tokens_out=body.estimated_tokens_out,
+        usd_cost=body.usd_cost,
+        sla_deadline=parse_iso8601(body.sla_deadline),
+        tags=body.tags,
+        source_snippets=[snippet.model_dump() for snippet in body.source_snippets],
+        conversation_summary=body.conversation_summary,
+        order_context=body.order_context,
+        model_latency_ms=body.model_latency_ms,
+        auto_escalated=body.auto_escalated,
+        auto_escalation_reason=body.auto_escalation_reason,
+        extra_metadata=body.metadata,
     )
-    async with SESSION() as session:
-        session.add(new_draft)
-        await session.commit()
-        await session.refresh(new_draft)
-        return _serialize(new_draft)
+    append_audit(record, actor="assistant-service", action="draft.created", payload={"channel": body.channel})
+    with _session() as session:
+        session.add(record)
+        session.commit()
+    return {"draft_id": record.id}
 
 
-@app.post("/assistants/approve", response_model=DraftRecord)
-async def approve(body: Approve) -> DraftRecord:
-    async with SESSION() as session:
-        draft = await session.get(Draft, body.draft_id)
-        if not draft:
+@app.get("/assistants/drafts")
+async def list_drafts(
+    status: Optional[str] = None,
+    channel: Optional[str] = None,
+    cursor: int = 0,
+    limit: int = 25,
+) -> JSONResponse:
+    statuses = parse_statuses_param(status)
+    channels = parse_channels_param(channel)
+    records = load_drafts(statuses=statuses, channels=channels, sort=True)
+    page, next_cursor, total = _paginate_records(records, cursor, limit)
+    content = {
+        "drafts": [serialize_list(r) for r in page],
+        "next_cursor": next_cursor,
+        "total": total,
+        "refresh_after_seconds": DEFAULT_REFRESH_SECONDS,
+    }
+    return JSONResponse(content=content, headers={"X-Refresh-After": str(DEFAULT_REFRESH_SECONDS)})
+
+
+@app.get("/assistants/drafts/{draft_id}")
+async def get_draft(draft_id: str) -> Dict[str, Any]:
+    with _session() as session:
+        record = session.get(DraftModel, draft_id)
+        if not record:
             raise HTTPException(status_code=404, detail="Draft not found")
-        now = datetime.utcnow()
-        final_text = draft.suggested_text
-        draft.status = "approved"
-        draft.final_text = final_text
-        draft.approved_at = now
-        draft.approved_by = body.approver_user_id
-        draft.updated_at = now
-        draft.delivery_status = "pending"
-        trail = list(draft.audit_trail or [])
-        trail.append({"event": "approved", "user": body.approver_user_id, "timestamp": now.isoformat()})
-        draft.audit_trail = trail
-        await session.commit()
-        await session.refresh(draft)
-        record = _serialize(draft)
-    delivery = await _dispatch_delivery(record)
-    async with SESSION() as session:
-        draft = await session.get(Draft, body.draft_id)
-        if not draft:
-            raise HTTPException(status_code=404, detail="Draft not found after approval")
-        trail = list(draft.audit_trail or [])
-        trail.append(
-            {
-                "event": "delivery",
-                "channel": draft.channel,
-                "status": delivery.status,
-                "timestamp": datetime.utcnow().isoformat(),
-            }
-        )
-        draft.delivery_status = delivery.status
-        draft.delivery_metadata = delivery.metadata
-        draft.delivery_error = delivery.error
-        draft.audit_trail = trail
-        draft.updated_at = datetime.utcnow()
-        await session.commit()
-        await session.refresh(draft)
-        return _serialize(draft)
+        return serialize_detail(record)
 
 
-@app.post("/assistants/edit", response_model=DraftRecord)
-async def edit(body: Edit) -> DraftRecord:
-    async with SESSION() as session:
-        draft = await session.get(Draft, body.draft_id)
-        if not draft:
+@app.post("/assistants/approve")
+async def approve(body: Approve) -> Dict[str, Any]:
+    with _session() as session:
+        record = session.get(DraftModel, body.draft_id)
+        if not record:
             raise HTTPException(status_code=404, detail="Draft not found")
-        now = datetime.utcnow()
-        draft.status = "edited"
-        draft.final_text = body.final_text
-        draft.edited_at = now
-        draft.edited_by = body.editor_user_id
-        draft.updated_at = now
-        draft.delivery_status = "pending"
-        trail = list(draft.audit_trail or [])
-        trail.append(
-            {
-                "event": "edited",
-                "user": body.editor_user_id,
-                "timestamp": now.isoformat(),
-            }
+        if record.status == "sent":
+            raise HTTPException(status_code=409, detail="Draft already sent")
+
+        if body.escalate_to_specialist:
+            record.status = "escalated"
+            if body.assign_to:
+                record.assigned_to = body.assign_to
+            if body.escalation_reason:
+                record.escalation_reason = body.escalation_reason
+            append_audit(
+                record,
+                actor=body.approver_user_id,
+                action="draft.escalated_during_approve",
+                payload={
+                    "escalate_to_specialist": True,
+                    "assign_to": body.assign_to,
+                    "escalation_reason": body.escalation_reason,
+                },
+            )
+            session.add(record)
+            session.commit()
+            return {"status": "escalated"}
+
+        record.status = "sent"
+        record.sent_at = utc_now()
+        record.usd_sent_copy = body.send_copy_to_customer
+        append_audit(
+            record,
+            actor=body.approver_user_id,
+            action="draft.approved",
+            payload={"send_copy_to_customer": body.send_copy_to_customer},
         )
-        draft.audit_trail = trail
-        await session.commit()
-        await session.refresh(draft)
-        record = _serialize(draft)
-    delivery = await _dispatch_delivery(record)
-    async with SESSION() as session:
-        draft = await session.get(Draft, body.draft_id)
-        if not draft:
-            raise HTTPException(status_code=404, detail="Draft not found after edit")
-        trail = list(draft.audit_trail or [])
-        trail.append(
-            {
-                "event": "delivery",
-                "channel": draft.channel,
-                "status": delivery.status,
-                "timestamp": datetime.utcnow().isoformat(),
-            }
+        session.add(record)
+        session.commit()
+
+    adapter = registry.adapter_for_channel(record.channel)
+    external_id = adapter.send(delivery_metadata(record))
+    return {"sent_msg_id": external_id}
+
+
+@app.post("/assistants/edit")
+async def edit(body: Edit) -> Dict[str, Any]:
+    with _session() as session:
+        record = session.get(DraftModel, body.draft_id)
+        if not record:
+            raise HTTPException(status_code=404, detail="Draft not found")
+        record.draft_text = body.final_text
+        record.draft_excerpt = clean_excerpt(body.final_text)
+        record.status = "sent"
+        record.sent_at = utc_now()
+        if body.learning_notes:
+            notes = list(record.learning_notes or [])
+            notes.append({"note": body.learning_notes, "author": body.editor_user_id, "timestamp": to_iso(utc_now())})
+            record.learning_notes = notes
+        append_audit(
+            record,
+            actor=body.editor_user_id,
+            action="draft.edited",
+            payload={"send_copy_to_customer": body.send_copy_to_customer},
         )
-        draft.delivery_status = delivery.status
-        draft.delivery_metadata = delivery.metadata
-        draft.delivery_error = delivery.error
-        draft.audit_trail = trail
-        draft.updated_at = datetime.utcnow()
-        await session.commit()
-        await session.refresh(draft)
-        return _serialize(draft)
+        session.add(record)
+        session.commit()
+
+    adapter = registry.adapter_for_channel(record.channel)
+    external_id = adapter.send(delivery_metadata(record))
+    return {"sent_msg_id": external_id}
+
+
+@app.post("/assistants/escalate")
+async def escalate(body: Escalate) -> Dict[str, Any]:
+    with _session() as session:
+        record = session.get(DraftModel, body.draft_id)
+        if not record:
+            raise HTTPException(status_code=404, detail="Draft not found")
+        record.status = "escalated"
+        record.assigned_to = body.assigned_to
+        record.escalation_reason = body.reason
+        append_audit(
+            record,
+            actor=body.requester_user_id,
+            action="draft.escalated",
+            payload={"assigned_to": body.assigned_to, "reason": body.reason},
+        )
+        session.add(record)
+        session.commit()
+    return {"status": "escalated"}
+
+
+@app.post("/assistants/notes")
+async def add_note(body: NoteCreate) -> Dict[str, Any]:
+    with _session() as session:
+        record = session.get(DraftModel, body.draft_id)
+        if not record:
+            raise HTTPException(status_code=404, detail="Draft not found")
+        notes = list(record.notes or [])
+        note_id = f"n{len(notes) + 1}"
+        note = {"note_id": note_id, "author_user_id": body.author_user_id, "text": body.text, "created_at": to_iso(utc_now())}
+        notes.append(note)
+        record.notes = notes
+        append_audit(record, actor=body.author_user_id, action="draft.note_added", payload={"note_id": note_id})
+        session.add(record)
+        session.commit()
+    return {"note": note}
+
+
+# ---------------------------------------------------------------------------
+# Test utilities
+# ---------------------------------------------------------------------------
+
+
+def reset_state_for_tests() -> None:
+    with _session() as session:
+        session.query(DraftModel).delete()
+        session.commit()
+
+
+__all__ = [
+    "app",
+    "DraftCreate",
+    "Approve",
+    "Edit",
+    "Escalate",
+    "NoteCreate",
+    "reset_state_for_tests",
+    "registry",
+]

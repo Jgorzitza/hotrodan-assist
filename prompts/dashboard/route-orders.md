@@ -112,6 +112,7 @@ Build an operational workspace for fulfillment leads handling pick/pack/ship, st
 - Will shipment delays feed from carrier webhooks in near-real time, or depend on batch polling? Impacts refresh cadence.
 
 ## Status / Notes
-- Owner: _unassigned_
-- Blockers: _none_
-- Notes: Coordinate with approvals/inbox owners for shared escalation badges and conversation links.
+- Owner: Orders Control Tower agent (Codex)
+- Blockers: Awaiting Sync write API handshake for returns + inventory escalations before removing mock fallbacks.
+- Sync dependency: `/sync/orders` loader + `/sync/orders/alerts` SSE are live; assign/fulfill/support/returns actions proxy to Sync when mocks disabled.
+- Notes: Alerts/data gaps update in real time with automatic revalidation; Vitest coverage added for Sync mapper and action proxy (happy + error paths).
