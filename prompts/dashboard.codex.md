@@ -114,8 +114,8 @@ Provide a **file tree** and **minimal code stubs** for each route with Polaris c
 - `app/lib/inventory/math.ts` — velocity, stockout date, reorder point, safety stock.
 - **Storefront MCP boundary now**:
 - `app/lib/mcp/types.ts` — interfaces for MCP tools/resources we’ll call.
-- `app/lib/mcp/client.ts` — stub client with method signatures (no-op returns).
-- Provide an example resource read (e.g., product recommendations) and a mock.
+- `app/lib/mcp/client.server.ts` — stub client with method signatures, retry skeleton, and telemetry hooks.
+- Provide an example resource read (e.g., product recommendations) and a mock via `app/lib/mcp/mocks.ts`.
 
 # Webhooks (register + handlers)
 Register on install and ensure per-store persistence:

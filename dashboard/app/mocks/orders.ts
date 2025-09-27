@@ -10,7 +10,6 @@ import {
 } from "./shared";
 import type {
   MockScenario,
-  Money,
   Order,
   OrderIssue,
   OrderOwner,
@@ -412,11 +411,20 @@ const filterOrdersByTab = (orders: Order[], tab: OrdersDataset["tab"]): Order[] 
 const paginateOrders = (orders: Order[], pageSize: number) => {
   const limited = orders.slice(0, pageSize);
   const hasNextPage = orders.length > pageSize;
+  const totalPages = Math.max(1, Math.ceil(orders.length / pageSize));
   return {
     items: limited,
     pageInfo: {
       hasNextPage,
-      endCursor: hasNextPage ? limited[limited.length - 1]?.id ?? null : null,
+      hasPreviousPage: false,
+      startCursor: limited[0]?.id ?? null,
+      endCursor: limited[limited.length - 1]?.id ?? null,
+      nextCursor: hasNextPage ? limited[limited.length - 1]?.id ?? null : null,
+      previousCursor: null,
+      shopifyCursor: null,
+      page: 1,
+      pageSize,
+      totalPages,
     },
   };
 };
@@ -428,7 +436,18 @@ const errorDataset = (scenario: MockScenario, tab: OrdersDataset["tab"]): Orders
   period: buildDefaultPeriod(),
   orders: [],
   count: 0,
-  pageInfo: { hasNextPage: false, endCursor: null },
+  pageInfo: {
+    hasNextPage: false,
+    hasPreviousPage: false,
+    startCursor: null,
+    endCursor: null,
+    nextCursor: null,
+    previousCursor: null,
+    shopifyCursor: null,
+    page: 1,
+    pageSize: DEFAULT_PAGE_SIZE,
+    totalPages: 1,
+  },
   metrics: {
     totalOrders: 0,
     awaitingFulfillment: 0,
@@ -453,7 +472,18 @@ const emptyDataset = (scenario: MockScenario, tab: OrdersDataset["tab"]): Orders
   period: buildDefaultPeriod(),
   orders: [],
   count: 0,
-  pageInfo: { hasNextPage: false, endCursor: null },
+  pageInfo: {
+    hasNextPage: false,
+    hasPreviousPage: false,
+    startCursor: null,
+    endCursor: null,
+    nextCursor: null,
+    previousCursor: null,
+    shopifyCursor: null,
+    page: 1,
+    pageSize: DEFAULT_PAGE_SIZE,
+    totalPages: 1,
+  },
   metrics: {
     totalOrders: 0,
     awaitingFulfillment: 0,

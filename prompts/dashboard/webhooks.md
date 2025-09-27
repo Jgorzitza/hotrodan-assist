@@ -40,5 +40,6 @@ Handle Shopify webhook subscriptions, HMAC verification, routing, and persistenc
 - [ ] Update `overview.md` + `database.md` references once handlers wired.
 
 ## Status / Notes
-- Owner: _unassigned_
-- Blockers: Need final confirmation on queue mechanism (Remix resource vs external worker) before fleshing background stub.
+- Owner: Sync & Webhooks agent (Codex)
+- Progress: `/sync/orders` + `/sync/orders/alerts` now serve webhook-backed data (fallback to stub if empty) and retain SSE support; `scripts/test_sync.sh` bootstraps `.venv-sync` and runs FastAPI tests for webhooks + orders.
+- Blockers: Need final confirmation on queue mechanism (Remix resource vs external worker) before fleshing background stub; awaiting decision on real Shopify ingestion hooks before enriching metrics beyond webhook data.

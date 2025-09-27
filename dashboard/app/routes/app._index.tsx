@@ -21,9 +21,16 @@ import {
 import { TitleBar } from "@shopify/app-bridge-react";
 
 import { authenticate } from "../shopify.server";
+import { storeSettingsRepository } from "../lib/settings/repository.server";
+import {
+  getMcpProductRecommendations,
+  isMcpFeatureEnabled,
+  shouldUseMcpMocks,
+} from "~/lib/mcp";
 import { scenarioFromRequest } from "~/mocks";
 import { getDashboardOverview, type DashboardOverview } from "~/mocks/dashboard";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
+import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
 import type { MockScenario } from "~/types/dashboard";
 
 const RANGE_OPTIONS = ["today", "7d", "28d", "90d"] as const;
@@ -32,21 +39,68 @@ type LoaderData = {
   data: DashboardOverview;
   useMockData: boolean;
   scenario: MockScenario;
+  mcp: {
+    enabled: boolean;
+    usingMocks: boolean;
+    source?: string;
+    generatedAt?: string;
+  };
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const range = url.searchParams.get("range") ?? "28d";
   const scenario = scenarioFromRequest(request);
+  let shopDomain = BASE_SHOP_DOMAIN;
 
   if (!USE_MOCK_DATA) {
-    await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
+    shopDomain = session.shop;
   }
+
+  const settings = await storeSettingsRepository.getSettings(shopDomain);
+  const toggles = settings.toggles;
+  const featureEnabled = isMcpFeatureEnabled(toggles);
+  const usingMocks = shouldUseMcpMocks(toggles);
 
   const data = await getDashboardOverview(range, scenario);
 
+  const shouldHydrateMcp = featureEnabled || USE_MOCK_DATA;
+  let mcpSource: string | undefined;
+  let mcpGeneratedAt: string | undefined;
+
+  if (shouldHydrateMcp) {
+    const response = await getMcpProductRecommendations(
+      {
+        shopDomain,
+        params: { limit: 3, range },
+      },
+      toggles,
+    );
+
+    const topRecommendation = response.data.at(0);
+    if (topRecommendation) {
+      data.mcpRecommendation = `${topRecommendation.title}: ${topRecommendation.rationale}`;
+    }
+    mcpSource = response.source;
+    mcpGeneratedAt = response.generatedAt;
+  } else {
+    data.mcpRecommendation =
+      "Enable the MCP integration in Settings to populate storefront insights.";
+  }
+
   return json<LoaderData>(
-    { data, useMockData: USE_MOCK_DATA, scenario },
+    {
+      data,
+      useMockData: USE_MOCK_DATA,
+      scenario,
+      mcp: {
+        enabled: featureEnabled,
+        usingMocks,
+        source: mcpSource,
+        generatedAt: mcpGeneratedAt,
+      },
+    },
     {
       headers: {
         "Cache-Control": "private, max-age=0, must-revalidate",
@@ -56,7 +110,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function DashboardRoute() {
-  const { data, useMockData, scenario } = useLoaderData<typeof loader>();
+  const { data, useMockData, scenario, mcp } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -246,12 +300,29 @@ export default function DashboardRoute() {
           </Layout.Section>
           <Layout.Section secondary>
             <Card title="MCP insight" sectioned>
-              <Text as="p" variant="bodyMd">
-                {data.mcpRecommendation}
-              </Text>
-              <Button url="/app/settings" variant="plain">
-                Manage MCP toggles
-              </Button>
+              <BlockStack gap="200">
+                <Text as="p" variant="bodyMd">
+                  {data.mcpRecommendation}
+                </Text>
+                {!mcp.enabled && (
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Configure credentials and enable the MCP toggle in Settings to load live data.
+                  </Text>
+                )}
+                {mcp.usingMocks && (
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Showing mock data while `USE_MOCK_DATA` is enabled.
+                  </Text>
+                )}
+                {mcp.generatedAt && (
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Last updated {new Date(mcp.generatedAt).toLocaleString()} • {mcp.source ?? "mock"}
+                  </Text>
+                )}
+                <Button url="/app/settings" variant="plain">
+                  Manage MCP toggles
+                </Button>
+              </BlockStack>
             </Card>
           </Layout.Section>
         </Layout>

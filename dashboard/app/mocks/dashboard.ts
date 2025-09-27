@@ -149,13 +149,9 @@ const toOrderBuckets = ({ orders }: DashboardMocks): OrdersBucket[] => {
 };
 
 const toInboxSnapshot = ({ inbox }: DashboardMocks): InboxSnapshot => {
-  const outstanding = inbox.tickets.filter(
-    (ticket) => ticket.status !== "resolved",
-  ).length;
+  const outstanding = inbox.tickets.filter((ticket) => ticket.status !== "sent").length;
   const breached = inbox.tickets.filter((ticket) => ticket.slaBreached).length;
-  const approvals = inbox.tickets.filter(
-    (ticket) => ticket.status === "open" && ticket.priority !== "low",
-  ).length;
+  const approvals = inbox.tickets.filter((ticket) => ticket.status === "needs_review").length;
 
   return {
     outstanding,

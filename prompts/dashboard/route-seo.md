@@ -38,5 +38,5 @@ Surface organic traffic insights, technical health, and prioritized actions:
 
 ## Status / Notes
 - Owner: _unassigned_
-- Blockers: _none_
-- Notes: coordinate with data layer for typed interfaces per adapter.
+- Blockers: Awaiting MCP credentials + live SEO adapters to replace mocks.
+- Notes: Current route skeleton (`dashboard/app/routes/app.seo.tsx`) renders scorecard + insight list from mocks and now hydrates an MCP keyword opportunity card via `getMcpClient` when both `ENABLE_MCP` and the settings toggle are enabled. When disabled, UI prompts the merchant to configure credentials. Need to expand route to full spec (filters, tables, actions, exports) and wire live data sources once adapters land.

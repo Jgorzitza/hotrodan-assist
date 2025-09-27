@@ -46,10 +46,13 @@ const toMessages = (dataset: InboxDataset, provider: InboxProvider): InboxMessag
     }));
 
 export class MockInboxProvider implements InboxProviderClient {
-  constructor(
-    private provider: InboxProvider,
-    private options: ProviderOptions = {},
-  ) {}
+  private readonly provider: InboxProvider;
+  private readonly options: ProviderOptions;
+
+  constructor(provider: InboxProvider, options: ProviderOptions = {}) {
+    this.provider = provider;
+    this.options = options;
+  }
 
   async listMessages(): Promise<InboxMessage[]> {
     const dataset = getInboxScenario({

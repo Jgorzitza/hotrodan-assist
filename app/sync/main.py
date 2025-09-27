@@ -5,16 +5,24 @@ import base64
 import hmac
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 import httpx
-from fastapi import FastAPI, HTTPException, Request, status
-from sqlalchemy import DateTime, Integer, String, Text, select
-from sqlalchemy import JSON
+from fastapi import FastAPI, HTTPException, Query, Request, status
+from fastapi.responses import StreamingResponse
+from sqlalchemy import JSON, DateTime, Integer, String, Text, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+from sync.orders_api import (
+    DEFAULT_PAGE_SIZE,
+    build_orders_alerts_feed,
+    build_orders_payload,
+    build_stub_orders_response,
+    decode_offset_cursor,
+)
 
 # ---------------------------------------------------------------------------
 # Database setup
@@ -308,6 +316,163 @@ async def shopify_webhook(req: Request) -> Dict[str, Any]:
         await _process_shopify_topic(session, topic, payload)
         await session.commit()
     return {"ok": True, "topic": topic, "event_id": event.id}
+
+
+@app.get("/sync/orders")
+async def sync_orders(
+    tab: Optional[str] = Query(None),
+    page_size: Optional[int] = Query(None, alias="pageSize"),
+    cursor: Optional[str] = Query(None),
+    direction: Optional[str] = Query(None),
+    status_filter: Optional[str] = Query(None, alias="status"),
+    priority: Optional[str] = Query(None),
+    assigned_to: Optional[str] = Query(None, alias="assigned_to"),
+    date_start: Optional[str] = Query(None, alias="date_start"),
+    date_end: Optional[str] = Query(None, alias="date_end"),
+) -> Dict[str, Any]:
+    params = {
+        "tab": tab,
+        "pageSize": str(page_size) if page_size else None,
+        "cursor": cursor,
+        "direction": direction,
+        "status": status_filter,
+        "priority": priority,
+        "assigned_to": assigned_to,
+        "date_start": date_start,
+        "date_end": date_end,
+    }
+
+    limit = int(page_size or DEFAULT_PAGE_SIZE)
+    offset = decode_offset_cursor(cursor)
+
+    async with SESSION() as session:
+        total_orders = await session.scalar(select(func.count(ShopifyOrder.id)))
+        if not total_orders:
+            return build_stub_orders_response(params)
+
+        ordering = (
+            ShopifyOrder.order_created_at.desc().nullslast(),
+            ShopifyOrder.updated_at.desc(),
+        )
+        page_stmt = (
+            select(ShopifyOrder)
+            .order_by(*ordering)
+            .offset(offset)
+            .limit(limit)
+        )
+        metrics_stmt = (
+            select(ShopifyOrder)
+            .order_by(*ordering)
+            .limit(200)
+        )
+
+        page_rows = (await session.execute(page_stmt)).scalars().all()
+        metrics_rows = (await session.execute(metrics_stmt)).scalars().all()
+
+    page_orders = [_normalize_order_record(order) for order in page_rows]
+    metrics_orders = [_normalize_order_record(order) for order in metrics_rows]
+    return build_orders_payload(params, page_orders, total_orders, metrics_orders)
+
+
+@app.get("/sync/orders/alerts")
+async def sync_orders_alerts(request: Request, since: Optional[str] = Query(None)) -> Any:
+    feed = build_orders_alerts_feed(since)
+    if "text/event-stream" in (request.headers.get("accept") or ""):
+
+        async def stream():
+            for alert in feed["alerts"]:
+                yield f"data: {json.dumps(alert)}\n\n"
+
+        return StreamingResponse(stream(), media_type="text/event-stream")
+    return feed
+
+
+def _normalize_order_record(order: "ShopifyOrder") -> Dict[str, Any]:
+    raw = order.raw or {}
+    tags = _extract_tags(raw)
+    created_at = order.order_created_at or _parse_order_datetime(raw.get("created_at"))
+    ship_by = _extract_ship_by(raw)
+    total_price = _to_float(order.total_price or raw.get("total_price"))
+    assigned_to = _extract_assignee(raw)
+    support_thread = _extract_support_thread(raw)
+
+    return {
+        "id": order.id,
+        "name": order.name,
+        "created_at": created_at,
+        "ship_by": ship_by,
+        "fulfillment_status": order.fulfillment_status,
+        "financial_status": order.financial_status,
+        "total_price": total_price,
+        "currency": order.currency,
+        "tags": tags,
+        "assigned_to": assigned_to,
+        "support_thread": support_thread,
+        "raw": raw,
+    }
+
+
+def _extract_tags(raw: Dict[str, Any]) -> List[str]:
+    tags = raw.get("tags")
+    if isinstance(tags, list):
+        return [str(tag) for tag in tags]
+    if isinstance(tags, str):
+        return [part.strip() for part in tags.split(",") if part.strip()]
+    return []
+
+
+def _extract_ship_by(raw: Dict[str, Any]) -> Optional[datetime]:
+    for key in ("ship_by", "expected_delivery_date", "delivery_date", "max_delivery_date"):
+        dt = _parse_order_datetime(raw.get(key))
+        if dt:
+            return dt
+    shipping_lines = raw.get("shipping_lines") or []
+    for line in shipping_lines:
+        for key in ("delivery_date", "max_delivery_date", "expected_delivery_date"):
+            dt = _parse_order_datetime(line.get(key))
+            if dt:
+                return dt
+    return None
+
+
+def _extract_assignee(raw: Dict[str, Any]) -> Optional[str]:
+    for attr in raw.get("note_attributes") or []:
+        key = (attr.get("name") or attr.get("key") or "").lower()
+        if key in {"orders_control_tower.assignee", "assignee", "assigned_to"}:
+            value = attr.get("value")
+            if value:
+                return str(value)
+    return None
+
+
+def _extract_support_thread(raw: Dict[str, Any]) -> Optional[str]:
+    for attr in raw.get("note_attributes") or []:
+        key = (attr.get("name") or attr.get("key") or "").lower()
+        if key in {"support_thread", "conversation_id"}:
+            value = attr.get("value")
+            if value:
+                return str(value)
+    return None
+
+
+def _parse_order_datetime(value: Optional[str]) -> Optional[datetime]:
+    if not value:
+        return None
+    try:
+        if value.endswith("Z"):
+            value = value.replace("Z", "+00:00")
+        return datetime.fromisoformat(value)
+    except Exception:
+        return None
+
+
+def _to_float(value: Any) -> float:
+    if value is None:
+        return 0.0
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
 
 
 @app.get("/customer_summary")

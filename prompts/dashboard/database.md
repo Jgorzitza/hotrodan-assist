@@ -48,3 +48,4 @@ Design Prisma schema + migration workflow bridging dev (SQLite) and production (
 ## Status / Notes
 - Owner: _unassigned_
 - Blockers: Awaiting confirmation on production DB provider (Fly Postgres vs Render vs RDS).
+- Follow-up: Prisma CLI config migrated to `dashboard/prisma.config.ts`; `package.json#prisma` removed. SQLite seed remains manual until `prisma/seed.ts` + `prisma/ts-loader.mjs` land on this branch. See `coordination/2025-09-26_prisma-config-plan.md` for rollout details.

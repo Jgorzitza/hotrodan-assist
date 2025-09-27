@@ -4,3 +4,4 @@ python-dotenv
 httpx
 sqlalchemy[asyncio]
 asyncpg
+aiosqlite>=0.19.0

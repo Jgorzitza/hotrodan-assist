@@ -1,7 +1,6 @@
 import type {
   ConnectionAttempt,
   ConnectionHealth,
-  ConnectionStatusState,
   FeatureToggles,
   SecretMetadata,
   SettingsPayload,

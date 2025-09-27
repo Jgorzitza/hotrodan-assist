@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildDashboardMocks,
   getDashboardOverview,
+  getInboxData,
   getInboxScenario,
   getInventoryScenario,
   getOrdersScenario,
@@ -69,6 +70,19 @@ describe("inbox mocks", () => {
     expect(dataset.state).toBe("warning");
     expect(dataset.alert).toMatch(/volume/i);
     expect(dataset.tickets.some((ticket) => ticket.slaBreached)).toBe(true);
+  });
+
+  it("includes metrics summary with histogram", () => {
+    const data = getInboxData({ scenario: "base", pageSize: 6, seed: 1 });
+
+    expect(data.metrics.total).toBeGreaterThan(0);
+    expect(Object.keys(data.metrics.confidenceHistogram)).toEqual([
+      "low",
+      "medium",
+      "high",
+      "unscored",
+    ]);
+    expect(data.availableScenarios.length).toBeGreaterThan(0);
   });
 });
 

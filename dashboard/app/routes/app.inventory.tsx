@@ -33,8 +33,16 @@ import {
 } from "@shopify/polaris";
 
 import { authenticate } from "../shopify.server";
+import { storeSettingsRepository } from "../lib/settings/repository.server";
+import {
+  getMcpInventorySignals,
+  isMcpFeatureEnabled,
+  shouldUseMcpMocks,
+  type InventorySignal,
+} from "~/lib/mcp";
 import { getInventoryScenario, scenarioFromRequest } from "~/mocks";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
+import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
 import type {
   InventoryBucketId,
   InventoryDashboardPayload,
@@ -57,12 +65,25 @@ const STATUS_TONE: Record<InventoryStatus, "success" | "warning" | "critical" | 
   preorder: "info",
 };
 
+const MCP_RISK_TONE: Record<InventorySignal["riskLevel"], "success" | "warning" | "critical"> = {
+  low: "success",
+  medium: "warning",
+  high: "critical",
+};
+
 type LoaderData = {
   payload: InventoryDashboardPayload;
   scenario: MockScenario;
   useMockData: boolean;
   selectedBucket: InventoryBucketId;
   count: number;
+  mcp: {
+    enabled: boolean;
+    usingMocks: boolean;
+    signals: InventorySignal[];
+    source?: string;
+    generatedAt?: string;
+  };
 };
 
 type PlannerSubmission = {
@@ -113,16 +134,42 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const scenario = scenarioFromRequest(request);
   const count = clampCount(url.searchParams.get("count"));
+  let shopDomain = BASE_SHOP_DOMAIN;
 
   if (!USE_MOCK_DATA) {
-    await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
+    shopDomain = session.shop;
   }
+
+  const settings = await storeSettingsRepository.getSettings(shopDomain);
+  const toggles = settings.toggles;
+  const featureEnabled = isMcpFeatureEnabled(toggles);
+  const usingMocks = shouldUseMcpMocks(toggles);
 
   const payload = getInventoryScenario({ scenario, count });
   const bucketParam = url.searchParams.get("bucket");
   const selectedBucket = isBucketId(bucketParam)
     ? bucketParam
     : payload.buckets[0]?.id ?? "urgent";
+
+  const shouldHydrateMcp = featureEnabled || USE_MOCK_DATA;
+  let mcpSignals: InventorySignal[] = [];
+  let mcpSource: string | undefined;
+  let mcpGeneratedAt: string | undefined;
+
+  if (shouldHydrateMcp) {
+    const response = await getMcpInventorySignals(
+      {
+        shopDomain,
+        params: { limit: 5, bucket: selectedBucket },
+      },
+      toggles,
+    );
+
+    mcpSignals = response.data;
+    mcpSource = response.source;
+    mcpGeneratedAt = response.generatedAt;
+  }
 
   return json<LoaderData>(
     {
@@ -131,6 +178,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       useMockData: USE_MOCK_DATA,
       selectedBucket,
       count,
+      mcp: {
+        enabled: featureEnabled,
+        usingMocks,
+        signals: mcpSignals,
+        source: mcpSource,
+        generatedAt: mcpGeneratedAt,
+      },
     },
     {
       headers: {
@@ -278,7 +332,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function InventoryRoute() {
-  const { payload, useMockData, scenario, selectedBucket, count } =
+  const { payload, useMockData, scenario, selectedBucket, count, mcp } =
     useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -493,6 +547,62 @@ export default function InventoryRoute() {
             </Card>
           ))}
         </InlineGrid>
+
+        <Card title="MCP inventory signals" sectioned>
+          <BlockStack gap="200">
+            {mcp.signals.map((signal) => (
+              <Box
+                key={signal.sku}
+                background="bg-subdued"
+                padding="200"
+                borderRadius="200"
+              >
+                <BlockStack gap="150">
+                  <InlineStack align="space-between" blockAlign="center">
+                    <BlockStack gap="050">
+                      <Text variant="bodyMd" as="span">
+                        {signal.sku}
+                      </Text>
+                      <Text variant="bodySm" tone="subdued" as="span">
+                        {signal.suggestedAction}
+                      </Text>
+                    </BlockStack>
+                    <Badge tone={MCP_RISK_TONE[signal.riskLevel]}>
+                      {signal.riskLevel.toUpperCase()}
+                    </Badge>
+                  </InlineStack>
+                  {signal.demandSignals.length > 0 && (
+                    <InlineStack gap="200" wrap>
+                      {signal.demandSignals.map((metric) => (
+                        <Badge key={metric.label} tone="info">
+                          {metric.label}: {metric.value}
+                          {metric.unit ? `${metric.unit}` : ""}
+                        </Badge>
+                      ))}
+                    </InlineStack>
+                  )}
+                </BlockStack>
+              </Box>
+            ))}
+            {mcp.signals.length === 0 && (
+              <Text variant="bodySm" tone="subdued" as="p">
+                {mcp.enabled
+                  ? "No MCP inventory signals returned yet. Check back after the next sync."
+                  : "Enable the MCP integration in Settings to surface prioritized restock actions."}
+              </Text>
+            )}
+            {mcp.generatedAt && (
+              <Text variant="bodySm" tone="subdued" as="p">
+                Last updated {new Date(mcp.generatedAt).toLocaleString()} • {mcp.source ?? "mock"}
+              </Text>
+            )}
+            {mcp.usingMocks && (
+              <Text variant="bodySm" tone="subdued" as="p">
+                Showing mock MCP data while `USE_MOCK_DATA` is enabled.
+              </Text>
+            )}
+          </BlockStack>
+        </Card>
 
         <Layout>
           <Layout.Section>
