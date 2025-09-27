@@ -4,3 +4,6 @@
 - q: "Return vs returnless—what should I use on a swap?"
   must_include: ["return-style", "regulator", "returnless"]
   must_cite: ["hotrodan.com"]
+- q: "How do I adapt GM quick-connect fuel lines to AN?"
+  must_include: ["AN-6", "AN-8", "threaded lock-nut", "10 μm"]
+  must_cite: ["hotrodan.com"]

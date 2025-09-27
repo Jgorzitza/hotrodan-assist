@@ -11,6 +11,9 @@
 - Enforce quality gates: corrections overrides, offline golden regression tests, and citation requirements.
 - Support service stubs (`app/rag_api`, `app/assistants`, `app/sync`, `app/approval-app`) as they mature toward production.
 
+## Status / Notes
+- 2025-09-27 – Refreshed sitemap + incremental ingest (state written), added GM quick-connect correction & golden, goldens passing locally with `.venv`.
+
 ## Key Components & Files
 ### RAG + Ingest
 - `discover_urls.py` → builds `urls.txt` and `urls_with_lastmod.tsv` from Shopify sitemaps with filtering.

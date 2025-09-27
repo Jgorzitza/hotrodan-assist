@@ -31,3 +31,19 @@
     - https://hotrodan.com/blogs/an-hose-101/ultimate-fuel-system-guide-for-73-87-c10-k10-squarebody-trucks-ls-swaps-and-efi-conversions
     - https://hotrodan.com/blogs/an-hose-101/fuel-pump-selection-for-ls-based-engines-and-efi-conversions
   last_verified: 2025-09-24
+
+- id: gm-quick-connect-an-adapters
+  patterns:
+    - "quick[- ]?connect"
+    - "corvette.*filter"
+    - "3/8.*(feed|line)"
+    - "5/16.*(return|line)"
+    - "threaded lock[- ]?nut"
+  answer: |
+    Most GM EFI feeds are 3/8" OD—adapt them to AN-6 for typical builds and step to AN-8 if you need extra headroom above ~500–600 hp. Returns are usually 5/16"; adapt those to AN-6.
+    Hot Rod AN’s Corvette-style filter/regulator already has AN-6 male ports, so you can skip quick-connect adapters when you mount it near the tank.
+    When you do need adapters, use the threaded lock-nut design: click the fitting into the GM socket, snug the lock-nut so it clamps the tube lip, and perform a tug test. Lubricate the small O-rings with clean oil before install so they seat without damage.
+    Always verify connector sizes with a caliper (≈9.5 mm feed, ≈8.0 mm return) and finish the system with a ≤10 μm post-pump filter for EFI.
+  sources:
+    - https://hotrodan.com/blogs/an-hose-101/gm-quick-connect-to-an-adapter-cheat-sheet-for-ls-efi-swaps
+  last_verified: 2025-09-27
