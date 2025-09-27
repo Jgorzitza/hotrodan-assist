@@ -17,8 +17,8 @@
 3) Plan the next dashboard QA pass (screenshots, smoke run) once credentials and dev server are ready.
 
 ## RAG status
-- No new ingest/run steps today; last successful refresh remains the 2025-09-26 FastEmbed fallback run (discover → ingest incremental → goldens ✅).
-- Retrieval spot check (`query_chroma_router.py` for LS swap guidance) from 2025-09-26 still stands; schedule the next crawl when Shopify sitemap timestamps advance.
+- Attempted sitemap refresh (`python discover_urls.py`) but proxy returned HTTP 403; added diagnostics to surface the failure and left URLs untouched until access opens back up.
+- Offline goldens (corrections-only) re-ran 2025-09-27 and still pass; retrieval spot check remains pending the next successful ingest.
 
 ## Follow-ups
 1) Expand `corrections/corrections.yaml` beyond the current EFI micron/returnless coverage (target dual-tank, surge, and vapor management FAQs).

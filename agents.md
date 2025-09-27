@@ -99,6 +99,13 @@ Validation:
 - `ingest_incremental_chroma.py` → compares sitemap last-mod times, deletes stale docs, reingests updates (tracks `ingest_state.json`).
 - `rag_config.py` → shared Settings via `configure_settings()` (chunk size 1500/overlap 150, auto-switches between OpenAI and FastEmbed/mock LLM fallback when `OPENAI_API_KEY` is missing or placeholder).
 
+#### Status / Notes
+
+STATUS: 2025-09-27T06:25:29Z | agent=rag | branch=feature/rag-refresh | commit=68aaec2 | mode=cloud | scope=rag
+- What changed: Investigated blocked sitemap fetches, added proxy diagnostics to `discover_urls.py`, made `rag_config` configure lazily to avoid forced FastEmbed downloads on import, and refreshed the RAG session summary.
+- Tests/lint: `python run_goldens.py` (pass).
+- Next step / blocker: Shopify sitemap currently returns HTTP 403 via proxy so URLs not refreshed; rerun discovery/ingest once access is restored.
+
 ### Query & Routing
 - `query_chroma_router.py` → primary CLI; applies corrections, model routing (`gpt-4o-mini` default, escalates to GPT-5 family), adds dynamic context.
 - `router_config.py` → keyword + length triggers for model escalation.

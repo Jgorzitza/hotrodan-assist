@@ -1,6 +1,7 @@
 import re, sys
 from urllib.parse import urljoin
 import requests
+from requests import exceptions as req_exc
 from xml.etree import ElementTree as ET
 
 BASE = "https://hotrodan.com"
@@ -34,14 +35,26 @@ def fetch(url, timeout=20):
 
 def find_sitemaps():
     good = []
+    errors = []
     for path in SITEMAP_CANDIDATES:
         url = urljoin(BASE, path)
         try:
             r = fetch(url, 10)
             if r.status_code == 200 and r.text.strip().startswith("<?xml"):
                 good.append(url)
-        except Exception:
-            pass
+        except req_exc.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else "?"
+            errors.append(f"{url} → HTTP {status}")
+        except req_exc.RequestException as exc:
+            errors.append(f"{url} → {exc.__class__.__name__}: {exc}")
+        except Exception as exc:  # pragma: no cover - defensive catch-all
+            errors.append(f"{url} → {exc.__class__.__name__}: {exc}")
+    if not good and errors:
+        print("Checked sitemap candidates but none succeeded:")
+        for msg in errors[:3]:
+            print(f" - {msg}")
+        if len(errors) > 3:
+            print(f" - … {len(errors) - 3} more similar errors suppressed")
     return good
 
 def parse_sitemap(url):
