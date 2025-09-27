@@ -106,6 +106,11 @@ STATUS: 2025-09-27T06:25:29Z | agent=rag | branch=feature/rag-refresh | commit=6
 - Tests/lint: `python run_goldens.py` (pass).
 - Next step / blocker: Shopify sitemap currently returns HTTP 403 via proxy so URLs not refreshed; rerun discovery/ingest once access is restored.
 
+STATUS: 2025-09-27T07:04:00Z | agent=rag | branch=feature/rag-refresh | commit=32f6ba4 | mode=cloud | scope=rag
+- What changed: Added proxy-bypass retry (and opt-out env flag) to `discover_urls.py` so sitemap discovery can work in environments where the corporate proxy blocks Shopify.
+- Tests/lint: `python run_goldens.py` (pass); `python discover_urls.py` (fails—network unreachable even without proxies).
+- Next step / blocker: Need direct outbound network access to hotrodan.com to refresh URLs before running incremental ingest.
+
 ### Query & Routing
 - `query_chroma_router.py` → primary CLI; applies corrections, model routing (`gpt-4o-mini` default, escalates to GPT-5 family), adds dynamic context.
 - `router_config.py` → keyword + length triggers for model escalation.

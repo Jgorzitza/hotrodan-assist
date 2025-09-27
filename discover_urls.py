@@ -1,3 +1,4 @@
+import os
 import re, sys
 from urllib.parse import urljoin
 import requests
@@ -28,10 +29,54 @@ BLOCK_PATTERNS = [
     r"/cdn/", r"\.json$", r"/apps/",
 ]
 
+USER_AGENT = "HRAN-crawler/1.0"
+
+
+def _env_flag(name: str) -> bool:
+    value = os.getenv(name, "").strip().lower()
+    return value in {"1", "true", "yes", "on"}
+
+
+def _build_session(disable_proxies: bool) -> requests.Session:
+    session = requests.Session()
+    session.headers.update({"User-Agent": USER_AGENT})
+    if disable_proxies:
+        session.trust_env = False
+    return session
+
+
+_DISABLE_PROXIES = _env_flag("DISCOVER_URLS_DISABLE_PROXIES")
+_SESSION_WITH_PROXIES = _build_session(False)
+_SESSION_NO_PROXY = _build_session(True)
+
+
+def _should_retry_without_proxy(exc: Exception) -> bool:
+    if isinstance(exc, req_exc.ProxyError):
+        return True
+    if isinstance(exc, req_exc.HTTPError):
+        if exc.response is not None and exc.response.status_code == 403:
+            text = "" if exc.response is None else exc.response.text
+            if "Tunnel connection failed" in str(exc) or "Tunnel connection failed" in text:
+                return True
+    return False
+
+
+def _request(url: str, timeout: int, disable_proxies: bool) -> requests.Response:
+    session = _SESSION_NO_PROXY if disable_proxies else _SESSION_WITH_PROXIES
+    proxies = {"http": "", "https": ""} if disable_proxies else None
+    response = session.get(url, timeout=timeout, allow_redirects=True, proxies=proxies)
+    response.raise_for_status()
+    return response
+
+
 def fetch(url, timeout=20):
-    r = requests.get(url, timeout=timeout, headers={"User-Agent":"HRAN-crawler/1.0"})
-    r.raise_for_status()
-    return r
+    try:
+        return _request(url, timeout, disable_proxies=_DISABLE_PROXIES)
+    except req_exc.RequestException as exc:
+        if not _DISABLE_PROXIES and _should_retry_without_proxy(exc):
+            print(f"Retrying {url} without proxies due to {exc.__class__.__name__} ...")
+            return _request(url, timeout, disable_proxies=True)
+        raise
 
 def find_sitemaps():
     good = []
