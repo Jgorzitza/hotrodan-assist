@@ -1,0 +1,441 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum StoreStatus {
+  ACTIVE
+  SUSPENDED
+  DISCONNECTED
+  ARCHIVED
+}
+
+enum OrderFlagStatus {
+  OPEN
+  SNOOZED
+  RESOLVED
+  DISMISSED
+}
+
+enum TicketStatus {
+  OPEN
+  PENDING
+  RESOLVED
+  CLOSED
+  ARCHIVED
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum TicketAuthorType {
+  CUSTOMER
+  STAFF
+  AUTOMATION
+  AI
+}
+
+enum SeoInsightSeverity {
+  INFO
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SeoInsightStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  DISMISSED
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  RECEIVED
+  CANCELLED
+}
+
+enum IntegrationProvider {
+  SHOPIFY
+  GA4
+  GSC
+  BING
+  MCP
+  KLAVIYO
+  CUSTOM
+}
+
+enum SettingsSecretProvider {
+  ga4
+  gsc
+  bing
+  mcp
+}
+
+enum ConnectionEventStatus {
+  SUCCESS
+  FAILURE
+  WARNING
+  INFO
+}
+
+enum WebhookProcessingStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  SKIPPED
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+  storeId       String?
+
+  store Store? @relation(fields: [storeId], references: [id], onDelete: SetNull)
+
+  @@index([shop])
+  @@index([storeId])
+}
+
+model Store {
+  id                    String      @id @default(cuid())
+  domain                String      @unique
+  myShopifyDomain       String?     @unique
+  name                  String?
+  planLevel             String      @default("free")
+  status                StoreStatus @default(ACTIVE)
+  timezone              String      @default("UTC")
+  accessTokenCipher     String
+  encryptionVersion     Int         @default(1)
+  scopeHash             String?
+  onboardingCompletedAt DateTime?
+  onboardingNotes       String?
+  lastSyncedAt          DateTime?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  sessions          Session[]
+  settings          StoreSettings?
+  kpiCaches         KpiCache[]
+  orderFlags        OrderFlag[]
+  tickets           Ticket[]
+  seoInsights       SeoInsight[]
+  productVelocities ProductVelocity[]
+  purchaseOrders    PurchaseOrder[]
+  connectionEvents  ConnectionEvent[]
+  aiDrafts          AiDraft[]
+  webhookEvents     WebhookEvent[]
+  webhookRegistrations WebhookRegistry[]
+  secrets           StoreSecret[]
+
+  @@index([status, updatedAt])
+}
+
+model StoreSettings {
+  id                  String    @id @default(cuid())
+  storeId             String    @unique
+  thresholds          Json?
+  featureFlags        Json?
+  connectionMetadata  Json?
+  lastRotationAt      DateTime?
+  lastInventorySyncAt DateTime?
+  notificationEmails  String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+}
+
+model StoreSecret {
+  id                String                 @id @default(cuid())
+  storeId           String
+  provider          SettingsSecretProvider
+  ciphertext        String
+  maskedValue       String
+  lastVerifiedAt    DateTime?
+  rotationReminderAt DateTime?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, provider])
+}
+
+model KpiCache {
+  id          String    @id @default(cuid())
+  storeId     String
+  metricKey   String
+  rangeStart  DateTime
+  rangeEnd    DateTime
+  payload     Json
+  refreshedAt DateTime  @default(now())
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, metricKey, rangeStart, rangeEnd])
+  @@index([storeId, metricKey, refreshedAt])
+}
+
+model OrderFlag {
+  id              String          @id @default(cuid())
+  storeId         String
+  shopifyOrderId  String
+  flagType        String
+  status          OrderFlagStatus @default(OPEN)
+  notes           String?
+  resolutionNotes String?
+  resolvedBy      String?
+  resolvedAt      DateTime?
+  metadata        Json?
+  webhookEventId  String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  webhookEvent WebhookEvent? @relation(fields: [webhookEventId], references: [id], onDelete: SetNull)
+
+  @@unique([storeId, shopifyOrderId, flagType])
+  @@index([storeId, status, createdAt])
+  @@index([storeId, shopifyOrderId])
+}
+
+model Ticket {
+  id             String         @id @default(cuid())
+  storeId        String
+  subject        String
+  status         TicketStatus   @default(OPEN)
+  priority       TicketPriority @default(NORMAL)
+  source         String         @default("inbox")
+  assignee       String?
+  customerEmail  String?
+  customerName   String?
+  shopifyOrderId String?
+  tags           Json?
+  metadata       Json?
+  openedAt       DateTime       @default(now())
+  lastMessageAt  DateTime?
+  closedAt       DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  store    Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  messages TicketMessage[]
+
+  @@index([storeId, status, updatedAt])
+  @@index([storeId, shopifyOrderId])
+}
+
+model TicketMessage {
+  id             String           @id @default(cuid())
+  ticketId       String
+  authorType     TicketAuthorType
+  authorLabel    String?
+  bodyRichText   String
+  bodyPlainText  String?
+  isDraft        Boolean          @default(false)
+  isInternalNote Boolean          @default(false)
+  metadata       Json?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  sentAt         DateTime?
+
+  ticket   Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  aiDrafts AiDraft[]
+
+  @@index([ticketId, createdAt])
+}
+
+model AiDraft {
+  id              String    @id @default(cuid())
+  storeId         String
+  ticketMessageId String
+  modelKey        String
+  modelVersion    String?
+  content         String
+  diff            String?
+  approved        Boolean   @default(false)
+  approvedAt      DateTime?
+  rewardScore     Float?
+  feedback        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  store         Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  ticketMessage TicketMessage @relation(fields: [ticketMessageId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, createdAt])
+  @@index([ticketMessageId])
+}
+
+model SeoInsight {
+  id          String             @id @default(cuid())
+  storeId     String
+  title       String
+  description String
+  severity    SeoInsightSeverity @default(MEDIUM)
+  status      SeoInsightStatus   @default(OPEN)
+  category    String?
+  resourceUrl String?
+  metadata    Json?
+  detectedAt  DateTime           @default(now())
+  dueAt       DateTime?
+  completedAt DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, status, severity])
+  @@index([storeId, detectedAt])
+}
+
+model ProductVelocity {
+  id                         String    @id @default(cuid())
+  storeId                    String
+  sku                        String
+  variantId                  String?
+  productTitle               String?
+  recordedFor                DateTime
+  averageDailySales          Float
+  velocityWindowDays         Int       @default(30)
+  currentInventory           Int
+  sellThroughRate            Float?
+  daysOfSupply               Float?
+  projectedStockoutDate      DateTime?
+  recommendedReorderQuantity Int?
+  metadata                   Json?
+  webhookEventId             String?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+
+  store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  webhookEvent WebhookEvent? @relation(fields: [webhookEventId], references: [id], onDelete: SetNull)
+
+  @@unique([storeId, sku, recordedFor])
+  @@index([storeId, recordedFor])
+}
+
+model PurchaseOrder {
+  id            String              @id @default(cuid())
+  storeId       String
+  vendorName    String
+  status        PurchaseOrderStatus @default(DRAFT)
+  referenceCode String?
+  expectedAt    DateTime?
+  submittedAt   DateTime?
+  receivedAt    DateTime?
+  notes         String?
+  metadata      Json?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  store Store               @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  items PurchaseOrderItem[]
+
+  @@index([storeId, status, updatedAt])
+  @@index([storeId, vendorName])
+}
+
+model PurchaseOrderItem {
+  id              String   @id @default(cuid())
+  purchaseOrderId String
+  sku             String
+  productTitle    String?
+  variantId       String?
+  quantity        Int
+  unitCost        Float?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseOrderId, sku])
+}
+
+model ConnectionEvent {
+  id            String                @id @default(cuid())
+  storeId       String
+  integration   IntegrationProvider
+  status        ConnectionEventStatus @default(INFO)
+  correlationId String?
+  message       String?
+  metadata      Json?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, integration, createdAt])
+}
+
+model WebhookEvent {
+  id           String                  @id @default(cuid())
+  webhookId    String                  @unique
+  storeId      String?
+  topic        String
+  shopDomain   String
+  status       WebhookProcessingStatus @default(PENDING)
+  payload      Json
+  errorMessage String?
+  receivedAt   DateTime                @default(now())
+  processedAt  DateTime?
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+
+  store             Store?            @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  orderFlags        OrderFlag[]
+  productVelocities ProductVelocity[]
+
+  @@index([storeId, status, receivedAt])
+  @@index([topic, receivedAt])
+}
+
+model WebhookRegistry {
+  id             String   @id @default(cuid())
+  storeId        String?
+  shopDomain     String
+  topicKey       String
+  deliveryMethod String
+  operation      String
+  success        Boolean
+  description    String?
+  callbackUrl    String?
+  result         Json?
+  recordedAt     DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  store Store? @relation(fields: [storeId], references: [id], onDelete: SetNull)
+
+  @@unique([shopDomain, topicKey])
+  @@index([storeId])
+}

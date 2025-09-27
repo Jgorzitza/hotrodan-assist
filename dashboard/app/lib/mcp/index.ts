@@ -36,11 +36,50 @@ const parseNumber = (value: string | undefined): number | undefined => {
 const envMcpEnabled = () => parseBoolean(process.env.ENABLE_MCP, false);
 const envUseMocks = () => parseBoolean(process.env.USE_MOCK_DATA, true);
 
-export const resolveMcpConfigFromEnv = (): McpClientConfig => ({
-  apiKey: process.env.MCP_API_KEY,
-  endpoint: process.env.MCP_API_URL,
-  maxRetries: parseNumber(process.env.MCP_MAX_RETRIES),
-  timeoutMs: parseNumber(process.env.MCP_TIMEOUT_MS),
+const selectString = (override?: string, fallback?: string) => {
+  if (override && override.trim().length > 0) {
+    return override;
+  }
+
+  if (fallback && fallback.trim().length > 0) {
+    return fallback;
+  }
+
+  return undefined;
+};
+
+const selectNumber = (override?: number, fallback?: string) => {
+  if (override !== undefined && override !== null) {
+    return override;
+  }
+
+  return parseNumber(fallback);
+};
+
+const stripPersistedKeys = (
+  overrides?: McpClientConfig,
+): Partial<McpClientConfig> | undefined => {
+  if (!overrides) {
+    return undefined;
+  }
+
+  const {
+    apiKey: _apiKey,
+    endpoint: _endpoint,
+    maxRetries: _maxRetries,
+    timeoutMs: _timeoutMs,
+    ...rest
+  } = overrides;
+  return rest as Partial<McpClientConfig>;
+};
+
+export const resolveMcpConfigFromEnv = (
+  overrides?: Pick<McpClientConfig, "apiKey" | "endpoint" | "maxRetries" | "timeoutMs">,
+): McpClientConfig => ({
+  apiKey: selectString(overrides?.apiKey, process.env.MCP_API_KEY),
+  endpoint: selectString(overrides?.endpoint, process.env.MCP_API_URL),
+  maxRetries: selectNumber(overrides?.maxRetries, process.env.MCP_MAX_RETRIES),
+  timeoutMs: selectNumber(overrides?.timeoutMs, process.env.MCP_TIMEOUT_MS),
 });
 
 export const isMcpFeatureEnabled = (toggles?: FeatureToggles | null) =>
@@ -57,18 +96,21 @@ export const getMcpClient = (
     return createMockMcpClient();
   }
 
+  const runtimeOverrides = stripPersistedKeys(overrides) ?? {};
+
   return createMcpClient({
-    ...resolveMcpConfigFromEnv(),
+    ...resolveMcpConfigFromEnv(overrides),
+    ...runtimeOverrides,
     useMocks: false,
-    ...overrides,
   });
 };
 
 export const getMcpProductRecommendations = (
   context: Omit<McpRequestContext, "resource">,
   toggles?: FeatureToggles | null,
+  overrides?: McpClientConfig,
 ): Promise<McpResponse<ProductRecommendation[]>> => {
-  const client = getMcpClient(toggles);
+  const client = getMcpClient(toggles, overrides);
   return client.getProductRecommendations({
     ...context,
     resource: McpResourceType.ProductRecommendation,
@@ -78,8 +120,9 @@ export const getMcpProductRecommendations = (
 export const getMcpInventorySignals = (
   context: Omit<McpRequestContext, "resource">,
   toggles?: FeatureToggles | null,
+  overrides?: McpClientConfig,
 ): Promise<McpResponse<InventorySignal[]>> => {
-  const client = getMcpClient(toggles);
+  const client = getMcpClient(toggles, overrides);
   return client.getInventorySignals({
     ...context,
     resource: McpResourceType.InventorySignal,
@@ -89,8 +132,9 @@ export const getMcpInventorySignals = (
 export const getMcpSeoOpportunities = (
   context: Omit<McpRequestContext, "resource">,
   toggles?: FeatureToggles | null,
+  overrides?: McpClientConfig,
 ): Promise<McpResponse<SeoOpportunity[]>> => {
-  const client = getMcpClient(toggles);
+  const client = getMcpClient(toggles, overrides);
   return client.getSeoOpportunities({
     ...context,
     resource: McpResourceType.SeoOpportunity,
@@ -98,6 +142,7 @@ export const getMcpSeoOpportunities = (
 };
 
 export {
+  createMcpClient,
   McpClientConfig,
   McpResourceType,
   DEFAULT_RESOURCE_PATHS,

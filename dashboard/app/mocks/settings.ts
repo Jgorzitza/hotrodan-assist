@@ -40,6 +40,7 @@ const baseSecretMetadata: Record<SettingsProvider, SecretMetadata | null> = {
     rotationReminderAt: "2024-03-01T00:00:00.000Z",
   },
   bing: null,
+  mcp: null,
 };
 
 const baseConnections: Record<SettingsProvider, ConnectionHealth> = {
@@ -104,6 +105,22 @@ const baseConnections: Record<SettingsProvider, ConnectionHealth> = {
         timestamp: "2024-02-02T13:40:00.000Z",
         durationMs: 0,
         message: "Credential not provided",
+      },
+    ],
+  },
+  mcp: {
+    provider: "mcp",
+    status: "warning",
+    lastCheckedAt: "2024-02-06T10:00:00.000Z",
+    message: "Mock MCP client active. Supply live credentials to enable ping tests.",
+    history: [
+      {
+        id: "mcp-20240206",
+        provider: "mcp",
+        status: "warning",
+        timestamp: "2024-02-06T10:00:00.000Z",
+        durationMs: 250,
+        message: "Using mock transport",
       },
     ],
   },

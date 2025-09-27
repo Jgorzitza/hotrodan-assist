@@ -82,3 +82,4 @@ app/
 - Update route-specific docs under `prompts/dashboard` to reference the new mock entry points.
 - Add `scripts/populate-mock-data.ts` if future CLI seeding is required.
 - Keep this plan updated as new routes/components land; open a task whenever a loader needs additional mock permutations.
+- Prisma harness (`prisma/seed.ts`) now hydrates the demo store/settings/ticket dataset; update the script alongside mock contract changes so database seeds and mock loaders stay in sync.

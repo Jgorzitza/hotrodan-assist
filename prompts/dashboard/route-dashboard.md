@@ -18,7 +18,7 @@ Build the embedded Polaris experience for the main dashboard landing page. It mu
 
 ## Technical Notes
 - Use Polaris `Page`, `Layout`, `Card`, `BlockStack`, `DataTable`, `InlineStack`, `Text`, `Badge`.
-- Sparkline placeholder via lightweight chart lib (e.g., `@shopify/polaris-viz` or `recharts`); include mock dataset.
+- Sales sparkline renders with `@shopify/polaris-viz` and mock trend data until Admin adapters land.
 - Date range state stored via search params + Remix `useSearchParams`; share helper with other routes.
 - Emphasize 1.5s load target → prefetch mock data in loader and render skeletons while loading.
 
@@ -32,11 +32,12 @@ Build the embedded Polaris experience for the main dashboard landing page. It mu
 - [x] Implement widget components with mock content and click handlers (orders, inbox, inventory, SEO).
 - [x] Document integration points (Admin GraphQL queries, MCP call for recommendations).
 - [x] Update `overview.md` status once UI skeleton renders with mocks.
-- [ ] Swap sparkline placeholder to `@shopify/polaris-viz` once the dependency is available.
+- [x] Swap sparkline placeholder to `@shopify/polaris-viz` once the dependency is available.
 
 ## Status / Notes
 - Owner: Dashboard Home agent (Codex)
-- Blockers: Waiting on `@shopify/polaris-viz` adoption to render the sales sparkline; real Admin adapters pending data layer contract.
+- Blockers: Real Admin adapters pending data layer contract.
 - Links: `dashboard/app/routes/app._index.tsx`, `dashboard/app/mocks/dashboard.ts`.
-- Notes: Loader shares the `range` query param with other routes and respects `USE_MOCK_DATA`; orders buckets preserve deep-link filters via `href` targets. When `ENABLE_MCP` and the settings toggle are on, the loader hydrates the MCP insight card; otherwise it coaches users to enable the integration. Sparkline still placeholder text—replace with Polaris Viz once package lands and confirm shared range helper lives alongside `/sales` + `/orders` filters.
-- Tests: Previous session validated with `npm run lint --workspace dashboard` and `npm exec vitest run --root dashboard --config ../vitest.config.ts`.
+- Notes: Added `~/lib/date-range` helper and wired loaders/routes to resolve the shared `range` token; dashboard links now append both `range` and normalized period params so `/sales`, `/orders`, `/inbox`, `/inventory`, and `/seo` open with matching filters. Sales sparkline continues to render via Polaris Viz and prefetch now respects the canonical range URL; MCP banner still downgrades gracefully when toggles are disabled.
+- Tests: `npm run lint` (dashboard) — ✅; `npm exec vitest run app/routes/__tests__/app.orders.test.ts --config vitest.config.ts` (expected WS warning only).
+- Immediate focus: smoke the updated deep links in the embedded shell to ensure the shared range token persists across routes, and reuse `buildDashboardRangeSelection` for any new range-aware routes to avoid duplicated parsing logic.

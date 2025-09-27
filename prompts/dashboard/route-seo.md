@@ -29,14 +29,15 @@ Surface organic traffic insights, technical health, and prioritized actions:
 - `mcp.md` for future MCP integration surface.
 
 ## Tasks
-- [ ] Loader fetching mock SEO metrics + merging.
-- [ ] Build cards + keyword/page tables with filters + empty states.
-- [ ] Implement action list UI with severity sections + mutation stub.
-- [ ] Add CSV export + TODO for background processing.
-- [ ] Document fallback behavior when adapters disabled.
-- [ ] Update overview/testing docs after skeleton ready.
+- [x] Loader fetching mock SEO metrics + merging.
+- [x] Build cards + keyword/page tables with filters + empty states.
+- [x] Implement action list UI with severity sections + mutation stub.
+- [x] Add CSV export + TODO for background processing.
+- [x] Document fallback behavior when adapters disabled.
+- [x] Update overview/testing docs after skeleton ready.
 
 ## Status / Notes
-- Owner: _unassigned_
+- Owner: SEO Insights UI agent (Codex)
 - Blockers: Awaiting MCP credentials + live SEO adapters to replace mocks.
-- Notes: Current route skeleton (`dashboard/app/routes/app.seo.tsx`) renders scorecard + insight list from mocks and now hydrates an MCP keyword opportunity card via `getMcpClient` when both `ENABLE_MCP` and the settings toggle are enabled. When disabled, UI prompts the merchant to configure credentials. Need to expand route to full spec (filters, tables, actions, exports) and wire live data sources once adapters land.
+- Notes: Loader now hydrates GA4/GSC/Bing mock adapters in parallel, applies Zod-validated filters, and surfaces adapter health toggles/fallback copy. UI covers traffic charting, keyword+page tables with filter/search + CSV export, and an actionable Now/Soon/Later queue with mutation stub. Overview + testing docs refreshed 2025-09-26 to capture chart/action/CSV coverage.
+- Immediate focus: line up Prisma persistence for action statuses, keep SEO lint clean (`npx eslint app/routes/app.seo.tsx`), and prep GA4/GSC/Bing adapter + MCP swaps when credentials arrive.

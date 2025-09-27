@@ -297,7 +297,7 @@ export default function Index() {
               <Card>
                 <BlockStack gap="200">
                   <Text as="h2" variant="headingMd">
-                    Next steps
+                    Immediate focus
                   </Text>
                   <List>
                     <List.Item>

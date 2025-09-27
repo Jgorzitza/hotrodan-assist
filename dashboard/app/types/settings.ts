@@ -1,4 +1,4 @@
-export type SettingsProvider = "ga4" | "gsc" | "bing";
+export type SettingsProvider = "ga4" | "gsc" | "bing" | "mcp";
 
 export type ThresholdSettings = {
   lowStockMinimum: number;

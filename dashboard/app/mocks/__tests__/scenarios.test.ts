@@ -37,7 +37,7 @@ describe("sales mocks", () => {
 describe("order mocks", () => {
   it("applies warning modifiers to flagged orders", () => {
     const warning = getOrdersScenario({ scenario: "warning", seed: 2 });
-    const flagged = warning.orders.filter(
+    const flagged = warning.orders.items.filter(
       (order) => order.status === "processing",
     );
 

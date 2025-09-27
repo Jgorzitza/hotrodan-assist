@@ -16,7 +16,7 @@
 - `discover_urls.py` → builds `urls.txt` and `urls_with_lastmod.tsv` from Shopify sitemaps with filtering.
 - `ingest_site_chroma.py` → bootstrap ingest into persistent Chroma + storage (auto-detects embed mode: OpenAI vs FastEmbed fallback).
 - `ingest_incremental_chroma.py` → compares sitemap last-mod times, deletes stale docs, reingests updates (tracks `ingest_state.json`).
-- `rag_config.py` → shared Settings (chunk size 1500/overlap 150, OpenAI defaults with FastEmbed + mock LLM fallback when `OPENAI_API_KEY` missing/placeholder).
+- `rag_config.py` → shared Settings via `configure_settings()` (chunk size 1500/overlap 150, auto-switches between OpenAI and FastEmbed/mock LLM fallback when `OPENAI_API_KEY` is missing or placeholder).
 
 ### Query & Routing
 - `query_chroma_router.py` → primary CLI; applies corrections, model routing (`gpt-4o-mini` default, escalates to GPT-5 family), adds dynamic context.
@@ -48,15 +48,15 @@
 
 ### Data Refresh Workflow
 1. `python discover_urls.py` to pull sitemap URLs.
-2. `python ingest_site_chroma.py` for bootstrap, or `python ingest_incremental_chroma.py` for updates.
+2. `.venv/bin/python ingest_site_chroma.py` for bootstrap, or `.venv/bin/python ingest_incremental_chroma.py` for updates.
 3. Confirm Chroma (`chroma/`) and storage (`storage/` or `/data/*` in containers) exist; never commit these directories.
 
 ### Query & Review
-- Run sample: `python query_chroma_router.py "EFI swap ~400 hp; pump LPH, return vs returnless, 10 micron, AN sizes?"`.
-- Expect source URLs listed after every answer; verify corrections trigger when applicable.
+- Run sample: `.venv/bin/python query_chroma_router.py "EFI swap ~400 hp; pump LPH, return vs returnless, 10 micron, AN sizes?"`.
+- Expect source URLs listed after every answer; verify corrections trigger when applicable (retrieval-only summary prints when `OPENAI_API_KEY` is unset).
 
 ### Testing
-- Python: run `python run_goldens.py`; CI mirrors this offline regimen.
+- Python: run `.venv/bin/python run_goldens.py`; CI mirrors this offline regimen.
 - Remix dashboard: from repo root run `npm run lint`, `npm test -- --run`, and `npm run test:e2e -- --list` (smoke skips until `PLAYWRIGHT_BASE_URL` is set). Playwright browsers install automatically in CI; locally call `npx playwright install --with-deps` the first time.
 - Webhooks: use `scripts/shopify_webhook_replay.sh orders/updated` to replay signed payloads when Shopify CLI isn’t available.
 - Add new golden/Vitest/Playwright cases whenever you introduce corrections, handlers, or UI flows.
@@ -74,6 +74,13 @@
 - Maintain confidence gating before auto-approvals (requires retrieval signal metrics).
 - Use LlamaHub readers when they accelerate ingestion, but keep Chroma + corrections + goldens intact.
 - Record every factual adjustment as both a correction entry and a golden test case.
+
+## Immediate Focus
+- Check `urls_with_lastmod.tsv` for sitemap deltas, then run `python ingest_incremental_chroma.py` (or full ingest if the diff is large) so Chroma stays current.
+- Execute `python run_goldens.py` after ingest; patch any regression before closing the loop.
+- Audit `corrections/corrections.yaml` for drift vs newest pages, add entries for emerging FAQs, and create matching golden cases before closing the loop.
+- Update `SESSION_SUMMARY_*` with ingest and goldens status so downstream services know data freshness.
+- _Last refresh:_ 2025-09-26 21:49 MDT — sitemap unchanged, goldens 2/2 pass, retrieval-only router output spot-checked.
 
 ## Known Gaps & TODOs
 - Implement Alembic migrations for the new Postgres tables before production deploys.

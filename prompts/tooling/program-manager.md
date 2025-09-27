@@ -27,3 +27,30 @@ Keep all agents aligned with the roadmap. Monitor progress, update documentation
 - Append a short status entry here each session (progress, blockers, next sweep time).
 - Update relevant prompts once you redirect an agent or resolve a dependency.
 - Surface escalations to the user only when decisions fall outside existing specs.
+- 2025-09-26 21:30 MDT – Added RAG agent immediate focus (ingest, goldens, corrections, summary) so it self-drives without pausing.
+- 2025-09-26 21:36 MDT – Published dependency matrix in `coordination/dependency-matrix.md` and expanded guards (pre-commit + CI) to cover it so cross-team contracts stay visible.
+- 2025-09-26 21:45 MDT – Re-swept route prompts to replace lingering 'Next' phrasing with immediate focus so relaunches always get concrete marching orders.
+- 2025-09-26 21:52 MDT – Inbox route prompt now captures lint failures as part of its immediate focus so the agent runs fixes instead of asking for direction.
+- 2025-09-26 21:54 MDT – Cleared lingering 'Next' phrasing in MCP prompt so integration agent stays on task.
+- 2025-09-26 21:56 MDT – Data-layer prompt now captures lint + withStoreSession follow-through so Assistants agent progresses without pausing.
+- 2025-09-26 22:00 MDT – MCP prompt tightened to call out credential storage + failing Vitest suites as immediate focus (no 'Next steps').
+- 2025-09-26 22:05 MDT – Settings prompt now carries Prisma persistence + integration test follow-through instead of open-ended next steps.
+- 2025-09-26 22:10 MDT – Tooling prompt updated to fold validation commands + CI smoke + seed docs into immediate focus.
+- 2025-09-26 22:15 MDT – Database prompt updated so immediate focus hands off schema/seed work and scripts provider plan—no 'Next steps' remain.
+- 2025-09-26 22:17 MDT – Webhooks prompt tightened to immediate focus (Prisma alignment + doc updates).
+- 2025-09-26 22:20 MDT – Webhooks prompt now folds Prisma migration + queue decision into immediate focus so Sync keeps executing.
+- 2025-09-26 22:24 MDT – Inbox/Approval prompt now covers feedback smoke + provider wiring so agent stays on task.
+- 2025-09-26 22:27 MDT – Database prompt immediate focus condensed (hand-off + pooling plan) so relaunch doesn’t ask for steps.
+- 2025-09-26 22:33 MDT – Inbox prompt now clarifies lint scope (file-level) alongside websocket + feedback coverage.
+- 2025-09-26 22:38 MDT – Data-layer prompt now explicitly handles `consistent-type-imports` warnings + inbox feedback coordination.
+- 2025-09-26 22:42 MDT – SEO prompt updated: immediate focus now calls out doc sync, persistence plan, lint guard, and live adapter prep.
+- 2025-09-26 22:46 MDT – RAG playbook refreshed: immediate focus now loops ingest + goldens without stale 'done' markers.
+- 2025-09-26 22:50 MDT – Session summary + RAG playbook updated to remove lingering 'Next steps' wording and reinforce corrections/goldens loop.
+- 2025-09-26 22:55 MDT – Removed lingering 'Next steps' labels (orders sync memo, dashboard home UI) to keep agents/UI aligned with immediate focus language.
+- 2025-09-26 23:02 MDT – Inbox prompt immediate focus updated for SSE lint + provider stub dry-run so Approval/Inboxes stay autonomous.
+- 2025-09-26 23:08 MDT – Sales prompt now emphasizes lint parse fixes + shared filter adoption as immediate focus.
+- 2025-09-26 23:10 MDT – Sales + Settings prompts converted remaining 'Next' phrasing; lint fixes + integration tests now explicit immediate focus.
+- 2025-09-26 23:15 MDT – Data-layer prompt now includes Prisma seed/loader coordination so Assistants agent stays on track.
+- 2025-09-26 23:20 MDT – Orders prompt now flags lint fixes + live Sync verification as immediate focus so agent stays on task.
+- 2025-09-26 23:27 MDT – Dashboard prompt now calls out link smoke + range helper reuse as immediate focus.
+- 2025-09-26 23:32 MDT – Database prompt immediate focus now mirrors ops handoffs (retention jobs + provider pooling).

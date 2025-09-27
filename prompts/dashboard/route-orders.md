@@ -115,4 +115,5 @@ Build an operational workspace for fulfillment leads handling pick/pack/ship, st
 - Owner: Orders Control Tower agent (Codex)
 - Blockers: Awaiting Sync write API handshake for returns + inventory escalations before removing mock fallbacks.
 - Sync dependency: `/sync/orders` loader + `/sync/orders/alerts` SSE are live; assign/fulfill/support/returns actions proxy to Sync when mocks disabled.
-- Notes: Alerts/data gaps update in real time with automatic revalidation; Vitest coverage added for Sync mapper and action proxy (happy + error paths).
+- Notes: Loader now carries range/channel/tag/owner filters and ships IDs through shipments/returns; UI wires those filters, bulk follow-ups, and optimistic shipment/return actions with updated support modal. Prompts/testing docs refreshed with the new flow.
+- Immediate focus: resolve the lingering lint errors in settings/tests before rerunning `npm run lint --workspace dashboard`, and verify the optimistic flows against live Sync data once the write APIs land.

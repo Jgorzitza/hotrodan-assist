@@ -30,6 +30,6 @@
 - `/sync/orders/support` — `{ orderId, conversationId?, note }` escalates through support queue and reassigns to assistant.
 - `/sync/orders/returns` — `{ orderId, action, note? }` advances the returns state machine and triggers ERP integration.
 
-## Next steps
+## Immediate focus
 1. Orders loader now consumes `/sync/orders`; alerts stream wired via `/sync/orders/alerts` with reconnection/backoff.
 2. Extend optimistic tests (returns/inventory) after Sync finalizes write API payloads for returns + inventory escalations.

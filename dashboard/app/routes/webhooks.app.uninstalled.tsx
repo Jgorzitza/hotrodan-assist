@@ -1,17 +1,20 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
-import db from "../db.server";
+import { handleAppUninstalled } from "../lib/webhooks/handlers.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { shop, session, topic } = await authenticate.webhook(request);
+  const context = await authenticate.webhook(request);
 
-  console.log(`Received ${topic} webhook for ${shop}`);
-
-  // Webhook requests can trigger multiple times and after an app has already been uninstalled.
-  // If this webhook already ran, the session may have been deleted previously.
-  if (session) {
-    await db.session.deleteMany({ where: { shop } });
-  }
+  await handleAppUninstalled({
+    apiVersion: context.apiVersion,
+    shop: context.shop,
+    topic: context.topic,
+    webhookId: context.webhookId,
+    payload: context.payload,
+    session: context.session,
+    admin: context.admin,
+    subTopic: context.subTopic,
+  });
 
   return new Response();
 };

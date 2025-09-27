@@ -33,6 +33,7 @@ import { z } from "zod";
 import { authenticate } from "../shopify.server";
 import { runConnectionTest } from "../lib/settings/connection-tests.server";
 import { storeSettingsRepository } from "../lib/settings/repository.server";
+import type { McpIntegrationOverrides } from "../lib/settings/repository.server";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
 import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
 import type {
@@ -59,6 +60,11 @@ const providerMeta: Record<
     label: "Bing Webmaster Tools",
     description: "Optional, powers supplemental keyword audits.",
   },
+  mcp: {
+    label: "Shopify MCP",
+    description:
+      "Powers storefront intelligence. Provide the MCP API key issued for this shop.",
+  },
 };
 
 const thresholdsSchema = z.object({
@@ -82,6 +88,7 @@ type SecretActionPayload = {
 type ActionData = {
   ok: boolean;
   settings?: SettingsPayload;
+  mcpOverrides?: McpIntegrationOverrides;
   fieldErrors?: Record<string, string>;
   formErrors?: string[];
   toast?: {
@@ -95,22 +102,30 @@ type ActionData = {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  if (USE_MOCK_DATA) {
-    const settings = await storeSettingsRepository.getSettings(BASE_SHOP_DOMAIN);
-    return json({ settings, useMockData: true as const });
+  let shopDomain = BASE_SHOP_DOMAIN;
+
+  if (!USE_MOCK_DATA) {
+    const { session } = await authenticate.admin(request);
+    shopDomain = session.shop;
   }
 
-  const { session } = await authenticate.admin(request);
-  const settings = await storeSettingsRepository.getSettings(session.shop);
+  const [settings, mcpOverrides] = await Promise.all([
+    storeSettingsRepository.getSettings(shopDomain),
+    storeSettingsRepository.getMcpIntegrationOverrides(shopDomain),
+  ]);
 
-  return json({ settings, useMockData: false as const });
+  return json({
+    settings,
+    useMockData: USE_MOCK_DATA ? (true as const) : (false as const),
+    mcpOverrides,
+  });
 };
 
 const badRequest = (data: ActionData) => json(data, { status: 400 });
 
 const parseSecretForm = (formData: FormData): SecretActionPayload => {
   const provider = z
-    .enum(["ga4", "gsc", "bing"] as const)
+    .enum(["ga4", "gsc", "bing", "mcp"] as const)
     .parse(formData.get("provider"));
   const rawSecret = formData.get("secret");
   const secretValue =
@@ -135,6 +150,87 @@ const providerStatusToBadge = (status: ConnectionStatusState) => {
     default:
       return { tone: "critical" as const, label: "Error" };
   }
+};
+
+const MCP_TIMEOUT_MIN_MS = 100;
+const MCP_TIMEOUT_MAX_MS = 120_000;
+const MCP_MAX_RETRIES_MIN = 0;
+const MCP_MAX_RETRIES_MAX = 10;
+
+const parseMcpOverridesForm = (formData: FormData) => {
+  const fieldErrors: Record<string, string> = {};
+  const formErrors: string[] = [];
+
+  const rawEndpoint = formData.get("endpoint");
+  let endpoint: string | null | undefined = undefined;
+  if (typeof rawEndpoint === "string") {
+    const trimmed = rawEndpoint.trim();
+    if (trimmed.length === 0) {
+      endpoint = null;
+    } else if (!/^https?:\/\//i.test(trimmed)) {
+      fieldErrors["mcp-endpoint"] =
+        "Endpoint must start with http:// or https://.";
+    } else {
+      endpoint = trimmed;
+    }
+  }
+
+  const rawTimeout = formData.get("timeoutMs");
+  let timeoutMs: number | null | undefined = undefined;
+  if (typeof rawTimeout === "string") {
+    const trimmed = rawTimeout.trim();
+    if (trimmed.length === 0) {
+      timeoutMs = null;
+    } else {
+      const parsed = Number(trimmed);
+      if (!Number.isFinite(parsed) || parsed <= 0) {
+        fieldErrors["mcp-timeoutMs"] =
+          "Timeout must be a positive number of milliseconds.";
+      } else if (
+        parsed < MCP_TIMEOUT_MIN_MS ||
+        parsed > MCP_TIMEOUT_MAX_MS
+      ) {
+        fieldErrors["mcp-timeoutMs"] = `Timeout must be between ${MCP_TIMEOUT_MIN_MS} and ${MCP_TIMEOUT_MAX_MS} ms.`;
+      } else {
+        timeoutMs = Math.round(parsed);
+      }
+    }
+  }
+
+  const rawMaxRetries = formData.get("maxRetries");
+  let maxRetries: number | null | undefined = undefined;
+  if (typeof rawMaxRetries === "string") {
+    const trimmed = rawMaxRetries.trim();
+    if (trimmed.length === 0) {
+      maxRetries = null;
+    } else {
+      const parsed = Number(trimmed);
+      if (!Number.isFinite(parsed) || !Number.isInteger(parsed)) {
+        fieldErrors["mcp-maxRetries"] =
+          "Max retries must be an integer.";
+      } else if (
+        parsed < MCP_MAX_RETRIES_MIN ||
+        parsed > MCP_MAX_RETRIES_MAX
+      ) {
+        fieldErrors["mcp-maxRetries"] = `Max retries must be between ${MCP_MAX_RETRIES_MIN} and ${MCP_MAX_RETRIES_MAX}.`;
+      } else {
+        maxRetries = parsed;
+      }
+    }
+  }
+
+  const overrides: Partial<McpIntegrationOverrides> = {};
+  if (endpoint !== undefined) {
+    overrides.endpoint = endpoint;
+  }
+  if (timeoutMs !== undefined) {
+    overrides.timeoutMs = timeoutMs;
+  }
+  if (maxRetries !== undefined) {
+    overrides.maxRetries = maxRetries;
+  }
+
+  return { overrides, fieldErrors, formErrors };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -219,6 +315,38 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         toast: {
           status: "success",
           message: "Feature toggles saved",
+        },
+        meta: { intent },
+      });
+    }
+    case "update-mcp-overrides": {
+      const { overrides, fieldErrors: overrideFieldErrors, formErrors } =
+        parseMcpOverridesForm(formData);
+
+      if (
+        Object.keys(overrideFieldErrors).length > 0 ||
+        formErrors.length > 0
+      ) {
+        return badRequest({
+          ok: false,
+          fieldErrors: overrideFieldErrors,
+          formErrors: formErrors.length > 0 ? formErrors : undefined,
+          meta: { intent },
+        });
+      }
+
+      const updatedOverrides =
+        await storeSettingsRepository.updateMcpIntegrationOverrides(
+          shopDomain,
+          overrides,
+        );
+
+      return json({
+        ok: true,
+        mcpOverrides: updatedOverrides,
+        toast: {
+          status: "success",
+          message: "MCP override settings saved",
         },
         meta: { intent },
       });
@@ -317,7 +445,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     case "test-connection": {
       let provider: SettingsProvider;
       try {
-        provider = z.enum(["ga4", "gsc", "bing"] as const).parse(
+        provider = z.enum(["ga4", "gsc", "bing", "mcp"] as const).parse(
           formData.get("provider"),
         );
       } catch {
@@ -355,9 +483,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         });
       }
 
+      let connectionOverrides: Parameters<typeof runConnectionTest>[0]["overrides"];
+      if (provider === "mcp") {
+        const overrides =
+          await storeSettingsRepository.getMcpIntegrationOverrides(shopDomain);
+        connectionOverrides = {
+          endpoint: overrides.endpoint ?? undefined,
+          timeoutMs: overrides.timeoutMs ?? undefined,
+          maxRetries: overrides.maxRetries ?? undefined,
+        };
+      }
+
       const { status, durationMs, message } = await runConnectionTest({
         provider,
         credential: secret,
+        overrides: connectionOverrides,
       });
       const updated = await storeSettingsRepository.recordConnectionTest(
         shopDomain,
@@ -395,7 +535,8 @@ const isoToDateInput = (iso?: string | null) =>
   iso ? iso.slice(0, 10) : "";
 
 export default function SettingsRoute() {
-  const { settings, useMockData } = useLoaderData<typeof loader>();
+  const { settings, useMockData, mcpOverrides: initialMcpOverrides } =
+    useLoaderData<typeof loader>();
   const actionData = useActionData<ActionData>();
   const navigation = useNavigation();
   const appBridge = useAppBridge();
@@ -406,6 +547,7 @@ export default function SettingsRoute() {
     ga4: "",
     gsc: "",
     bing: "",
+    mcp: "",
   });
   const [rotationDrafts, setRotationDrafts] = useState<
     Record<SettingsProvider, string>
@@ -413,6 +555,17 @@ export default function SettingsRoute() {
     ga4: isoToDateInput(settings.secrets.ga4?.rotationReminderAt),
     gsc: isoToDateInput(settings.secrets.gsc?.rotationReminderAt),
     bing: isoToDateInput(settings.secrets.bing?.rotationReminderAt),
+    mcp: isoToDateInput(settings.secrets.mcp?.rotationReminderAt),
+  });
+  const [mcpOverridesState, setMcpOverridesState] = useState(initialMcpOverrides);
+  const [mcpOverrideDraft, setMcpOverrideDraft] = useState({
+    endpoint: initialMcpOverrides.endpoint ?? "",
+    timeoutMs: initialMcpOverrides.timeoutMs
+      ? String(initialMcpOverrides.timeoutMs)
+      : "",
+    maxRetries: initialMcpOverrides.maxRetries
+      ? String(initialMcpOverrides.maxRetries)
+      : "",
   });
 
   useEffect(() => {
@@ -422,8 +575,22 @@ export default function SettingsRoute() {
       ga4: isoToDateInput(settings.secrets.ga4?.rotationReminderAt),
       gsc: isoToDateInput(settings.secrets.gsc?.rotationReminderAt),
       bing: isoToDateInput(settings.secrets.bing?.rotationReminderAt),
+      mcp: isoToDateInput(settings.secrets.mcp?.rotationReminderAt),
     });
   }, [settings]);
+
+  useEffect(() => {
+    setMcpOverridesState(initialMcpOverrides);
+    setMcpOverrideDraft({
+      endpoint: initialMcpOverrides.endpoint ?? "",
+      timeoutMs: initialMcpOverrides.timeoutMs
+        ? String(initialMcpOverrides.timeoutMs)
+        : "",
+      maxRetries: initialMcpOverrides.maxRetries
+        ? String(initialMcpOverrides.maxRetries)
+        : "",
+    });
+  }, [initialMcpOverrides]);
 
   useEffect(() => {
     if (actionData?.toast) {
@@ -441,6 +608,22 @@ export default function SettingsRoute() {
       }));
     }
   }, [actionData, appBridge]);
+
+  useEffect(() => {
+    if (
+      actionData?.ok &&
+      actionData.meta?.intent === "update-mcp-overrides" &&
+      actionData.mcpOverrides
+    ) {
+      const next = actionData.mcpOverrides;
+      setMcpOverridesState(next);
+      setMcpOverrideDraft({
+        endpoint: next.endpoint ?? "",
+        timeoutMs: next.timeoutMs ? String(next.timeoutMs) : "",
+        maxRetries: next.maxRetries ? String(next.maxRetries) : "",
+      });
+    }
+  }, [actionData]);
 
   const fieldErrors = actionData?.fieldErrors ?? {};
 
@@ -564,6 +747,19 @@ export default function SettingsRoute() {
                   const submittingSecret =
                     isSubmitting("update-secret") &&
                     navigation.formData?.get("provider") === provider;
+                  const credentialPlaceholder =
+                    provider === "mcp"
+                      ? "Paste MCP API key"
+                      : "Paste API key or service account JSON";
+                  const connectionHelpText =
+                    provider === "mcp"
+                      ? mcpOverridesState.endpoint
+                        ? `Routing via ${mcpOverridesState.endpoint}.`
+                        : "Falling back to MCP_API_URL or mock transport."
+                      : undefined;
+                  const submittingOverrides =
+                    provider === "mcp" &&
+                    isSubmitting("update-mcp-overrides");
 
                   return (
                     <Box
@@ -618,7 +814,7 @@ export default function SettingsRoute() {
                                     [provider]: value,
                                   }))
                                 }
-                                placeholder="Paste API key or service account JSON"
+                                placeholder={credentialPlaceholder}
                                 error={secretError}
                               />
                               <TextField
@@ -671,6 +867,134 @@ export default function SettingsRoute() {
                           </Form>
                         </BlockStack>
 
+                        {provider === "mcp" && (
+                          <>
+                            <Divider />
+                            <Form method="post">
+                              <input
+                                type="hidden"
+                                name="intent"
+                                value="update-mcp-overrides"
+                              />
+                              <BlockStack gap="200">
+                                <Text as="p" variant="bodySm">
+                                  Override MCP connection settings for this shop. Leave
+                                  fields blank to inherit environment defaults.
+                                </Text>
+                                <Text as="p" variant="bodySm" tone="subdued">
+                                  Current endpoint: {" "}
+                                  {mcpOverridesState.endpoint ??
+                                    "Environment-supplied or mock transport"}
+                                  {mcpOverridesState.timeoutMs
+                                    ? ` • Timeout ${mcpOverridesState.timeoutMs} ms`
+                                    : ""}
+                                  {typeof mcpOverridesState.maxRetries === "number"
+                                    ? ` • Max retries ${mcpOverridesState.maxRetries}`
+                                    : ""}
+                                </Text>
+                                <FormLayout>
+                                  <TextField
+                                    label="Endpoint override"
+                                    type="text"
+                                    name="endpoint"
+                                    autoComplete="off"
+                                    value={mcpOverrideDraft.endpoint}
+                                    onChange={(value) =>
+                                      setMcpOverrideDraft((prev) => ({
+                                        ...prev,
+                                        endpoint: value,
+                                      }))
+                                    }
+                                    placeholder="https://example.com/mcp"
+                                    error={
+                                      actionData?.meta?.intent ===
+                                      "update-mcp-overrides"
+                                        ? fieldErrors["mcp-endpoint"]
+                                        : undefined
+                                    }
+                                    helpText="Provide a fully qualified HTTP(S) endpoint."
+                                  />
+                                  <TextField
+                                    label="Request timeout (ms)"
+                                    type="number"
+                                    name="timeoutMs"
+                                    value={mcpOverrideDraft.timeoutMs}
+                                    onChange={(value) =>
+                                      setMcpOverrideDraft((prev) => ({
+                                        ...prev,
+                                        timeoutMs: value,
+                                      }))
+                                    }
+                                    min={MCP_TIMEOUT_MIN_MS}
+                                    max={MCP_TIMEOUT_MAX_MS}
+                                    inputMode="numeric"
+                                    error={
+                                      actionData?.meta?.intent ===
+                                      "update-mcp-overrides"
+                                        ? fieldErrors["mcp-timeoutMs"]
+                                        : undefined
+                                    }
+                                    helpText={`Allowed range ${MCP_TIMEOUT_MIN_MS}-${MCP_TIMEOUT_MAX_MS} ms.`}
+                                  />
+                                  <TextField
+                                    label="Max retries"
+                                    type="number"
+                                    name="maxRetries"
+                                    value={mcpOverrideDraft.maxRetries}
+                                    onChange={(value) =>
+                                      setMcpOverrideDraft((prev) => ({
+                                        ...prev,
+                                        maxRetries: value,
+                                      }))
+                                    }
+                                    min={MCP_MAX_RETRIES_MIN}
+                                    max={MCP_MAX_RETRIES_MAX}
+                                    inputMode="numeric"
+                                    error={
+                                      actionData?.meta?.intent ===
+                                      "update-mcp-overrides"
+                                        ? fieldErrors["mcp-maxRetries"]
+                                        : undefined
+                                    }
+                                    helpText={`Allowed range ${MCP_MAX_RETRIES_MIN}-${MCP_MAX_RETRIES_MAX}.`}
+                                  />
+                                  {actionData?.meta?.intent ===
+                                    "update-mcp-overrides" &&
+                                    actionData.formErrors && (
+                                      <InlineError
+                                        message={actionData.formErrors.join(", ")}
+                                        fieldID="mcp-overrides"
+                                      />
+                                    )}
+                                </FormLayout>
+                                <InlineStack gap="200">
+                                  <Button
+                                    submit
+                                    primary
+                                    loading={submittingOverrides}
+                                  >
+                                    Save MCP overrides
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="secondary"
+                                    disabled={submittingOverrides}
+                                    onClick={() =>
+                                      setMcpOverrideDraft({
+                                        endpoint: "",
+                                        timeoutMs: "",
+                                        maxRetries: "",
+                                      })
+                                    }
+                                  >
+                                    Reset fields
+                                  </Button>
+                                </InlineStack>
+                              </BlockStack>
+                            </Form>
+                          </>
+                        )}
+
                         <Divider />
                         <Form method="post">
                           <input type="hidden" name="intent" value="test-connection" />
@@ -690,6 +1014,9 @@ export default function SettingsRoute() {
                               {connection.history[0]?.timestamp ?? "n/a"}
                               {connection.history[0]?.message
                                 ? ` — ${connection.history[0]?.message}`
+                                : ""}
+                              {connectionHelpText
+                                ? ` — ${connectionHelpText}`
                                 : ""}
                             </Text>
                           </InlineStack>

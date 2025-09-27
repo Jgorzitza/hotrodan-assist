@@ -32,14 +32,16 @@ Handle Shopify webhook subscriptions, HMAC verification, routing, and persistenc
 - Document expected DB mutations per topic + Vitest coverage for signature helper (`app/tests/unit/webhook-signature.test.ts`).
 
 ## Tasks
-- [ ] Implement registration helper invoked post-install.
+- [x] Implement registration helper invoked post-install.
 - [x] Build HMAC verification middleware with tests.
-- [ ] Create handler skeletons per topic writing to mock persistence.
-- [ ] Add background processing stub (Remix resource route) for heavy tasks.
+- [x] Create handler skeletons per topic writing to mock persistence.
+- [x] Add background processing stub (Remix resource route) for heavy tasks.
 - [x] Write local testing scripts + documentation in README/testing plan.
-- [ ] Update `overview.md` + `database.md` references once handlers wired.
+- [x] Update `overview.md` + `database.md` references once handlers wired.
 
 ## Status / Notes
 - Owner: Sync & Webhooks agent (Codex)
-- Progress: `/sync/orders` + `/sync/orders/alerts` now serve webhook-backed data (fallback to stub if empty) and retain SSE support; `scripts/test_sync.sh` bootstraps `.venv-sync` and runs FastAPI tests for webhooks + orders.
-- Blockers: Need final confirmation on queue mechanism (Remix resource vs external worker) before fleshing background stub; awaiting decision on real Shopify ingestion hooks before enriching metrics beyond webhook data.
+- Progress: Shopify `afterAuth` now calls the webhook registrar (topics: orders/products/fulfillments/app uninstall) and records results; new `webhooks.*` route handlers persist to Prisma (registrations via the new `WebhookRegistry` table, flags/velocity leveraging `Store` relations) and enqueue background jobs via `/queue/webhooks`; BullMQ + Upstash driver is feature-flagged behind `WEBHOOK_QUEUE_DRIVER=bullmq` with a worker stub in `app/workers/webhooks.worker.ts`, diagnostics route now reads live BullMQ jobs (falling back to memory in dev), and test coverage added in `app/lib/webhooks/__tests__/queue.server.test.ts` alongside the existing handler suite.
+- Tests: `CI=1 npx vitest run --config vitest.config.ts app/lib/webhooks/__tests__/handlers.server.test.ts app/lib/webhooks/__tests__/queue.server.test.ts`
+- Blockers: Need to implement real processors inside the BullMQ worker (Zoho sync + analytics refresh) and ensure uninstall flow drains the Upstash queue and associated Redis keys.
+- Immediate focus: wire worker processors with feature-flagged dispatchers, exercise an end-to-end replay via `scripts/shopify_webhook_replay.sh` hitting the BullMQ path, and extend integration coverage once worker side-effects land.

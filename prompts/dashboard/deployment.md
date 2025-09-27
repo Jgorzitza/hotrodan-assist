@@ -155,6 +155,9 @@ CMD ["npm", "run", "start"]
 | `OPENAI_API_KEY` | Sandbox key with throttled usage | Production key with higher quota | Consider separate OpenAI projects for staging vs prod. |
 | `POSTGRES_URL` | Local docker-compose or Fly/Render staging Postgres | Managed production Postgres (Fly Postgres, Render Postgres, or RDS) | Run migrations on deploy via `npm run prisma:migrate`. |
 | `REDIS_URL` | Optional (local Redis docker, Render Starter Redis) | Managed Redis (Upstash/Fly Machines/Render) | Required if using session or job queues. |
+| `WEBHOOK_QUEUE_DRIVER` | `memory` | `bullmq` | Set to `bullmq` once Upstash Redis is provisioned so webhook jobs fan out via BullMQ. |
+| `UPSTASH_REDIS_URL` | Optional while using in-memory queue | Required Upstash Redis connection string (`rediss://`) | Shared between Remix app and background worker for BullMQ. |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Optional while using in-memory queue | Required | Needed for worker/diagnostics tooling to hit Upstash REST endpoint; store alongside `UPSTASH_REDIS_URL`. |
 | `CHROMA_PATH` / `PERSIST_DIR` | `/data/chroma` on staging volume | `/data/chroma` on production volume | Size volumes based on embedding count; keep ingest pipeline ready for rebuilds. |
 | `ZOHO_*` | Sandbox org credentials | Production org credentials | Label secrets for quick rotation; restrict access per environment. |
 | `SHOPIFY_BOT_SIGNATURE*` | Test signatures for dev webhooks | Production-signed values | Keep the agent URL aligned with environment (`SHOPIFY_BOT_SIGNATURE_AGENT`). |

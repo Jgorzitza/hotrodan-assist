@@ -197,6 +197,7 @@ const buildShipments = (
     .slice(0, 4)
     .map((order, index) => ({
       id: `tracking-${index}`,
+      orderId: order.id,
       orderNumber: order.name,
       expectedShipDate: order.shipBy ?? order.fulfillmentDueAt ?? faker.date
         .soon({ days: 2 })
@@ -214,6 +215,7 @@ const buildShipments = (
     .slice(0, 3)
     .map((order, index) => ({
       id: `delay-${index}`,
+      orderId: order.id,
       orderNumber: order.name,
       carrier: faker.helpers.arrayElement(["UPS", "FedEx", "USPS", "DHL"]),
       delayHours: faker.number.int({ min: 6, max: 42 }),
@@ -242,6 +244,7 @@ const buildReturns = (
 
     return {
       id: `return-${index}`,
+      orderId: order.id,
       orderNumber: order.name,
       reason: faker.helpers.arrayElement([
         "Wrong size",
@@ -408,21 +411,57 @@ const filterOrdersByTab = (orders: Order[], tab: OrdersDataset["tab"]): Order[] 
   }
 };
 
-const paginateOrders = (orders: Order[], pageSize: number) => {
-  const limited = orders.slice(0, pageSize);
-  const hasNextPage = orders.length > pageSize;
+const paginateOrders = (
+  orders: Order[],
+  pageSize: number,
+  cursor: string | null | undefined,
+  direction: "after" | "before" = "after",
+) => {
   const totalPages = Math.max(1, Math.ceil(orders.length / pageSize));
+  const lastIndex = Math.max(0, orders.length - 1);
+  const initialStart = 0;
+
+  const resolveStartIndex = () => {
+    if (!cursor) {
+      return direction === "before" ? Math.max(0, orders.length - pageSize) : initialStart;
+    }
+    const index = orders.findIndex((order) => order.id === cursor);
+    if (index === -1) {
+      return initialStart;
+    }
+    if (direction === "before") {
+      return Math.max(0, index - pageSize);
+    }
+    return Math.min(index + 1, Math.max(orders.length - pageSize, 0));
+  };
+
+  let startIndex = resolveStartIndex();
+  if (startIndex > lastIndex) {
+    startIndex = Math.max(0, orders.length - pageSize);
+  }
+
+  const items = orders.slice(startIndex, startIndex + pageSize);
+  const hasNextPage = startIndex + items.length < orders.length;
+  const hasPreviousPage = startIndex > 0;
+  const startCursor = items[0]?.id ?? null;
+  const endCursor = items[items.length - 1]?.id ?? null;
+  const previousCursor = hasPreviousPage ? orders[Math.max(0, startIndex - 1)]?.id ?? null : null;
+  const nextCursor = hasNextPage ? orders[Math.min(lastIndex, startIndex + pageSize - 1)]?.id ?? null : null;
+  const page = items.length
+    ? Math.min(totalPages, Math.max(1, Math.floor(startIndex / pageSize) + 1))
+    : 1;
+
   return {
-    items: limited,
+    items,
     pageInfo: {
+      cursor: endCursor,
+      startCursor,
+      endCursor,
+      nextCursor,
+      previousCursor,
       hasNextPage,
-      hasPreviousPage: false,
-      startCursor: limited[0]?.id ?? null,
-      endCursor: limited[limited.length - 1]?.id ?? null,
-      nextCursor: hasNextPage ? limited[limited.length - 1]?.id ?? null : null,
-      previousCursor: null,
-      shopifyCursor: null,
-      page: 1,
+      hasPreviousPage,
+      page,
       pageSize,
       totalPages,
     },
@@ -434,19 +473,21 @@ const errorDataset = (scenario: MockScenario, tab: OrdersDataset["tab"]): Orders
   state: "error",
   tab,
   period: buildDefaultPeriod(),
-  orders: [],
-  count: 0,
-  pageInfo: {
-    hasNextPage: false,
-    hasPreviousPage: false,
-    startCursor: null,
-    endCursor: null,
-    nextCursor: null,
-    previousCursor: null,
-    shopifyCursor: null,
-    page: 1,
-    pageSize: DEFAULT_PAGE_SIZE,
-    totalPages: 1,
+  orders: {
+    items: [],
+    count: 0,
+    pageInfo: {
+      cursor: null,
+      startCursor: null,
+      endCursor: null,
+      nextCursor: null,
+      previousCursor: null,
+      hasNextPage: false,
+      hasPreviousPage: false,
+      page: 1,
+      pageSize: DEFAULT_PAGE_SIZE,
+      totalPages: 1,
+    },
   },
   metrics: {
     totalOrders: 0,
@@ -470,19 +511,21 @@ const emptyDataset = (scenario: MockScenario, tab: OrdersDataset["tab"]): Orders
   state: "empty",
   tab,
   period: buildDefaultPeriod(),
-  orders: [],
-  count: 0,
-  pageInfo: {
-    hasNextPage: false,
-    hasPreviousPage: false,
-    startCursor: null,
-    endCursor: null,
-    nextCursor: null,
-    previousCursor: null,
-    shopifyCursor: null,
-    page: 1,
-    pageSize: DEFAULT_PAGE_SIZE,
-    totalPages: 1,
+  orders: {
+    items: [],
+    count: 0,
+    pageInfo: {
+      cursor: null,
+      startCursor: null,
+      endCursor: null,
+      nextCursor: null,
+      previousCursor: null,
+      hasNextPage: false,
+      hasPreviousPage: false,
+      page: 1,
+      pageSize: DEFAULT_PAGE_SIZE,
+      totalPages: 1,
+    },
   },
   metrics: {
     totalOrders: 0,
@@ -506,6 +549,15 @@ export type OrdersScenarioOptions = {
   tab?: OrdersDataset["tab"];
   pageSize?: number;
   seed?: number;
+  cursor?: string | null;
+  direction?: "after" | "before";
+  status?: string | null;
+  priority?: OrderPriority | null;
+  channel?: Order["channel"] | null;
+  assignedTo?: string | null;
+  tag?: string | null;
+  dateStart?: string | null;
+  dateEnd?: string | null;
 };
 
 const buildDefaultPeriod = () => {
@@ -525,6 +577,8 @@ export const getOrdersScenario = (
   const seed = options.seed ?? 0;
   const tab = options.tab ?? "all";
   const pageSize = clampPageSize(options.pageSize);
+  const cursor = options.cursor ?? null;
+  const direction = options.direction === "before" ? "before" : "after";
 
   if (scenario === "error") {
     return errorDataset(scenario, tab);
@@ -534,8 +588,54 @@ export const getOrdersScenario = (
   }
 
   const store = getStore(scenario, seed);
-  const filtered = filterOrdersByTab(store.orders, tab);
-  const { items, pageInfo } = paginateOrders(filtered, pageSize);
+  let filtered = filterOrdersByTab(store.orders, tab);
+
+  if (options.status) {
+    const normalized = options.status.toLowerCase();
+    if (normalized === "awaiting_fulfillment") {
+      filtered = filtered.filter((order) => order.fulfillmentStatus !== "fulfilled");
+    } else if (normalized === "awaiting_tracking") {
+      filtered = filtered.filter((order) => order.fulfillmentStatus === "partial");
+    } else if (normalized === "overdue") {
+      filtered = filtered.filter((order) => {
+        const due = order.fulfillmentDueAt ?? order.shipBy;
+        return due ? new Date(due).getTime() < Date.now() : false;
+      });
+    } else if (normalized === "holds") {
+      filtered = filtered.filter((order) => order.issue !== "none");
+    }
+  }
+
+  if (options.priority) {
+    filtered = filtered.filter((order) => order.priority === options.priority);
+  }
+
+  if (options.channel) {
+    filtered = filtered.filter((order) => order.channel === options.channel);
+  }
+
+  if (options.assignedTo) {
+    const normalizedAssigned = options.assignedTo.toLowerCase();
+    filtered = filtered.filter((order) => order.assignedTo.toLowerCase() === normalizedAssigned);
+  }
+
+  if (options.tag) {
+    const normalizedTag = options.tag.toLowerCase();
+    filtered = filtered.filter((order) =>
+      order.tags.some((tag) => tag.toLowerCase() === normalizedTag),
+    );
+  }
+
+  const startDate = options.dateStart ? new Date(options.dateStart) : null;
+  const endDate = options.dateEnd ? new Date(options.dateEnd) : null;
+  if (startDate && !Number.isNaN(startDate.getTime())) {
+    filtered = filtered.filter((order) => new Date(order.placedAt) >= startDate);
+  }
+  if (endDate && !Number.isNaN(endDate.getTime())) {
+    filtered = filtered.filter((order) => new Date(order.placedAt) <= endDate);
+  }
+
+  const { items, pageInfo } = paginateOrders(filtered, pageSize, cursor, direction);
   const metrics = computeMetrics(store.orders, store.shipments);
 
   return {
@@ -543,9 +643,11 @@ export const getOrdersScenario = (
     state: scenarioToDatasetState(scenario),
     tab,
     period: buildDefaultPeriod(),
-    orders: items,
-    count: filtered.length,
-    pageInfo,
+    orders: {
+      items,
+      count: filtered.length,
+      pageInfo,
+    },
     metrics,
     shipments: store.shipments,
     returns: store.returns,
@@ -628,7 +730,9 @@ export const updateReturnAction = (
   payload: { orderId: string; action: "approve_refund" | "deny" | "request_inspection"; note?: string },
 ) => {
   const store = getStore(scenario, seed);
-  const entry = store.returns.pending.find((ret) => ret.orderNumber === payload.orderId);
+  const entry = store.returns.pending.find(
+    (ret) => ret.orderId === payload.orderId || ret.orderNumber === payload.orderId,
+  );
   if (!entry) return null;
 
   if (payload.action === "approve_refund") {

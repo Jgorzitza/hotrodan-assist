@@ -65,4 +65,36 @@ describe("MCP environment helpers", () => {
     expect(config.timeoutMs).toBe(8000);
     expect(config.maxRetries).toBe(5);
   });
+
+  it("prefers overrides over environment values", () => {
+    process.env.MCP_API_KEY = "env-key";
+    process.env.MCP_API_URL = "https://env.example.com";
+    process.env.MCP_TIMEOUT_MS = "5000";
+    process.env.MCP_MAX_RETRIES = "3";
+
+    const config = resolveMcpConfigFromEnv({
+      apiKey: "override-key",
+      endpoint: "https://override.example.com",
+      timeoutMs: 12_000,
+      maxRetries: 6,
+    });
+
+    expect(config.apiKey).toBe("override-key");
+    expect(config.endpoint).toBe("https://override.example.com");
+    expect(config.timeoutMs).toBe(12_000);
+    expect(config.maxRetries).toBe(6);
+  });
+
+  it("falls back to env when overrides are empty", () => {
+    process.env.MCP_API_KEY = "env-key";
+    process.env.MCP_API_URL = "https://env.example.com";
+
+    const config = resolveMcpConfigFromEnv({
+      apiKey: "",
+      endpoint: " ",
+    });
+
+    expect(config.apiKey).toBe("env-key");
+    expect(config.endpoint).toBe("https://env.example.com");
+  });
 });

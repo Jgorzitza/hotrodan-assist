@@ -3,6 +3,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const authenticateAdminMock = vi.fn(async () => ({ session: { shop: "test-shop" } }));
 
+const importAppOrdersModule = () => import("../app.orders");
+type AppOrdersModule = Awaited<ReturnType<typeof importAppOrdersModule>>;
+
 vi.mock("../../shopify.server", () => ({
   __esModule: true,
   authenticate: {
@@ -10,7 +13,7 @@ vi.mock("../../shopify.server", () => ({
   },
 }));
 
-let cachedModule: typeof import("../app.orders") | null = null;
+let cachedModule: AppOrdersModule | null = null;
 
 const loadModule = async () => {
   process.env.USE_MOCK_DATA = "false";
@@ -28,7 +31,7 @@ const loadModule = async () => {
   }));
   authenticateAdminMock.mockResolvedValue({ session: { shop: "test-shop" } });
 
-  cachedModule = await import("../app.orders");
+  cachedModule = await importAppOrdersModule();
   return cachedModule;
 };
 

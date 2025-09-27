@@ -28,16 +28,17 @@ Deliver a deep-dive analytics surface focused on sales trends, product performan
 - Shared date utilities + KPI component library from dashboard home route.
 
 ## Tasks
-- [ ] Define loader with param validation (zod) and mock data fetch.
+- [x] Define loader with param validation (zod) and mock data fetch.
 - [x] Compose KPI header + filters (date range, channel, compare).
-- [ ] Implement drilldown tables with persisted params + `Link` wrappers.
-- [ ] Wire CSV export action and document TODO for async job.
-- [ ] Hook into overview widget to prefetch `/sales` data on click.
+- [x] Implement drilldown tables with persisted params + `Link` wrappers.
+- [x] Wire CSV export action and document TODO for async job.
+- [x] Hook into overview widget to prefetch `/sales` data on click.
 - [ ] Update `overview.md` once skeleton + export stub ship.
 - [ ] Adopt shared dashboard filter helpers (range/query contract) alongside `/app` + `/orders` once extracted.
 
 ## Status / Notes
 - Owner: Sales analytics agent (Codex)
 - Blockers: Waiting on shared range helper + `@shopify/polaris-viz` package before swapping DataTable trend/channel views for charts; CSV export path depends on background job design.
-- Notes: Loader reads `granularity` + `days` search params and returns scenario datasets via `getSalesScenario`; banner surfaces mock/alert states; KPI grid + selects cover current/previous totals. Trend + channel sections currently render as tables until Polaris Viz lands. Drilldowns/export still TODO; align query naming with data-layer once Admin adapter available.
+- Notes: Loader now parses `period`, `compare`, and drilldown params via zod and hydrates nested collection/product/variant datasets; breadcrumbs + drilldown tables persist selection through search params and expose best sellers/laggards/attach-rate/overstock insights. CSV export action returns the current drilldown view with TODO to stream via background worker when payloads grow. Dashboard overview prefetches the `/app/sales` route so the drilldown data is warm when navigating from "View sales".
 - Tests: Previous dashboard run used `npm exec vitest run --root dashboard --config ../vitest.config.ts` after linting.
+- Immediate focus: clear parse errors in settings/webhooks modules so `npm run lint --workspace dashboard` succeeds again, adopt shared dashboard filter helpers once extracted, and refresh overview/testing docs when the skeleton + export stub ship.
