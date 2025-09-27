@@ -5,6 +5,33 @@
 - Canonical knowledge stack: LlamaIndex + Chroma (collection `hotrodan_docs`, index `hotrodan`).
 - All agents must keep RAG data, corrections, and golden tests authoritative before introducing new tooling.
 
+---
+
+## Cloud ↔ Local Transition Contract (Codex Web & CLI)
+
+### Purpose
+Make it trivial to move any agent’s work between **Codex (web/cloud)** and **Codex CLI (local)** while keeping branches, prompts, and status perfectly in sync.
+
+### Branching Rule
+- **One agent → one feature branch.** Do not run cloud and local sessions **concurrently** on the same branch.
+
+### Terms & Signals (machine- and human-readable)
+- **Cloud task** — work running in Codex on the web against a repo/branch in an isolated container.
+- **Local session** — work running via `codex` CLI in your working copy.
+- **Dispatcher prompt** — the short instruction used when launching a cloud task that tells Codex to load the in-repo prompt and follow the rules below.
+- **Status / Notes** — the in-repo running log each agent appends to inside its prompt file.
+- **PAUSE** — clean stop condition; commit/push with a status line and checklist satisfied.
+- **HANDOFF→CLOUD** — local → cloud transfer signal; push branch, open/continue a cloud task with the dispatcher.
+- **HANDOFF→LOCAL** — cloud → local transfer signal; ensure a PR or pushed commits exist; pull locally and continue.
+- **PR boundary** — preferred sync boundary; small PRs keep review tight and create stable checkpoints.
+
+### Standard Dispatcher Prompt (paste into Codex Web when starting a task)
+
+## Mission & Context
+- Owner: justin; project aims to 10× support throughput with a human-in-the-loop assistant for email + chat.
+- Canonical knowledge stack: LlamaIndex + Chroma (collection `hotrodan_docs`, index `hotrodan`).
+- All agents must keep RAG data, corrections, and golden tests authoritative before introducing new tooling.
+
 ## Core Responsibilities
 - Keep the retrieval stack fresh: crawl hotrodan.com, ingest into Chroma, and maintain incremental updates.
 - Produce draft responses via `query_chroma_router.py`, ensuring sourcing and system prompts stay aligned with fuel-system guidance.
