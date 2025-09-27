@@ -1,0 +1,40 @@
+name: RAG Refresh Monitor
+
+on:
+  workflow_run:
+    workflows: ["RAG Refresh"]
+    types:
+      - completed
+
+jobs:
+  notify:
+    if: ${{ github.event.workflow_run.conclusion != 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const run = context.payload.workflow_run;
+            const title = `RAG Refresh failure (${run.run_number})`;
+            const existing = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${owner}/${repo} \\"${title}\\" state:open type:issue`
+            });
+            const body = `Nightly RAG refresh failed.\n\n- Run URL: ${run.html_url}\n- Status: ${run.conclusion}\n- Triggered by: ${run.event}`;
+            if (existing.data.total_count === 0) {
+              await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body,
+                labels: ["rag-refresh", "automated-alert"]
+              });
+            } else {
+              const issue = existing.data.items[0];
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issue.number,
+                body: `Run ${run.run_number} failed again. ${run.html_url}`
+              });
+            }
