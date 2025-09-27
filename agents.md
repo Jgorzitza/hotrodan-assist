@@ -111,6 +111,11 @@ STATUS: 2025-09-27T07:04:00Z | agent=rag | branch=feature/rag-refresh | commit=3
 - Tests/lint: `python run_goldens.py` (pass); `python discover_urls.py` (fails—network unreachable even without proxies).
 - Next step / blocker: Need direct outbound network access to hotrodan.com to refresh URLs before running incremental ingest.
 
+STATUS: 2025-09-27T07:29:10Z | agent=rag | branch=feature/rag-refresh | commit=bc8de2c | mode=cloud | scope=rag
+- What changed: Added CLI + gzip/loop handling to `discover_urls.py`, making sitemap discovery configurable offline and resilient to compressed sitemap indexes; updated session summary with the refined workflow.
+- Tests/lint: `python discover_urls.py` (fails—network unreachable, still blocked); `python run_goldens.py` (pass).
+- Next step / blocker: Outbound access still fails so URLs/ingest remain stale; rerun discovery and incremental ingest when networking is restored.
+
 ### Query & Routing
 - `query_chroma_router.py` → primary CLI; applies corrections, model routing (`gpt-4o-mini` default, escalates to GPT-5 family), adds dynamic context.
 - `router_config.py` → keyword + length triggers for model escalation.

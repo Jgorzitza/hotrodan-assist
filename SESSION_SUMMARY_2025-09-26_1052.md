@@ -17,8 +17,8 @@
 3) Plan the next dashboard QA pass (screenshots, smoke run) once credentials and dev server are ready.
 
 ## RAG status
-- Attempted sitemap refresh (`python discover_urls.py`) but proxy returned HTTP 403; added diagnostics to surface the failure and left URLs untouched until access opens back up.
-- Hardened sitemap discovery to auto-retry without proxies (and respect `DISCOVER_URLS_DISABLE_PROXIES`), but direct reachability is still blocked in this environment (`[Errno 101] Network is unreachable`).
+- Refined sitemap discovery to auto-detect gzip-compressed XML, guard against recursive sitemap loops, and expose CLI overrides for base URL, proxy usage, timeouts, and output paths.
+- `python discover_urls.py` still fails with `[Errno 101] Network is unreachable` despite proxy bypass attempts, so cached URL lists remain authoritative until outbound access is restored.
 - Offline goldens (corrections-only) re-ran 2025-09-27 and still pass; retrieval spot check remains pending the next successful ingest.
 
 ## Follow-ups
