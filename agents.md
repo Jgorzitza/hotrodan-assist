@@ -80,7 +80,7 @@
 - Execute `python run_goldens.py` after ingest; patch any regression before closing the loop.
 - Audit `corrections/corrections.yaml` for drift vs newest pages, add entries for emerging FAQs, and create matching golden cases before closing the loop.
 - Update `SESSION_SUMMARY_*` with ingest and goldens status so downstream services know data freshness.
-- _Last refresh:_ 2025-09-27 13:54 MDT — Ran discover → incremental ingest (87 updates, 0 deletes via FastEmbed) and offline goldens; still awaiting analytics contract handoff and ops cron decision.
+- _Last refresh:_ 2025-09-27 14:13 MDT — Ran two discover → incremental ingest loops (87 + 80 updates via FastEmbed) and offline goldens; still awaiting analytics contract handoff and ops cron decision.
 
 ## Known Gaps & TODOs
 - Implement Alembic migrations for the new Postgres tables before production deploys.
