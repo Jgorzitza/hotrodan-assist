@@ -54,3 +54,5 @@ Keep all agents aligned with the roadmap. Monitor progress, update documentation
 - 2025-09-26 23:20 MDT – Orders prompt now flags lint fixes + live Sync verification as immediate focus so agent stays on task.
 - 2025-09-26 23:27 MDT – Dashboard prompt now calls out link smoke + range helper reuse as immediate focus.
 - 2025-09-26 23:32 MDT – Database prompt immediate focus now mirrors ops handoffs (retention jobs + provider pooling).
+- 2025-10-04 09:15 MDT – Reconciled sales/orders prompts (marked tasks complete, refreshed immediate focus), confirmed `dashboard` lint passes, and flagged Sync write API + Polaris Viz upgrade dependencies; next sweep after Sync ETA or 24h.
+- 2025-10-04 21:40 MDT – Posted handoff reminder for the web assistant: update `agents.md` (Status / Notes, Immediate Focus, last refresh) before sign-off so the morning agent restarts with fresh context.
