@@ -9,24 +9,78 @@
 
 ## Cloud ↔ Local Transition Contract (Codex Web & CLI)
 
-### Purpose
-Make it trivial to move any agent’s work between **Codex (web/cloud)** and **Codex CLI (local)** while keeping branches, prompts, and status perfectly in sync.
+**Goal:** Move work between Codex **cloud** (web) and Codex **local** (CLI) without drift or duplicated effort.
 
-### Branching Rule
-- **One agent → one feature branch.** Do not run cloud and local sessions **concurrently** on the same branch.
+**Prerequisites**
+- GitHub repo connected in Codex web.
+- This `AGENTS.md` at repo root.
+- Each surface has an in‑repo prompt file with a `## Status / Notes` section.
+- A Cloud Environment is configured (base image + setup commands).
+- Branch exists (or will be created) for the target surface.
 
-### Terms & Signals (machine- and human-readable)
-- **Cloud task** — work running in Codex on the web against a repo/branch in an isolated container.
-- **Local session** — work running via `codex` CLI in your working copy.
-- **Dispatcher prompt** — the short instruction used when launching a cloud task that tells Codex to load the in-repo prompt and follow the rules below.
-- **Status / Notes** — the in-repo running log each agent appends to inside its prompt file.
-- **PAUSE** — clean stop condition; commit/push with a status line and checklist satisfied.
-- **HANDOFF→CLOUD** — local → cloud transfer signal; push branch, open/continue a cloud task with the dispatcher.
-- **HANDOFF→LOCAL** — cloud → local transfer signal; ensure a PR or pushed commits exist; pull locally and continue.
-- **PR boundary** — preferred sync boundary; small PRs keep review tight and create stable checkpoints.
+**Invariants (don’t break these)**
+- One agent → one feature branch. Never run cloud and local simultaneously on the same branch.
+- Every session (cloud or local) appends a `STATUS:` line to `Status / Notes`.
+- Every pause or handoff leaves behind: passing lint/tests **or** a clear note of what’s failing and why.
+- Prefer small PRs; treat PRs as synchronization boundaries and review checkpoints.
+
+**Scope**
+- ✅ Feature work, small refactors, fixes, tests, doc updates scoped to the surface.
+- 🚫 Cross‑cutting refactors that touch multiple surfaces in one shot—split by path/branch.
+
+- ## Branching Strategy & Naming
+
+**Pattern:** `<type>/<surface>-<short-desc>`
+
+- `feature/route-orders-line-items`
+- `chore/prisma-config-migration`
+- `fix/webhooks-dup-events`
+
+**Rules**
+- One live worker (cloud or local) per branch.
+- If two branches must touch the same files, serialize merges with PRs.
+- Avoid long‑running branches; open PR early and iterate.
+
+## Terms & Signals
+
+- **Cloud task** — Work running in Codex web on a repo/branch inside an isolated container.
+- **Local session** — Work running via `codex` CLI in your working copy.
+- **Dispatcher prompt** — Short instruction pasted into Codex web that tells the agent which in‑repo prompt to follow.
+- **Status / Notes** — The append‑only journal inside each surface prompt file.
+- **PAUSE** — Clean stop; code committed; checklist satisfied.
+- **HANDOFF→CLOUD** — You’re moving from local to cloud. Push branch, start cloud task, write a `STATUS` entry.
+- **HANDOFF→LOCAL** — You’re moving from cloud to local. Ensure commits/PR exist, pull locally, write a `STATUS` entry.
+- **PR boundary** — Preferred sync point for reviews and merges.
+
+
+**Success criteria**
+- Branch history is linear enough to merge without a rebase war.
+- A reviewer can learn what happened from:
+  1) the PR diff, and
+  2) the `Status / Notes` entries.
 
 ### Standard Dispatcher Prompt (paste into Codex Web when starting a task)
+Paste the following, fill the placeholders, and run:
 
+Instruction:
+- Load and follow the in‑repo prompt at: `<PROMPT_FILE>`.
+- Work strictly within the declared surface and its shared primitives.
+- Use the project setup/test/lint commands from AGENTS.md.
+- Make small, reviewable commits; prefer opening a PR early.
+- Append a session entry to `<PROMPT_FILE>` under **Status / Notes** (format below).
+- Stop on **PAUSE Checklist**; for **HANDOFF→LOCAL**: ensure commits/PR exist, then stop.
+
+Inputs:
+- Prompt file: `<PROMPT_FILE>` (e.g., `prompts/dashboard/route-orders.md`)
+- Branch: `<BRANCH>` (e.g., `feature/route-orders`)
+
+Deliverables:
+- Commits on `<BRANCH>` and/or an open PR titled: `[<scope>] <concise summary>`.
+- Updated **Status / Notes** entry for this session.
+
+Validation:
+- Before first edit, echo the H1 title of `<PROMPT_FILE>` to confirm the correct file was loaded.
+- Before stopping, run lint/tests and summarize results in **Status / Notes**.
 ## Mission & Context
 - Owner: justin; project aims to 10× support throughput with a human-in-the-loop assistant for email + chat.
 - Canonical knowledge stack: LlamaIndex + Chroma (collection `hotrodan_docs`, index `hotrodan`).
@@ -59,6 +113,73 @@ Make it trivial to move any agent’s work between **Codex (web/cloud)** and **C
 - FastAPI stubs: `app/rag_api/main.py`, `app/assistants/main.py`, `app/sync/main.py`; Dockerfiles + requirements provided for each service.
 - `docker-compose.yml` orchestrates Postgres, Redis, rag-api, assistants, sync, approval app; mounts `/data` for vector persistence.
 - CI: `.github/workflows/ci.yml` runs golden tests on push/PR.
+## Status / Notes — Format & Enforcement
+
+**Required header line (single line):**
+
+**Optional bullets (keep terse):**
+- What changed:
+- Tests/lint:
+- Next step / blocker:
+
+**(Optional) CI guard**
+- Reject PRs if the last commit didn’t touch the surface prompt’s `Status / Notes`.
+## Handoff Checklists
+
+### Local → Cloud (HANDOFF→CLOUD)
+1) Ensure working tree clean; run tests/lint locally.  
+2) Commit with concise message; push:
+3) Start a Codex web task on `<feature-branch>` using the **Dispatcher Prompt** (fill `<PROMPT_FILE>` + `<BRANCH>`).  
+4) Add a `STATUS ... mode=cloud` entry before edits; another when pausing.
+## Parallelization Policy
+
+**Cloud (web)**
+- Prompt file: `prompts/dashboard/route-orders.md`
+- Branch: `feature/route-orders`
+- Paste the **Dispatcher Prompt**, then run.
+
+**Repeat the same pattern for:**
+- `prompts/dashboard/route-inventory.md` on `feature/route-inventory`
+- `prompts/dashboard/route-seo.md` on `feature/route-seo`
+- `prompts/dashboard/webhooks.md` on `feature/sync-webhooks`
+- `prompts/dashboard/data-layer.md` (focus: assistants) on `feature/assistants`
+- ## Change Log
+
+- Use reverse chronological order.
+- One line per change; keep it surgical.
+- Always include the date, a one‑line summary, and whether any process rules changed.
+
+Example:
+- **2025-09-27** — Hardened transition workflow; added Status format, handoff checklists, pause checklist, and CI guard suggestion. No changes to existing RAG/quality responsibilities.
+
+
+
+- You may run **many cloud tasks in parallel**—one per branch/agent.
+- Never run cloud and local on the **same branch** at the same time.
+- Keep PRs small (≤ ~300 lines changed) to maintain merge velocity.
+- If two agents need the same files:
+  - Split by path (e.g., `routes/orders/*` vs `components/tables/*`) **or**
+  - Sequence: merge Agent A, rebase Agent B, proceed.
+## Pause Checklist (both modes)
+
+- ✅ Lint and unit tests run; status noted (pass/fail with reason).
+- ✅ `Status / Notes` updated with a fresh `STATUS:` line and bullets.
+- ✅ Commits pushed or PR opened with a specific, scope‑tagged title.
+- ✅ Any TODOs or blocked items listed in `Status / Notes`.
+
+**Throughput defaults**
+- Start with 3–5 parallel cloud tasks; scale up only if review bandwidth and CI capacity are healthy.
+
+**Failure recovery**
+- If cloud can’t install deps: update Cloud Environment setup script; rerun.
+- If tests fail in cloud but pass locally: pin tool versions in setup; re‑run.
+
+### Cloud → Local (HANDOFF→LOCAL)
+1) Confirm commits (or an open PR) exist from the cloud task.  
+2) Pull and continue:
+
+
+
 
 ## Setup Checklist
 ### Python Environment
