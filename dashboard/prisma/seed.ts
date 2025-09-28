@@ -1,6 +1,6 @@
+import { createHash } from "node:crypto";
+
 import {
-  ConnectionEventStatus,
-  IntegrationProvider,
   OrderFlagStatus,
   PrismaClient,
   PurchaseOrderStatus,
@@ -14,8 +14,16 @@ import {
   WebhookProcessingStatus,
 } from "@prisma/client";
 
+import { buildDashboardRangeSelection } from "../app/lib/date-range.ts";
+import { mapAnalyticsResponse } from "../app/lib/sales/analytics.server.ts";
 import { encryptSecret, maskSecret } from "../app/lib/security/secrets.server.ts";
 import { BASE_SHOP_DOMAIN, getMockSettings } from "../app/mocks/settings.ts";
+import { analyticsSalesBase } from "../app/mocks/fixtures/analytics.sales.ts";
+import {
+  SETTINGS_SEED_ACCESS_TOKEN,
+  SETTINGS_SECRET_SEEDS,
+  buildSettingsPrismaSeed,
+} from "../app/lib/settings/fixtures.server.ts";
 
 const prisma = new PrismaClient();
 
@@ -23,7 +31,7 @@ const now = new Date();
 const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
 async function seedStore() {
-  const accessTokenCipher = encryptSecret("shpat_seed_123456789");
+  const accessTokenCipher = encryptSecret(SETTINGS_SEED_ACCESS_TOKEN);
 
   const store = await prisma.store.upsert({
     where: { domain: BASE_SHOP_DOMAIN },
@@ -49,52 +57,43 @@ async function seedStore() {
   });
 
   const settings = getMockSettings(BASE_SHOP_DOMAIN);
-  const connectionMetadata = {
-    connections: settings.connections,
-    mcpOverrides: {
-      endpoint: null,
-      timeoutMs: null,
-      maxRetries: null,
-    },
-  } as const;
+  const seedPayload = buildSettingsPrismaSeed({
+    storeId: store.id,
+    shopDomain: store.domain,
+    now,
+  });
+
+  const connectionMetadata = seedPayload.storeSettings.connectionMetadata;
 
   await prisma.storeSettings.upsert({
     where: { storeId: store.id },
     update: {
-      thresholds: settings.thresholds,
-      featureFlags: settings.toggles,
+      thresholds: seedPayload.storeSettings.thresholds,
+      featureFlags: seedPayload.storeSettings.featureFlags,
       connectionMetadata,
-      notificationEmails: "ops@seed-demo.test",
-      lastRotationAt: settings.secrets.ga4?.lastUpdatedAt
-        ? new Date(settings.secrets.ga4.lastUpdatedAt)
-        : now,
-      lastInventorySyncAt: now,
+      notificationEmails: seedPayload.storeSettings.notificationEmails,
+      lastRotationAt: seedPayload.storeSettings.lastRotationAt,
+      lastInventorySyncAt: seedPayload.storeSettings.lastInventorySyncAt,
     },
     create: {
       storeId: store.id,
-      thresholds: settings.thresholds,
-      featureFlags: settings.toggles,
+      thresholds: seedPayload.storeSettings.thresholds,
+      featureFlags: seedPayload.storeSettings.featureFlags,
       connectionMetadata,
-      notificationEmails: "ops@seed-demo.test",
-      lastRotationAt: settings.secrets.ga4?.lastUpdatedAt
-        ? new Date(settings.secrets.ga4.lastUpdatedAt)
-        : now,
-      lastInventorySyncAt: now,
+      notificationEmails: seedPayload.storeSettings.notificationEmails,
+      lastRotationAt: seedPayload.storeSettings.lastRotationAt,
+      lastInventorySyncAt: seedPayload.storeSettings.lastInventorySyncAt,
     },
   });
-
-  const secretSeeds: Record<SettingsSecretProvider, string | null> = {
-    [SettingsSecretProvider.ga4]: "mock-ga4-service-account-1234",
-    [SettingsSecretProvider.gsc]: "mock-gsc-credentials-5678",
-    [SettingsSecretProvider.bing]: null,
-    [SettingsSecretProvider.mcp]: null,
-  };
 
   await Promise.all(
     (Object.values(SettingsSecretProvider) as SettingsSecretProvider[]).map(
       async (provider) => {
-        const plaintext = secretSeeds[provider];
+        const plaintext = SETTINGS_SECRET_SEEDS[provider];
         const metadata = settings.secrets[provider as keyof typeof settings.secrets];
+        const seedEntry = seedPayload.storeSecrets.find(
+          (secret) => secret.provider === provider,
+        );
 
         if (!plaintext) {
           await prisma.storeSecret.deleteMany({
@@ -103,8 +102,19 @@ async function seedStore() {
           return;
         }
 
-        const ciphertext = encryptSecret(plaintext);
-        const maskedValue = metadata?.maskedValue ?? maskSecret(plaintext);
+        const ciphertext = seedEntry?.ciphertext ?? encryptSecret(plaintext);
+        const maskedValue =
+          seedEntry?.maskedValue ?? metadata?.maskedValue ?? maskSecret(plaintext);
+        const lastVerifiedAt = seedEntry?.lastVerifiedAt
+          ? new Date(seedEntry.lastVerifiedAt)
+          : metadata?.lastVerifiedAt
+            ? new Date(metadata.lastVerifiedAt)
+            : null;
+        const rotationReminderAt = seedEntry?.rotationReminderAt
+          ? new Date(seedEntry.rotationReminderAt)
+          : metadata?.rotationReminderAt
+            ? new Date(metadata.rotationReminderAt)
+            : null;
 
         await prisma.storeSecret.upsert({
           where: {
@@ -116,65 +126,84 @@ async function seedStore() {
           update: {
             ciphertext,
             maskedValue,
-            lastVerifiedAt: metadata?.lastVerifiedAt
-              ? new Date(metadata.lastVerifiedAt)
-              : null,
-            rotationReminderAt: metadata?.rotationReminderAt
-              ? new Date(metadata.rotationReminderAt)
-              : null,
+            lastVerifiedAt,
+            rotationReminderAt,
           },
           create: {
             storeId: store.id,
             provider,
             ciphertext,
             maskedValue,
-            lastVerifiedAt: metadata?.lastVerifiedAt
-              ? new Date(metadata.lastVerifiedAt)
-              : null,
-            rotationReminderAt: metadata?.rotationReminderAt
-              ? new Date(metadata.rotationReminderAt)
-              : null,
+            lastVerifiedAt,
+            rotationReminderAt,
           },
         });
       },
     ),
   );
 
+  const salesRange = buildDashboardRangeSelection("28d", now);
+  const rangeStartDate = new Date(salesRange.start);
+  const rangeEndDate = new Date(salesRange.end);
+
+  const normalizedSalesSearch = {
+    period: "28d",
+    compare: "previous_period",
+    granularity: "daily",
+    bucketDate: null,
+    collectionId: null,
+    productId: null,
+    variantId: null,
+    days: salesRange.days,
+  } as const;
+
+  const metricKey = `sales_analytics:${createHash("sha1")
+    .update(JSON.stringify(normalizedSalesSearch))
+    .digest("hex")}`;
+
+  const salesDataset = (() => {
+    const mapped = mapAnalyticsResponse(analyticsSalesBase);
+    return {
+      ...mapped,
+      granularity: normalizedSalesSearch.granularity,
+      range: {
+        ...mapped.range,
+        label: salesRange.label,
+        start: salesRange.start,
+        end: salesRange.end,
+      },
+    };
+  })();
+
+  const cacheExpiresAt = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+  const cachedPayload = {
+    dataset: salesDataset,
+    search: normalizedSalesSearch,
+    storedAt: now.toISOString(),
+  };
+
   await prisma.kpiCache.upsert({
     where: {
       storeId_metricKey_rangeStart_rangeEnd: {
         storeId: store.id,
-        metricKey: "sales_overview",
-        rangeStart: thirtyDaysAgo,
-        rangeEnd: now,
+        metricKey,
+        rangeStart: rangeStartDate,
+        rangeEnd: rangeEndDate,
       },
     },
     update: {
-      payload: {
-        totals: { revenue: 18250, orders: 312, returningCustomersRate: 0.34 },
-        metrics: [
-          { id: "aov", label: "Average order value", value: 168.23 },
-          { id: "conversion", label: "Conversion rate", value: 2.7 },
-          { id: "refundRate", label: "Refund rate", value: 1.8 },
-        ],
-      },
+      payload: cachedPayload,
       refreshedAt: now,
-      expiresAt: new Date(now.getTime() + 6 * 60 * 60 * 1000),
+      expiresAt: cacheExpiresAt,
     },
     create: {
       storeId: store.id,
-      metricKey: "sales_overview",
-      rangeStart: thirtyDaysAgo,
-      rangeEnd: now,
-      payload: {
-        totals: { revenue: 18250, orders: 312, returningCustomersRate: 0.34 },
-        metrics: [
-          { id: "aov", label: "Average order value", value: 168.23 },
-          { id: "conversion", label: "Conversion rate", value: 2.7 },
-          { id: "refundRate", label: "Refund rate", value: 1.8 },
-        ],
-      },
-      expiresAt: new Date(now.getTime() + 6 * 60 * 60 * 1000),
+      metricKey,
+      rangeStart: rangeStartDate,
+      rangeEnd: rangeEndDate,
+      payload: cachedPayload,
+      refreshedAt: now,
+      expiresAt: cacheExpiresAt,
     },
   });
 
@@ -406,24 +435,26 @@ async function seedStore() {
     },
   });
 
-  await prisma.connectionEvent.upsert({
-    where: { id: "seed-connection-ga4" },
-    update: {
-      storeId: store.id,
-      integration: IntegrationProvider.GA4,
-      status: ConnectionEventStatus.SUCCESS,
-      message: "GA4 credentials verified",
-      metadata: { latencyMs: 420 },
-    },
-    create: {
-      id: "seed-connection-ga4",
-      storeId: store.id,
-      integration: IntegrationProvider.GA4,
-      status: ConnectionEventStatus.SUCCESS,
-      message: "GA4 credentials verified",
-      metadata: { latencyMs: 420 },
-    },
-  });
+  for (const event of seedPayload.connectionEvents) {
+    await prisma.connectionEvent.upsert({
+      where: { id: event.id },
+      update: {
+        storeId: store.id,
+        integration: event.integration,
+        status: event.status,
+        message: event.message,
+        metadata: event.metadata,
+      },
+      create: {
+        id: event.id,
+        storeId: store.id,
+        integration: event.integration,
+        status: event.status,
+        message: event.message,
+        metadata: event.metadata,
+      },
+    });
+  }
 
   await prisma.session.updateMany({
     where: { shop: store.domain },

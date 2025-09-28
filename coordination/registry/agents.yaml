@@ -1,0 +1,328 @@
+version: 1.0.2
+generated: '2025-09-27T20:30:00+00:00'
+agents:
+  manager:
+    name: Program Manager
+    responsibilities:
+    - Maintain single source of truth for instructions and handovers
+    - Sweep prompts, coordination notes, and unblock dependencies across teams
+    - Enforce MVP gates and surface blockers upstream
+    inputs:
+    - coordination/inbox/manager/*.md
+    - coordination/*-feedback.md
+    - prompts/tooling/program-manager.md
+    outputs:
+    - docs/agents.md
+    - handover/*.md
+    - agent/*/INSTRUCTIONS.md
+    - coordination/digests/*.md
+    constraints:
+    - Must not ship scope outside MVP without approval
+    - Treat managed artifacts as generated read-only outputs
+    feature_flags: []
+    kpis:
+    - MVP gate status stays green
+    - Feedback to prompt turnaround < 1 sweep
+    mvp_tasks:
+    - Keep instructions regenerated and aligned with gates
+    - Drive Gate A/B/C sign-off readiness
+    post_mvp_backlog:
+    - Expand automation/CI coverage beyond MVP needs
+    integration_points:
+    - All agents via coordination registry
+  rag:
+    name: RAG & Corrections
+    responsibilities:
+    - Maintain hotrodan.com ingest, corrections, and golden tests
+    - Provide reliable retrieval outputs for downstream services
+    inputs:
+    - agents.md (RAG section)
+    - coordination/inbox/rag/*.md
+    - prompts/dashboard/data-layer.md
+    outputs:
+    - Updated corrections/goldens
+    - SESSION_SUMMARY_* ingest status entries
+    constraints:
+    - Run ingest + goldens only when sitemap timestamps change
+    - Ensure every factual change has correction + golden
+    feature_flags:
+    - use_fastembed_fallback
+    kpis:
+    - Time since last successful ingest < 24h when sitemap changes
+    - Golden regression pass rate 100%
+    mvp_tasks:
+    - Monitor sitemap timestamps and rerun ingest/goldens on change
+    - Log freshness in session summary & agents log
+    post_mvp_backlog:
+    - Confidence gating metrics for autonomous approvals
+    integration_points:
+    - Inbox drafting
+    - Dashboard knowledge surfacing
+  assistants:
+    name: Assistants API & Settings Data Layer
+    responsibilities:
+    - Maintain Prisma-backed settings repository and Assistants provider stubs
+    - Supply loaders/actions with shared repos and fixtures
+    inputs:
+    - coordination/inbox/assistants/*.md
+    - prompts/dashboard/route-settings.md
+    - prompts/dashboard/data-layer.md
+    outputs:
+    - Prisma seeds/fixtures
+    - Settings repository updates
+    constraints:
+    - KMS/retention work is documentation-only until hosting chosen
+    feature_flags:
+    - use_prisma_stub_helper
+    kpis:
+    - Settings loader/action tests pass with Prisma fixtures
+    mvp_tasks:
+    - Share Prisma stub helper with route owners
+    - Keep loader/action tests passing under USE_MOCK_DATA=false
+    post_mvp_backlog:
+    - Implement KMS-backed secret rotation
+    integration_points:
+    - Settings route
+    - Data-layer analytics modules
+  approval:
+    name: Inbox / Approval App UI
+    responsibilities:
+    - Deliver inbox UI with SSE updates, approve/edit loop, and feedback telemetry
+    inputs:
+    - coordination/inbox/approval/*.md
+    - prompts/dashboard/route-inbox.md
+    outputs:
+    - Inbox route implementations and tests
+    constraints:
+    - Privacy guardrails: scrub PII from mocks
+    feature_flags:
+    - assistants_provider_handoff
+    - connection_health_indicator
+    kpis:
+    - SSE connection health indicator accurate in mock/live modes
+    mvp_tasks:
+    - Wire Assistants provider handoff behind feature flag
+    - Extend tests for connection health + SSE failures
+    post_mvp_backlog:
+    - Build operator feedback telemetry dashboards
+    integration_points:
+    - Assistants provider backend
+    - RAG corrections feedback loop
+  sync:
+    name: Sync & Webhooks Service
+    responsibilities:
+    - Manage Shopify webhook registration, persistence, and Sync write API contracts
+    inputs:
+    - coordination/inbox/sync/*.md
+    - prompts/dashboard/webhooks.md
+    - coordination/2025-09-27_orders-sync-contract.md
+    outputs:
+    - Sync API payload schemas
+    - Webhook storage
+    constraints:
+    - Keep BullMQ worker disabled for MVP
+    - Payload schema locked at v1.2
+    feature_flags:
+    - bullmq_worker (false)
+    kpis:
+    - Write API response envelopes documented per change
+    mvp_tasks:
+    - Freeze assign/fulfill/support/returns payloads and notify Orders
+    - Log envelopes & ensure Prisma persistence
+    post_mvp_backlog:
+    - Enable BullMQ worker + Upstash integration
+    integration_points:
+    - Orders dashboard
+    - Inventory thresholds
+  dashboard:
+    name: Dashboard Home UI
+    responsibilities:
+    - Maintain root Polaris dashboard, shared range helper, and deep link behaviour
+    inputs:
+    - coordination/inbox/dashboard/*.md
+    - prompts/dashboard/route-dashboard.md
+    outputs:
+    - Dashboard home route updates/tests
+    constraints:
+    - Keep mock-backed overview until analytics contract lands
+    feature_flags: []
+    kpis:
+    - Shared range helper reused across routes
+    mvp_tasks:
+    - Backfill loader/range tests, smoke deep links once tunnel available
+    post_mvp_backlog:
+    - Live Admin analytics integration
+    integration_points:
+    - Sales and Orders routes
+  sales:
+    name: Sales Analytics UI
+    responsibilities:
+    - Provide drilldown tables, CSV export, summary KPIs based on mock data until
+      live contract ready
+    inputs:
+    - coordination/inbox/sales/*.md
+    - prompts/dashboard/route-sales.md
+    outputs:
+    - Sales route implementation/tests
+    constraints:
+    - Polaris Viz upgrade + streaming deferred post-MVP
+    feature_flags: []
+    kpis:
+    - Loader/action tests green under USE_MOCK_DATA=false
+    mvp_tasks:
+    - Integrate analytics fixtures via `fetchSalesAnalytics`; update loader/tests
+      for live swap readiness
+    post_mvp_backlog:
+    - Polaris Viz chart integration & background export streaming
+    integration_points:
+    - Data-layer analytics contract
+  orders:
+    name: Orders Control Tower UI
+    responsibilities:
+    - Deliver fulfillment dashboard wired to Sync write APIs
+    inputs:
+    - coordination/inbox/orders/*.md
+    - prompts/dashboard/route-orders.md
+    - coordination/2025-09-27_orders-sync-contract.md
+    outputs:
+    - Orders route updates/tests
+    constraints:
+    - Must use live Sync payload schema v1.2; no BullMQ writes
+    feature_flags:
+    - use_sync_live_payloads
+    kpis:
+    - Vitest coverage for assign/fulfill/support/returns with USE_MOCK_DATA=false
+    mvp_tasks:
+    - Wire live Sync endpoints and log contract findings
+    post_mvp_backlog:
+    - Playwright smoke covering live flows post-tunnel
+    integration_points:
+    - Sync service
+    - Inventory thresholds
+  inventory:
+    name: Inventory Planner UI
+    responsibilities:
+    - Manage bucket tabs, SKU modal, and PO planner using mock data until analytics
+      live
+    inputs:
+    - coordination/inbox/inventory/*.md
+    - prompts/dashboard/route-inventory.md
+    outputs:
+    - Inventory route updates/tests
+    constraints:
+    - Charts/persistence deferred until analytics feed ready
+    feature_flags: []
+    kpis:
+    - Mock scenarios stay deterministic
+    mvp_tasks:
+    - Prep plans for chart + persistence once data arrives
+    post_mvp_backlog:
+    - Live Shopify inventory integration
+    integration_points:
+    - Sales + Orders blockers
+  seo:
+    name: SEO Insights UI
+    responsibilities:
+    - Provide SEO dashboard using GA4/GSC/Bing mocks
+    inputs:
+    - coordination/inbox/seo/*.md
+    - prompts/dashboard/route-seo.md
+    outputs:
+    - SEO route tests/docs
+    constraints:
+    - Stay on mocks until credentials delivered
+    feature_flags: []
+    kpis:
+    - Lint/tests clean for SEO route
+    mvp_tasks:
+    - Prep persistence plan for action statuses
+    post_mvp_backlog:
+    - Live adapter integration
+    integration_points:
+    - Settings secrets repository
+  settings:
+    name: Settings Admin UI
+    responsibilities:
+    - Manage thresholds, toggles, credential storage UI backed by Prisma mock repo
+    inputs:
+    - coordination/inbox/settings/*.md
+    - prompts/dashboard/route-settings.md
+    outputs:
+    - Settings route updates/tests
+    constraints:
+    - KMS/retention implementation deferred; documentation only
+    feature_flags:
+    - prisma_stub_helper
+    kpis:
+    - Loader/action integration tests pass under USE_MOCK_DATA=false
+    mvp_tasks:
+    - Share Prisma stub helper; keep integration tests green
+    post_mvp_backlog:
+    - KMS migration + audit logging
+    integration_points:
+    - Data-layer repository
+  data:
+    name: Data & Prisma Layer
+    responsibilities:
+    - Provide Admin analytics queries, Prisma schema/seeds, shared helpers
+    inputs:
+    - coordination/inbox/data/*.md
+    - prompts/dashboard/data-layer.md
+    outputs:
+    - Prisma schema, fixtures, analytics contracts
+    constraints:
+    - Retention/cron implementation deferred pending hosting
+    feature_flags:
+    - analytics_contract_pending
+    kpis:
+    - Publish analytics response shape + fixtures (Gate B)
+    mvp_tasks:
+    - Finalise analytics query builders and share fixtures
+    post_mvp_backlog:
+    - Automate retention cron + KMS pipelines
+    integration_points:
+    - Sales/Dashboard analytics consumers
+    - Settings repository
+  mcp:
+    name: MCP Integration
+    responsibilities:
+    - Maintain mock MCP client and overrides until real creds arrive
+    inputs:
+    - coordination/inbox/mcp/*.md
+    - prompts/dashboard/mcp.md
+    outputs:
+    - MCP client stubs/tests
+    constraints:
+    - Stay in mock mode pre-MVP
+    feature_flags:
+    - enable_mcp (mock)
+    kpis:
+    - Override precedence tests passing
+    mvp_tasks:
+    - Document secure persistence notes pending real creds
+    post_mvp_backlog:
+    - Live MCP fetch + telemetry
+    integration_points:
+    - Dashboard widgets
+    - Inventory/SEO signals
+  tooling:
+    name: Tooling & Prisma Config
+    responsibilities:
+    - Own Prisma CLI config migration, hooks, and CI tooling
+    inputs:
+    - coordination/inbox/tooling/*.md
+    - prompts/tooling/prisma-config.md
+    outputs:
+    - Prisma config files, CI scripts
+    constraints:
+    - Post-Oct 1 CI smoke pending merges
+    feature_flags: []
+    kpis:
+    - Prisma CLI commands pass in local/CI
+    mvp_tasks:
+    - Monitor config migration, add verify-managed-files CI
+    post_mvp_backlog:
+    - Additional developer tooling automation
+    integration_points:
+    - Data & Prisma agent
+    - CI pipeline

@@ -10,6 +10,7 @@ export type FeatureToggles = {
   enableMcpIntegration: boolean;
   enableExperimentalWidgets: boolean;
   enableBetaWorkflows: boolean;
+  enableAssistantsProvider: boolean;
 };
 
 export type SecretMetadata = {

@@ -1,10 +1,11 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   useFetcher,
   useLoaderData,
   useNavigate,
+  useLocation,
   useSearchParams,
 } from "@remix-run/react";
 import {
@@ -23,11 +24,17 @@ import {
   Select,
   Text,
 } from "@shopify/polaris";
+import {
+  BarChart,
+  PolarisVizProvider,
+  SparkLineChart,
+  type DataSeries,
+} from "@shopify/polaris-viz";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { z } from "zod";
 
 import { authenticate } from "../shopify.server";
-import { getSalesScenario, scenarioFromRequest } from "~/mocks";
+import { scenarioFromRequest } from "~/mocks";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
 import type {
   DashboardRangeKey,
@@ -49,6 +56,8 @@ import {
   buildDashboardRangeSelection,
   resolveDashboardRangeKey,
 } from "~/lib/date-range";
+import { fetchSalesAnalyticsWithCache } from "~/lib/sales/cache.server";
+import { buildSalesFixtureDataset } from "~/lib/sales/fixtures.server";
 
 const GRANULARITY_VALUES = ["daily", "weekly", "monthly"] as const;
 
@@ -95,6 +104,41 @@ const mapPeriodToRangeKey = (period: PeriodOption): DashboardRangeKey => {
     default:
       return DEFAULT_DASHBOARD_RANGE;
   }
+};
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const computeRangeDays = (
+  range: SalesDataset["range"] | undefined,
+  fallback: number,
+): number => {
+  if (!range?.start || !range?.end) return fallback;
+  const start = Date.parse(range.start);
+  const end = Date.parse(range.end);
+  if (Number.isNaN(start) || Number.isNaN(end) || end < start) {
+    return fallback;
+  }
+  const diff = end - start;
+  if (!Number.isFinite(diff)) {
+    return fallback;
+  }
+  const days = Math.floor(diff / MS_PER_DAY) + 1;
+  if (!Number.isFinite(days) || days <= 0) {
+    return fallback;
+  }
+  return days;
+};
+
+const toDateOnlyString = (value: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return trimmed;
+  }
+  const [datePart] = trimmed.split("T");
+  if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+    return datePart;
+  }
+  return trimmed;
 };
 
 const COMPARE_OPTIONS = ["previous_period", "previous_year"] as const;
@@ -644,23 +688,65 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     : fallbackRange;
   const rangeSelection = buildDashboardRangeSelection(activeRange);
   const normalizedPeriod = mapRangeKeyToPeriod(activeRange);
-  const days = rangeSelection.days;
   const normalizedSearch: SearchParams = {
     ...search,
     period: normalizedPeriod,
   };
 
-  if (!USE_MOCK_DATA) {
-    await authenticate.admin(request);
-    // TODO: Replace mock dataset with Admin API analytics adapter once ready.
-  }
+  const rangeStartDate = toDateOnlyString(rangeSelection.start);
+  const rangeEndDate = toDateOnlyString(rangeSelection.end);
 
-  const dataset = getSalesScenario({
+  const fixtureRange = {
+    label: rangeSelection.label,
+    start: rangeStartDate,
+    end: rangeEndDate,
+    days: rangeSelection.days,
+  } as const;
+
+  const fixtureDataset = buildSalesFixtureDataset({
     scenario,
     granularity: normalizedSearch.granularity,
-    days,
+    range: fixtureRange,
   });
 
+  let dataset: SalesDataset = fixtureDataset;
+  let usingMockDataset = USE_MOCK_DATA;
+
+  if (!USE_MOCK_DATA) {
+    const auth = await authenticate.admin(request);
+    try {
+      dataset = await fetchSalesAnalyticsWithCache({
+        shopDomain: auth?.session?.shop ?? undefined,
+        signal: request.signal,
+        search: {
+          period: normalizedSearch.period,
+          compare: normalizedSearch.compare,
+          granularity: normalizedSearch.granularity,
+          bucketDate: normalizedSearch.bucketDate ?? undefined,
+          collectionId: normalizedSearch.collectionId ?? undefined,
+          productId: normalizedSearch.productId ?? undefined,
+          variantId: normalizedSearch.variantId ?? undefined,
+          days: rangeSelection.days,
+          rangeStart: rangeStartDate,
+          rangeEnd: rangeEndDate,
+        },
+      });
+      usingMockDataset = false;
+    } catch (error) {
+      console.error("sales loader: analytics fetch failed", error);
+      const fallbackMessage = "Sales analytics temporarily unavailable — showing mock data";
+      dataset = {
+        ...fixtureDataset,
+        state: fixtureDataset.state === "ok" ? "warning" : fixtureDataset.state,
+        alert: fixtureDataset.alert
+          ? `${fallbackMessage}. ${fixtureDataset.alert}`
+          : fallbackMessage,
+      };
+      usingMockDataset = true;
+    }
+  }
+
+  const datasetRangeDays = computeRangeDays(dataset.range, rangeSelection.days);
   const bucket = normalizedSearch.bucketDate
     ? dataset.trend.find((entry) => entry.date === normalizedSearch.bucketDate)
     : undefined;
@@ -679,7 +765,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     collectionId: selection.collection?.id ?? null,
     productId: selection.product?.id ?? null,
     variantId: selection.variant?.id ?? null,
-    days,
+    days: datasetRangeDays,
     range: activeRange,
   };
 
@@ -706,7 +792,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     {
       dataset,
       scenario,
-      useMockData: USE_MOCK_DATA,
+      useMockData: usingMockDataset,
       filters,
       drilldown,
       selection: {
@@ -751,18 +837,55 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const parsed = SEARCH_SCHEMA.safeParse(raw);
   const search = parsed.success ? parsed.data : SEARCH_SCHEMA.parse({});
   const scenario = scenarioFromRequest(request);
-  const days = PERIOD_TO_DAYS[search.period] ?? PERIOD_TO_DAYS[DEFAULT_PERIOD];
+  const rangeKey = mapPeriodToRangeKey(search.period);
+  const rangeSelection = buildDashboardRangeSelection(rangeKey);
+  const actionRangeStart = toDateOnlyString(rangeSelection.start);
+  const actionRangeEnd = toDateOnlyString(rangeSelection.end);
 
-  if (!USE_MOCK_DATA) {
-    await authenticate.admin(request);
-    // TODO: Stream export via background job once analytics adapter is live.
-  }
-
-  const dataset = getSalesScenario({
+  const fixtureDataset = buildSalesFixtureDataset({
     scenario,
     granularity: search.granularity,
-    days,
+    range: {
+      label: rangeSelection.label,
+      start: actionRangeStart,
+      end: actionRangeEnd,
+      days: rangeSelection.days,
+    },
   });
+
+  let dataset: SalesDataset = fixtureDataset;
+
+  if (!USE_MOCK_DATA) {
+    const auth = await authenticate.admin(request);
+    try {
+      dataset = await fetchSalesAnalyticsWithCache({
+        shopDomain: auth?.session?.shop ?? undefined,
+        signal: request.signal,
+        search: {
+          period: search.period,
+          compare: search.compare,
+          granularity: search.granularity,
+          bucketDate: search.bucketDate ?? undefined,
+          collectionId: search.collectionId ?? undefined,
+          productId: search.productId ?? undefined,
+          variantId: search.variantId ?? undefined,
+          days: rangeSelection.days,
+          rangeStart: actionRangeStart,
+          rangeEnd: actionRangeEnd,
+        },
+      });
+    } catch (error) {
+      console.error("sales action: analytics fetch failed", error);
+      const fallbackMessage = "Sales analytics export using mock data";
+      dataset = {
+        ...fixtureDataset,
+        state: fixtureDataset.state === "ok" ? "warning" : fixtureDataset.state,
+        alert: fixtureDataset.alert
+          ? `${fallbackMessage}. ${fixtureDataset.alert}`
+          : fallbackMessage,
+      };
+    }
+  }
 
   const bucket = search.bucketDate
     ? dataset.trend.find((entry) => entry.date === search.bucketDate)
@@ -802,8 +925,26 @@ export default function SalesRoute() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const exportFetcher = useFetcher();
+  const drilldownPrefetcher = useFetcher();
+  const location = useLocation();
+  const { load: loadDrilldown } = drilldownPrefetcher;
   const exportData = exportFetcher.data as string | undefined;
   const exportReadyRef = useRef<string | null>(null);
+  const prefetchedDrilldownsRef = useRef<Set<string>>(new Set());
+  const basePathname = location.pathname || "/app/sales";
+  // Track prefetched drilldown paths so hover/focus events don't hammer the analytics endpoint.
+  const prefetchDrilldown = useCallback(
+    (href: string | null | undefined) => {
+      if (!href) return;
+      const targetPath = href.startsWith("?") ? `${basePathname}${href}` : href;
+      if (prefetchedDrilldownsRef.current.has(targetPath)) {
+        return;
+      }
+      prefetchedDrilldownsRef.current.add(targetPath);
+      loadDrilldown(targetPath);
+    },
+    [basePathname, loadDrilldown],
+  );
 
   const buildClientHref = useMemo(
     () =>
@@ -925,6 +1066,70 @@ export default function SalesRoute() {
     exportFetcher.submit(submission, { method: "post" });
   };
 
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: dataset.totals.currentTotal.currency,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    [dataset.totals.currentTotal.currency],
+  );
+
+  const formatCurrencyValue = useCallback(
+    (value: number | string | null | undefined) => {
+      const numeric =
+        typeof value === "number"
+          ? value
+          : Number(
+              typeof value === "string" && value.trim().length
+                ? value
+                : value ?? 0,
+            );
+      const safe = Number.isFinite(numeric) ? numeric : 0;
+      return currencyFormatter.format(safe);
+    },
+    [currencyFormatter],
+  );
+
+  const revenueTrendSeries = useMemo<DataSeries[]>(() => {
+    if (!dataset.trend.length) return [];
+    return [
+      {
+        name: "GMV",
+        data: dataset.trend.map((bucket) => ({
+          key: bucket.date,
+          value: bucket.total.amount,
+        })),
+      },
+    ];
+  }, [dataset.trend]);
+
+  const channelBreakdownData = useMemo(
+    () =>
+      dataset.channelBreakdown.map((channel) => ({
+        key: channel.channel,
+        value: channel.total.amount,
+      })),
+    [dataset.channelBreakdown],
+  );
+
+  const channelBreakdownSeries = useMemo<DataSeries[]>(() => {
+    if (!channelBreakdownData.length) return [];
+    return [
+      {
+        name: "Revenue",
+        data: channelBreakdownData,
+      },
+    ];
+  }, [channelBreakdownData]);
+
+  const channelChartHeight = useMemo(
+    () => Math.max(160, channelBreakdownData.length * 44),
+    [channelBreakdownData],
+  );
+
   const drilldownTable = useMemo(() => {
     switch (drilldown.level) {
       case "collections": {
@@ -938,7 +1143,14 @@ export default function SalesRoute() {
             : "";
           return [
             drilldown.nextLevel ? (
-              <PolarisLink url={href}>{row.title}</PolarisLink>
+              <PolarisLink
+                url={href}
+                onMouseEnter={() => prefetchDrilldown(href)}
+                onFocus={() => prefetchDrilldown(href)}
+                onTouchStart={() => prefetchDrilldown(href)}
+              >
+                {row.title}
+              </PolarisLink>
             ) : (
               row.title
             ),
@@ -985,7 +1197,14 @@ export default function SalesRoute() {
             : "";
           return [
             drilldown.nextLevel ? (
-              <PolarisLink url={href}>{row.title}</PolarisLink>
+              <PolarisLink
+                url={href}
+                onMouseEnter={() => prefetchDrilldown(href)}
+                onFocus={() => prefetchDrilldown(href)}
+                onTouchStart={() => prefetchDrilldown(href)}
+              >
+                {row.title}
+              </PolarisLink>
             ) : (
               row.title
             ),
@@ -1145,10 +1364,11 @@ export default function SalesRoute() {
   );
 
   return (
-    <Page
-      title="Sales analytics"
-      subtitle="Inspect revenue trends, channel performance, and forecast variance."
-    >
+    <PolarisVizProvider>
+      <Page
+        title="Sales analytics"
+        subtitle="Inspect revenue trends, channel performance, and forecast variance."
+      >
       <TitleBar
         title="Sales"
         primaryAction={{
@@ -1322,37 +1542,93 @@ export default function SalesRoute() {
 
         <Layout>
           <Layout.Section>
-            <Card title="Revenue trend" sectioned>
-              <DataTable
-                columnContentTypes={["text", "text", "numeric"]}
-                headings={["Date", "GMV", "Orders"]}
-                rows={trendRows}
-              />
+            <Card title="Revenue trend">
+              <Card.Section>
+                {revenueTrendSeries.length ? (
+                  <div style={{ width: "100%", height: 220 }}>
+                    <SparkLineChart
+                      data={revenueTrendSeries}
+                      isAnimated={false}
+                      accessibilityLabel="Revenue trend for the selected period"
+                      tooltipOptions={{
+                        valueFormatter: (value) => formatCurrencyValue(value),
+                        keyFormatter: (value) => formatDate(String(value ?? "")),
+                        titleFormatter: (value) => formatDate(String(value ?? "")),
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <Text tone="subdued" variant="bodySm">
+                    Revenue trend data unavailable.
+                  </Text>
+                )}
+              </Card.Section>
+              <Card.Section>
+                {trendRows.length ? (
+                  <DataTable
+                    columnContentTypes={["text", "text", "numeric"]}
+                    headings={["Date", "GMV", "Orders"]}
+                    rows={trendRows}
+                  />
+                ) : (
+                  <Text tone="subdued" variant="bodySm">
+                    No revenue entries for this period.
+                  </Text>
+                )}
+              </Card.Section>
             </Card>
           </Layout.Section>
           <Layout.Section secondary>
-            <Card title="Channel breakdown" sectioned>
-              <BlockStack gap="300">
-                {dataset.channelBreakdown.map((channel) => (
-                  <InlineStack
-                    key={channel.channel}
-                    align="space-between"
-                    blockAlign="center"
-                  >
-                    <BlockStack gap="050">
-                      <Text as="span" variant="bodyMd">
-                        {channel.channel}
-                      </Text>
-                      <Text as="span" variant="bodySm" tone="subdued">
-                        {formatPercent(channel.percentage, 1)} of revenue
-                      </Text>
-                    </BlockStack>
-                    <Text variant="headingMd" as="span">
-                      {channel.total.formatted}
-                    </Text>
-                  </InlineStack>
-                ))}
-              </BlockStack>
+            <Card title="Channel breakdown">
+              <Card.Section>
+                {channelBreakdownSeries.length ? (
+                  <div style={{ width: "100%", height: channelChartHeight }}>
+                    <BarChart
+                      data={channelBreakdownSeries}
+                      direction="horizontal"
+                      isAnimated={false}
+                      showLegend={false}
+                      skipLinkText="Skip channel breakdown chart"
+                      tooltipOptions={{
+                        valueFormatter: (value) => formatCurrencyValue(value),
+                        keyFormatter: (value) => String(value ?? ""),
+                      }}
+                      xAxisOptions={{
+                        labelFormatter: (value) => formatCurrencyValue(value),
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <Text tone="subdued" variant="bodySm">
+                    No channel data available.
+                  </Text>
+                )}
+              </Card.Section>
+              {dataset.channelBreakdown.length ? (
+                <Card.Section>
+                  <BlockStack gap="300">
+                    {dataset.channelBreakdown.map((channel) => (
+                      <InlineStack
+                        key={channel.channel}
+                        align="space-between"
+                        blockAlign="center"
+                      >
+                        <BlockStack gap="050">
+                          <Text as="span" variant="bodyMd">
+                            {channel.channel}
+                          </Text>
+                          <Text as="span" variant="bodySm" tone="subdued">
+                            {formatPercent(channel.percentage, 1)} of revenue
+                          </Text>
+                        </BlockStack>
+                        <Text variant="headingMd" as="span">
+                          {channel.total.formatted}
+                        </Text>
+                      </InlineStack>
+                    ))}
+                  </BlockStack>
+                </Card.Section>
+              ) : null}
             </Card>
           </Layout.Section>
         </Layout>
@@ -1477,6 +1753,7 @@ export default function SalesRoute() {
         </Layout>
       </BlockStack>
     </Page>
+    </PolarisVizProvider>
   );
 }
 

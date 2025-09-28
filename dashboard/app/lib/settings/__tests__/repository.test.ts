@@ -7,356 +7,18 @@ import {
   vi,
 } from "vitest";
 
-import { encryptSecret } from "~/lib/security/secrets.server";
 import { resetMockSettings } from "~/mocks/settings";
-import type {
-  SettingsProvider,
-  ThresholdSettings,
-} from "~/types/settings";
+import {
+  createSettingsPrismaStub,
+  seedSettingsStore,
+  type SettingsPrismaStub,
+} from "~/tests/settings-prisma-stub";
 
 const loadRepository = async () => {
   const module = await import("~/lib/settings/repository.server");
   return module.storeSettingsRepository;
 };
-
-type PrismaStoreSettingsLike = {
-  id: string;
-  storeId: string;
-  thresholds: ThresholdSettings | null;
-  featureFlags: Record<string, unknown> | null;
-  connectionMetadata: Record<string, unknown> | null;
-  lastRotationAt: Date | null;
-  lastInventorySyncAt: Date | null;
-  notificationEmails: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-type PrismaStoreSecretLike = {
-  id: string;
-  storeId: string;
-  provider: SettingsProvider;
-  ciphertext: string;
-  maskedValue: string;
-  lastVerifiedAt: Date | null;
-  rotationReminderAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-type PrismaStub = {
-  store: {
-    findUnique: (args: any) => Promise<any>;
-    create: (args: any) => Promise<any>;
-    deleteMany: (args: any) => Promise<{ count: number }>;
-  };
-  storeSettings: {
-    findUnique: (args: any) => Promise<PrismaStoreSettingsLike | null>;
-    create: (args: any) => Promise<PrismaStoreSettingsLike>;
-    update: (args: any) => Promise<PrismaStoreSettingsLike>;
-  };
-  storeSecret: {
-    findMany: (args: any) => Promise<PrismaStoreSecretLike[]>;
-    findUnique: (args: any) => Promise<PrismaStoreSecretLike | null>;
-    upsert: (args: any) => Promise<PrismaStoreSecretLike>;
-    deleteMany: (args: any) => Promise<{ count: number }>;
-  };
-  connectionEvent: {
-    create: (args: any) => Promise<any>;
-  };
-  $transaction: (operations: Promise<unknown>[]) => Promise<unknown[]>;
-};
-
-type StoreRecord = {
-  id: string;
-  domain: string;
-  myShopifyDomain: string | null;
-  name?: string | null;
-};
-
-const createPrismaStub = (): PrismaStub => {
-  let idCounter = 1;
-  const stores = new Map<string, StoreRecord>();
-  const settings = new Map<string, PrismaStoreSettingsLike>();
-  const secrets = new Map<string, Map<SettingsProvider, PrismaStoreSecretLike>>();
-  const connectionEvents: Array<{
-    id: string;
-    storeId: string;
-    integration: string;
-    status: string;
-    metadata: unknown;
-    message?: string | null;
-    createdAt: Date;
-  }> = [];
-
-  const nextId = (prefix: string) => `${prefix}_${idCounter++}`;
-
-  const clone = <T>(value: T): T =>
-    value === undefined || value === null
-      ? (value as T)
-      : structuredClone(value);
-
-  const ensureSecretBucket = (storeId: string) => {
-    if (!secrets.has(storeId)) {
-      secrets.set(storeId, new Map());
-    }
-    return secrets.get(storeId)!;
-  };
-
-  return {
-    store: {
-      findFirst: async ({ where, include }: any) => {
-        const match = Array.from(stores.values()).find((record) => {
-          const byDomain = record.domain === where?.OR?.[0]?.domain;
-          const byMyShopify =
-            record.myShopifyDomain === where?.OR?.[1]?.myShopifyDomain;
-          return Boolean(byDomain || byMyShopify);
-        });
-
-        if (!match) {
-          return null;
-        }
-
-        return {
-          ...clone(match),
-          settings: include?.settings
-            ? clone(settings.get(match.id) ?? null)
-            : undefined,
-          secrets: include?.secrets
-            ? Array.from(ensureSecretBucket(match.id).values()).map(clone)
-            : undefined,
-        };
-      },
-      findUnique: async ({ where, select }: any) => {
-        const record = where?.domain ? stores.get(where.domain) : undefined;
-        if (!record) {
-          return null;
-        }
-        if (select && select.id) {
-          return { id: record.id };
-        }
-        return clone(record);
-      },
-      create: async ({ data }: any) => {
-        const id = nextId("store");
-        stores.set(data.domain, {
-          id,
-          domain: data.domain,
-          myShopifyDomain: data.myShopifyDomain ?? null,
-          name: data.name ?? null,
-        });
-        return { id, ...data };
-      },
-      deleteMany: async ({ where }: any) => {
-        let count = 0;
-        if (where?.domain) {
-          const record = stores.get(where.domain);
-          if (record) {
-            stores.delete(where.domain);
-            settings.delete(record.id);
-            secrets.delete(record.id);
-            count = 1;
-          }
-        }
-        return { count };
-      },
-    },
-    storeSettings: {
-      findUnique: async ({ where }: any) => {
-        const record = settings.get(where.storeId);
-        return record ? clone(record) : null;
-      },
-      create: async ({ data }: any) => {
-        const record: PrismaStoreSettingsLike = {
-          id: nextId("settings"),
-          storeId: data.storeId,
-          thresholds: clone(data.thresholds ?? null),
-          featureFlags: clone(data.featureFlags ?? null),
-          connectionMetadata: clone(data.connectionMetadata ?? null),
-          lastRotationAt: data.lastRotationAt ?? null,
-          lastInventorySyncAt: data.lastInventorySyncAt ?? null,
-          notificationEmails: data.notificationEmails ?? null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        settings.set(data.storeId, record);
-        return clone(record);
-      },
-      update: async ({ where, data }: any) => {
-        const record = settings.get(where.storeId);
-        if (!record) {
-          throw new Error(`StoreSettings missing for ${where.storeId}`);
-        }
-        if (data.thresholds !== undefined) {
-          record.thresholds = clone(data.thresholds);
-        }
-        if (data.featureFlags !== undefined) {
-          record.featureFlags = clone(data.featureFlags);
-        }
-        if (data.connectionMetadata !== undefined) {
-          record.connectionMetadata = clone(data.connectionMetadata);
-        }
-        record.updatedAt = new Date();
-        return clone(record);
-      },
-    },
-    storeSecret: {
-      create: async ({ data }: any) => {
-        const bucket = ensureSecretBucket(data.storeId);
-        const record: PrismaStoreSecretLike = {
-          id: nextId("secret"),
-          storeId: data.storeId,
-          provider: data.provider,
-          ciphertext: data.ciphertext,
-          maskedValue: data.maskedValue,
-          lastVerifiedAt: data.lastVerifiedAt ?? null,
-          rotationReminderAt: data.rotationReminderAt ?? null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        bucket.set(data.provider, record);
-        return clone(record);
-      },
-      findMany: async ({ where }: any) => {
-        const bucket = ensureSecretBucket(where.storeId);
-        return Array.from(bucket.values()).map(clone);
-      },
-      findUnique: async ({ where }: any) => {
-        const bucket = ensureSecretBucket(where.storeId_provider.storeId);
-        const record = bucket.get(
-          where.storeId_provider.provider as SettingsProvider,
-        );
-        return record ? clone(record) : null;
-      },
-      upsert: async ({ where, create, update }: any) => {
-        const storeId = where.storeId_provider.storeId;
-        const provider = where.storeId_provider.provider as SettingsProvider;
-        const bucket = ensureSecretBucket(storeId);
-        const now = new Date();
-        const existing = bucket.get(provider);
-        const payload = existing ? update : create;
-        const base = existing ?? {
-          id: nextId("secret"),
-          storeId,
-          provider,
-          ciphertext: payload.ciphertext,
-          maskedValue: payload.maskedValue,
-          lastVerifiedAt: payload.lastVerifiedAt ?? null,
-          rotationReminderAt: payload.rotationReminderAt ?? null,
-          createdAt: now,
-          updatedAt: now,
-        };
-
-        base.ciphertext = payload.ciphertext;
-        base.maskedValue = payload.maskedValue;
-        base.lastVerifiedAt = payload.lastVerifiedAt ?? null;
-        base.rotationReminderAt = payload.rotationReminderAt ?? null;
-        base.updatedAt = now;
-
-        bucket.set(provider, { ...base });
-        return clone(base);
-      },
-      update: async ({ where, data }: any) => {
-        for (const bucket of secrets.values()) {
-          for (const record of bucket.values()) {
-            if (record.id === where.id) {
-              record.ciphertext = data.ciphertext ?? record.ciphertext;
-              record.maskedValue = data.maskedValue ?? record.maskedValue;
-              record.lastVerifiedAt =
-                data.lastVerifiedAt ?? record.lastVerifiedAt;
-              record.rotationReminderAt =
-                data.rotationReminderAt ?? record.rotationReminderAt;
-              record.updatedAt = new Date();
-              return clone(record);
-            }
-          }
-        }
-        throw new Error(`Secret with id ${where.id} not found`);
-      },
-      deleteMany: async ({ where }: any) => {
-        const bucket = ensureSecretBucket(where.storeId);
-        let count = 0;
-        if (where.provider) {
-          count = bucket.delete(where.provider as SettingsProvider) ? 1 : 0;
-        } else {
-          count = bucket.size;
-          bucket.clear();
-        }
-        return { count };
-      },
-    },
-    connectionEvent: {
-      findMany: async ({ where, orderBy, take, select }: any) => {
-        let results = connectionEvents.filter((event) => {
-          if (where.storeId && event.storeId !== where.storeId) {
-            return false;
-          }
-          const integrationFilter = where.integration;
-          if (integrationFilter) {
-            if (
-              integrationFilter.in &&
-              Array.isArray(integrationFilter.in) &&
-              !integrationFilter.in.includes(event.integration)
-            ) {
-              return false;
-            }
-
-            if (
-              typeof integrationFilter === "string" &&
-              integrationFilter !== event.integration
-            ) {
-              return false;
-            }
-          }
-          return true;
-        });
-
-        if (orderBy?.createdAt === "desc") {
-          results = [...results].sort(
-            (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-          );
-        }
-
-        if (typeof take === "number") {
-          results = results.slice(0, take);
-        }
-
-        if (select) {
-          return results.map((event) => {
-            const picked: Record<string, unknown> = {};
-            for (const key of Object.keys(select)) {
-              if (select[key]) {
-                picked[key] = clone((event as any)[key]);
-              }
-            }
-            return picked;
-          });
-        }
-
-        return results.map(clone);
-      },
-      create: async ({ data }: any) => {
-        const record = {
-          id: nextId("event"),
-          ...clone(data),
-        } as {
-          id: string;
-          storeId: string;
-          integration: string;
-          status: string;
-          metadata: unknown;
-          message?: string | null;
-          createdAt: Date;
-        };
-        connectionEvents.push(record);
-        return clone(record);
-      },
-    },
-    $transaction: async (operations: Promise<unknown>[]) => Promise.all(operations),
-  } satisfies PrismaStub;
-};
-
-const loadRepositoryWithStub = async (prismaStub: PrismaStub) => {
+const loadRepositoryWithStub = async (prismaStub: SettingsPrismaStub) => {
   vi.resetModules();
   vi.doMock("~/db.server", () => ({
     __esModule: true,
@@ -505,30 +167,12 @@ describe("StoreSettingsRepository (Prisma)", () => {
     vi.doUnmock("~/db.server");
   });
 
-  const seedStore = async (
-    prismaStub: PrismaStub,
-    shopDomain: string,
-  ): Promise<string> => {
-    await prismaStub.store.deleteMany({ where: { domain: shopDomain } });
-    const record = await prismaStub.store.create({
-      data: {
-        domain: shopDomain,
-        myShopifyDomain: shopDomain,
-        name: "Prisma Test Shop",
-        accessTokenCipher: encryptSecret("test-token"),
-        planLevel: "pro",
-        status: "ACTIVE",
-      },
-    });
-    return record.id as string;
-  };
-
   it("creates settings row on first access and updates thresholds", async () => {
-    const prismaStub = createPrismaStub();
+    const prismaStub = createSettingsPrismaStub();
     const repo = await loadRepositoryWithStub(prismaStub);
     const shopDomain = "prisma-thresholds.myshopify.com";
 
-    await seedStore(prismaStub, shopDomain);
+    await seedSettingsStore(prismaStub, shopDomain);
 
     const initial = await repo.getSettings(shopDomain);
     expect(initial.shopDomain).toBe(shopDomain);
@@ -546,11 +190,11 @@ describe("StoreSettingsRepository (Prisma)", () => {
   });
 
   it("persists encrypted secrets and exposes metadata", async () => {
-    const prismaStub = createPrismaStub();
+    const prismaStub = createSettingsPrismaStub();
     const repo = await loadRepositoryWithStub(prismaStub);
     const shopDomain = "prisma-secret.myshopify.com";
 
-    await seedStore(prismaStub, shopDomain);
+    await seedSettingsStore(prismaStub, shopDomain);
 
     await repo.updateSecret(shopDomain, {
       provider: "bing",
@@ -568,11 +212,11 @@ describe("StoreSettingsRepository (Prisma)", () => {
   });
 
   it("records connection tests and trims history", async () => {
-    const prismaStub = createPrismaStub();
+    const prismaStub = createSettingsPrismaStub();
     const repo = await loadRepositoryWithStub(prismaStub);
     const shopDomain = "prisma-connection.myshopify.com";
 
-    await seedStore(prismaStub, shopDomain);
+    await seedSettingsStore(prismaStub, shopDomain);
 
     for (let i = 0; i < 6; i += 1) {
       await repo.recordConnectionTest(shopDomain, {
@@ -591,11 +235,11 @@ describe("StoreSettingsRepository (Prisma)", () => {
   });
 
   it("persists MCP overrides in connection metadata", async () => {
-    const prismaStub = createPrismaStub();
+    const prismaStub = createSettingsPrismaStub();
     const repo = await loadRepositoryWithStub(prismaStub);
     const shopDomain = "prisma-overrides.myshopify.com";
 
-    const storeId = await seedStore(prismaStub, shopDomain);
+    const storeId = await seedSettingsStore(prismaStub, shopDomain);
 
     const overrides = await repo.updateMcpIntegrationOverrides(shopDomain, {
       endpoint: "https://mcp.example/api",

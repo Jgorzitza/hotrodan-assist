@@ -40,6 +40,7 @@ type QueueDriver = {
   mark(jobId: string, status: WebhookQueueStatus, error?: string): Promise<WebhookQueueJob | undefined>;
   snapshot(): Promise<WebhookQueueJob[]>;
   clear(): Promise<void>;
+  purge(shopDomain: string): Promise<number>;
 };
 
 const parseBoolean = (value: string | undefined | null, fallback = false): boolean => {
@@ -109,6 +110,18 @@ const createMemoryDriver = (): QueueDriver => {
     },
     async clear() {
       queue.splice(0, queue.length);
+    },
+    async purge(shopDomain) {
+      const normalized = shopDomain.toLowerCase();
+      let removed = 0;
+      for (let index = queue.length - 1; index >= 0; index -= 1) {
+        const item = queue[index];
+        if (item.shopDomain.toLowerCase() === normalized) {
+          queue.splice(index, 1);
+          removed += 1;
+        }
+      }
+      return removed;
     },
   };
 };
@@ -212,6 +225,20 @@ const createBullDriver = (): QueueDriver => {
       await queue.clean(0, 1000, "failed");
       await queue.clean(0, 1000, "delayed");
     },
+    async purge(shopDomain) {
+      const normalized = shopDomain.toLowerCase();
+      const targetStatuses = ["waiting", "delayed", "paused", "waiting-children"] as const; // BullMQ job types we can safely remove
+      const jobs = await queue.getJobs(targetStatuses as any, 0, -1, false);
+      let removed = 0;
+      for (const job of jobs) {
+        const domain = (job.data?.shopDomain ?? job.data?.shop ?? "").toLowerCase();
+        if (domain === normalized) {
+          await job.remove();
+          removed += 1;
+        }
+      }
+      return removed;
+    },
   };
 };
 
@@ -232,6 +259,8 @@ export const markJobStatus = (jobId: string, status: WebhookQueueStatus, error?:
 export const snapshotQueue = () => getDriver().snapshot();
 
 export const clearQueue = () => getDriver().clear();
+
+export const purgeShopJobs = (shopDomain: string) => getDriver().purge(shopDomain);
 
 export const createWebhookQueueWorker = (
   processor: (job: Job<BullWebhookJobData>) => Promise<unknown>,

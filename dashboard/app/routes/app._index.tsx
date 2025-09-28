@@ -5,6 +5,7 @@ import {
   useFetcher,
   useLoaderData,
   useNavigate,
+  useNavigation,
   useSearchParams,
 } from "@remix-run/react";
 import {
@@ -18,6 +19,9 @@ import {
   InlineStack,
   Layout,
   Page,
+  SkeletonBodyText,
+  SkeletonDisplayText,
+  SkeletonThumbnail,
   Text,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
@@ -142,6 +146,7 @@ export default function DashboardRoute() {
   const { data, useMockData, scenario, mcp } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const navigation = useNavigation();
   const salesPrefetcher = useFetcher();
   const prefetchedSalesHref = useRef<string | null>(null);
 
@@ -150,8 +155,14 @@ export default function DashboardRoute() {
     data.range ?? DEFAULT_DASHBOARD_RANGE,
   );
 
+  const navigationLocation = navigation.location;
+  const isHomeNavigation = navigation.state !== "idle" && navigationLocation?.pathname === "/app";
+  const showSkeleton = isHomeNavigation;
+
+  const sharedLinkOptions = { searchParams };
+
   const salesHref = (() => {
-    const base = withDashboardRangeParam("/app/sales", activeRange);
+    const base = withDashboardRangeParam("/app/sales", activeRange, sharedLinkOptions);
     const url = new URL(base, "https://dashboard.internal");
     url.searchParams.set("period", SALES_PERIOD_BY_RANGE[activeRange] ?? "28d");
     return `${url.pathname}${url.search}${url.hash}`;
@@ -177,6 +188,29 @@ export default function DashboardRoute() {
   }));
 
   const rangeLabel = data.rangeLabel ?? DASHBOARD_RANGE_PRESETS[activeRange].label;
+
+  const metricCount = data.metrics.length || 4;
+  const metricsContent = showSkeleton
+    ? Array.from({ length: metricCount }, (_, index) => (
+        <Card key={`metric-skeleton-${index}`} sectioned>
+          <MetricTileSkeleton />
+        </Card>
+      ))
+    : data.metrics.map((metric) => (
+        <Card key={metric.id} sectioned>
+          <BlockStack gap="100">
+            <Text as="span" variant="bodySm" tone="subdued">
+              {metric.label}
+            </Text>
+            <Text as="p" variant="headingLg">
+              {metric.value}
+            </Text>
+            <Badge tone={metric.delta >= 0 ? "success" : "critical"}>
+              {formatDelta(metric.delta)} {metric.deltaPeriod}
+            </Badge>
+          </BlockStack>
+        </Card>
+      ));
 
   return (
     <PolarisVizProvider>
@@ -224,29 +258,22 @@ export default function DashboardRoute() {
                       </Button>
                     ))}
                   </ButtonGroup>
+                  <Text as="span" tone="subdued" variant="bodySm">
+                    {rangeLabel}
+                  </Text>
                 </InlineStack>
               </InlineStack>
               <InlineGrid columns={{ xs: 1, sm: 2, lg: 4 }} gap="300">
-                {data.metrics.map((metric) => (
-                  <Card key={metric.id} sectioned>
-                    <BlockStack gap="100">
-                      <Text as="span" variant="bodySm" tone="subdued">
-                        {metric.label}
-                      </Text>
-                      <Text as="p" variant="headingLg">
-                        {metric.value}
-                      </Text>
-                      <Badge tone={metric.delta >= 0 ? "success" : "critical"}>
-                        {formatDelta(metric.delta)} {metric.deltaPeriod}
-                      </Badge>
-                    </BlockStack>
-                  </Card>
-                ))}
+                {metricsContent}
               </InlineGrid>
-              <SalesSparkline
-                points={sparklineData}
-                rangeLabel={rangeLabel}
-              />
+              {showSkeleton ? (
+                <SalesSparklineSkeleton />
+              ) : (
+                <SalesSparkline
+                  points={sparklineData}
+                  rangeLabel={rangeLabel}
+                />
+              )}
             </BlockStack>
           </Card>
 
@@ -254,71 +281,83 @@ export default function DashboardRoute() {
             <Layout.Section oneHalf>
               <Card title="Orders attention" sectioned>
                 <BlockStack gap="300">
-                  {data.orders.map((bucket) => (
-                    <InlineStack
-                      key={bucket.id}
-                      align="space-between"
-                      blockAlign="center"
-                    >
-                      <BlockStack gap="050">
-                        <Text as="p" variant="headingMd">
-                          {bucket.label}
-                        </Text>
-                        <Text as="span" variant="bodySm" tone="subdued">
-                          {bucket.description}
-                        </Text>
-                      </BlockStack>
-                      <InlineStack gap="200" blockAlign="center">
-                        <Text as="span" variant="headingMd">
-                          {bucket.count}
-                        </Text>
-                        <Button
-                          url={withDashboardRangeParam(bucket.href, activeRange)}
-                          accessibilityLabel={`View ${bucket.label}`}
+                  {(showSkeleton
+                    ? Array.from({ length: data.orders.length || 3 }, (_, index) => (
+                        <OrderBucketSkeleton key={`order-skeleton-${index}`} />
+                      ))
+                    : data.orders.map((bucket) => (
+                        <InlineStack
+                          key={bucket.id}
+                          align="space-between"
+                          blockAlign="center"
                         >
-                          Open
-                        </Button>
-                      </InlineStack>
-                    </InlineStack>
-                  ))}
+                          <BlockStack gap="050">
+                            <Text as="p" variant="headingMd">
+                              {bucket.label}
+                            </Text>
+                            <Text as="span" variant="bodySm" tone="subdued">
+                              {bucket.description}
+                            </Text>
+                          </BlockStack>
+                          <InlineStack gap="200" blockAlign="center">
+                            <Text as="span" variant="headingMd">
+                              {bucket.count}
+                            </Text>
+                            <Button
+                              url={withDashboardRangeParam(
+                                bucket.href,
+                                activeRange,
+                                sharedLinkOptions,
+                              )}
+                              accessibilityLabel={`View ${bucket.label}`}
+                            >
+                              Open
+                            </Button>
+                          </InlineStack>
+                        </InlineStack>
+                      )))}
                 </BlockStack>
               </Card>
             </Layout.Section>
             <Layout.Section secondary>
               <Card title="Inbox" sectioned>
-                <BlockStack gap="200">
-                  <InlineStack align="space-between">
-                    <Text variant="bodyMd" as="span">
-                      Outstanding
-                    </Text>
-                    <Text variant="headingMd" as="span">
-                      {data.inbox.outstanding}
-                    </Text>
-                  </InlineStack>
-                  <InlineStack align="space-between">
-                    <Text variant="bodyMd" as="span">
-                      Overdue &gt;12h
-                    </Text>
-                    <Text variant="headingMd" as="span">
-                      {data.inbox.overdueHours}
-                    </Text>
-                  </InlineStack>
-                  <InlineStack align="space-between">
-                    <Text variant="bodyMd" as="span">
-                      Approvals pending
-                    </Text>
-                    <Text variant="headingMd" as="span">
-                      {data.inbox.approvalsPending}
-                    </Text>
-                  </InlineStack>
-                  <Button
-                    url={withDashboardRangeParam("/app/inbox", activeRange)}
-                    tone="primary"
-                    variant="plain"
-                  >
-                    Go to inbox
-                  </Button>
-                </BlockStack>
+                {showSkeleton ? (
+                  <InboxSnapshotSkeleton />
+                ) : (
+                  <BlockStack gap="200">
+                    <InlineStack align="space-between">
+                      <Text variant="bodyMd" as="span">
+                        Outstanding
+                      </Text>
+                      <Text variant="headingMd" as="span">
+                        {data.inbox.outstanding}
+                      </Text>
+                    </InlineStack>
+                    <InlineStack align="space-between">
+                      <Text variant="bodyMd" as="span">
+                        Overdue &gt;12h
+                      </Text>
+                      <Text variant="headingMd" as="span">
+                        {data.inbox.overdueHours}
+                      </Text>
+                    </InlineStack>
+                    <InlineStack align="space-between">
+                      <Text variant="bodyMd" as="span">
+                        AI approvals pending
+                      </Text>
+                      <Text variant="headingMd" as="span">
+                        {data.inbox.approvalsPending}
+                      </Text>
+                    </InlineStack>
+                    <Button
+                      url={withDashboardRangeParam("/app/inbox", activeRange, sharedLinkOptions)}
+                      tone="primary"
+                      variant="plain"
+                    >
+                      Go to inbox
+                    </Button>
+                  </BlockStack>
+                )}
               </Card>
             </Layout.Section>
           </Layout>
@@ -326,20 +365,33 @@ export default function DashboardRoute() {
           <Layout>
             <Layout.Section>
               <Card title="Inventory snapshot" sectioned>
-                <InlineStack gap="400">
-                  <MetricTile label="Low stock" value={data.inventory.lowStock} />
-                  <MetricTile
-                    label="POs in flight"
-                    value={data.inventory.purchaseOrdersInFlight}
-                  />
-                  <MetricTile label="Overstock" value={data.inventory.overstock} />
-                </InlineStack>
-                <Button
-                  url={withDashboardRangeParam("/app/inventory", activeRange)}
-                  accessibilityLabel="View inventory planner"
-                >
-                  Open inventory planner
-                </Button>
+                {showSkeleton ? (
+                  <BlockStack gap="200">
+                    <InlineStack gap="400">
+                      {Array.from({ length: 3 }, (_, index) => (
+                        <MetricTileSkeleton key={`inventory-skeleton-${index}`} />
+                      ))}
+                    </InlineStack>
+                    <SkeletonDisplayText size="small" />
+                  </BlockStack>
+                ) : (
+                  <>
+                    <InlineStack gap="400">
+                      <MetricTile label="Low stock" value={data.inventory.lowStock} />
+                      <MetricTile
+                        label="POs in flight"
+                        value={data.inventory.purchaseOrdersInFlight}
+                      />
+                      <MetricTile label="Overstock" value={data.inventory.overstock} />
+                    </InlineStack>
+                    <Button
+                      url={withDashboardRangeParam("/app/inventory", activeRange, sharedLinkOptions)}
+                      accessibilityLabel="View inventory planner"
+                    >
+                      Open inventory planner
+                    </Button>
+                  </>
+                )}
               </Card>
             </Layout.Section>
           </Layout>
@@ -347,61 +399,83 @@ export default function DashboardRoute() {
           <Layout>
             <Layout.Section oneHalf>
               <Card title="SEO highlights" sectioned>
-                <BlockStack gap="200">
-                  <Text as="span" variant="bodyMd">
-                    Traffic Δ
-                  </Text>
-                  <Badge tone="success">+{data.seo.trafficDelta}%</Badge>
-                  <Text as="p" variant="bodySm">
-                    {data.seo.summary}
-                  </Text>
-                  <InlineStack gap="300">
-                    <Text variant="bodyMd" as="span">
-                      Rising queries
+                {showSkeleton ? (
+                  <SeoHighlightsSkeleton />
+                ) : (
+                  <BlockStack gap="200">
+                    <Text as="span" variant="bodyMd">
+                      Traffic Δ
                     </Text>
-                    <Text variant="headingMd" as="span">
-                      {data.seo.risingQueries}
+                    <Badge tone="success">+{data.seo.trafficDelta}%</Badge>
+                    <Text as="p" variant="bodySm">
+                      {data.seo.summary}
                     </Text>
-                  </InlineStack>
-                  <InlineStack gap="300">
-                    <Text variant="bodyMd" as="span">
-                      Critical issues
-                    </Text>
-                    <Text variant="headingMd" tone="critical" as="span">
-                      {data.seo.criticalIssues}
-                    </Text>
-                  </InlineStack>
-                  <Button url={withDashboardRangeParam("/app/seo", activeRange)} variant="plain">
-                    Dive into SEO
-                  </Button>
-                </BlockStack>
+                    <InlineStack gap="300">
+                      <Text variant="bodyMd" as="span">
+                        Rising queries
+                      </Text>
+                      <Text variant="headingMd" as="span">
+                        {data.seo.risingQueries}
+                      </Text>
+                    </InlineStack>
+                    <InlineStack gap="300">
+                      <Text variant="bodyMd" as="span">
+                        Rising pages
+                      </Text>
+                      <Text variant="headingMd" as="span">
+                        {data.seo.risingPages}
+                      </Text>
+                    </InlineStack>
+                    <InlineStack gap="300">
+                      <Text variant="bodyMd" as="span">
+                        Critical issues
+                      </Text>
+                      <Text variant="headingMd" tone="critical" as="span">
+                        {data.seo.criticalIssues}
+                      </Text>
+                    </InlineStack>
+                    <Button
+                      url={withDashboardRangeParam("/app/seo", activeRange, sharedLinkOptions)}
+                      variant="plain"
+                    >
+                      Dive into SEO
+                    </Button>
+                  </BlockStack>
+                )}
               </Card>
             </Layout.Section>
             <Layout.Section secondary>
               <Card title="MCP insight" sectioned>
-                <BlockStack gap="200">
-                  <Text as="p" variant="bodyMd">
-                    {data.mcpRecommendation}
-                  </Text>
-                  {!mcp.enabled && (
-                    <Text as="p" variant="bodySm" tone="subdued">
-                      Configure credentials and enable the MCP toggle in Settings to load live data.
+                {showSkeleton ? (
+                  <McpInsightSkeleton />
+                ) : (
+                  <BlockStack gap="200">
+                    <Text as="p" variant="bodyMd">
+                      {data.mcpRecommendation}
                     </Text>
-                  )}
-                  {mcp.usingMocks && (
-                    <Text as="p" variant="bodySm" tone="subdued">
-                      Showing mock data while `USE_MOCK_DATA` is enabled.
-                    </Text>
-                  )}
-                  {mcp.generatedAt && (
-                    <Text as="p" variant="bodySm" tone="subdued">
-                      Last updated {new Date(mcp.generatedAt).toLocaleString()} • {mcp.source ?? "mock"}
-                    </Text>
-                  )}
-                  <Button url={withDashboardRangeParam("/app/settings", activeRange)} variant="plain">
-                    Manage MCP toggles
-                  </Button>
-                </BlockStack>
+                    {!mcp.enabled && (
+                      <Text as="p" variant="bodySm" tone="subdued">
+                        Configure credentials and enable the MCP toggle in Settings to load live data.
+                      </Text>
+                    )}
+                    {mcp.usingMocks && (
+                      <Text as="p" variant="bodySm" tone="subdued">
+                        Showing mock data while `USE_MOCK_DATA` is enabled.
+                      </Text>
+                    )}
+                    {mcp.generatedAt && (
+                      <Text as="p" variant="bodySm" tone="subdued">
+                        Last updated {new Date(mcp.generatedAt).toLocaleString()} • {mcp.source ?? "mock"}
+                      </Text>
+                    )}
+                    <Button
+                      url={withDashboardRangeParam("/app/settings", activeRange, sharedLinkOptions)}
+                      variant="plain"
+                    >
+                      Manage MCP toggles
+                    </Button>
+                  </BlockStack>
+                )}
               </Card>
             </Layout.Section>
           </Layout>
@@ -420,6 +494,79 @@ function MetricTile({ label, value }: { label: string; value: number }) {
       <Text as="span" variant="headingMd">
         {value}
       </Text>
+    </BlockStack>
+  );
+}
+
+function MetricTileSkeleton() {
+  return (
+    <BlockStack gap="050">
+      <SkeletonBodyText lines={1} />
+      <SkeletonDisplayText size="small" />
+    </BlockStack>
+  );
+}
+
+function OrderBucketSkeleton() {
+  return (
+    <InlineStack align="space-between" blockAlign="center" gap="200">
+      <div style={{ flex: 1 }}>
+        <BlockStack gap="050">
+          <SkeletonDisplayText size="small" />
+          <SkeletonBodyText lines={1} />
+        </BlockStack>
+      </div>
+      <InlineStack gap="200" blockAlign="center">
+        <SkeletonDisplayText size="small" />
+        <SkeletonDisplayText size="small" />
+      </InlineStack>
+    </InlineStack>
+  );
+}
+
+function InlineStatSkeleton() {
+  return (
+    <InlineStack align="space-between" blockAlign="center" gap="200">
+      <div style={{ flex: 1 }}>
+        <SkeletonBodyText lines={1} />
+      </div>
+      <SkeletonDisplayText size="small" />
+    </InlineStack>
+  );
+}
+
+function InboxSnapshotSkeleton() {
+  return (
+    <BlockStack gap="200">
+      <InlineStatSkeleton />
+      <InlineStatSkeleton />
+      <InlineStatSkeleton />
+      <SkeletonDisplayText size="small" />
+    </BlockStack>
+  );
+}
+
+function SeoHighlightsSkeleton() {
+  return (
+    <BlockStack gap="200">
+      <SkeletonBodyText lines={1} />
+      <SkeletonDisplayText size="small" />
+      <SkeletonBodyText lines={2} />
+      <InlineStatSkeleton />
+      <InlineStatSkeleton />
+      <InlineStatSkeleton />
+      <SkeletonDisplayText size="small" />
+    </BlockStack>
+  );
+}
+
+function McpInsightSkeleton() {
+  return (
+    <BlockStack gap="200">
+      <SkeletonBodyText lines={2} />
+      <SkeletonBodyText lines={1} />
+      <SkeletonBodyText lines={1} />
+      <SkeletonDisplayText size="small" />
     </BlockStack>
   );
 }
@@ -454,6 +601,22 @@ function SalesSparkline({
         data={dataset}
         isAnimated={false}
       />
+    </div>
+  );
+}
+
+function SalesSparklineSkeleton() {
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: 160,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <SkeletonThumbnail size="extraLarge" />
     </div>
   );
 }

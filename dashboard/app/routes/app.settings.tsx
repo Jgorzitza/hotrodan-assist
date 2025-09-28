@@ -75,6 +75,7 @@ const thresholdsSchema = z.object({
 
 const togglesSchema = z.object({
   enableMcpIntegration: z.boolean(),
+  enableAssistantsProvider: z.boolean(),
   enableExperimentalWidgets: z.boolean(),
   enableBetaWorkflows: z.boolean(),
 });
@@ -291,6 +292,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     case "update-toggles": {
       const togglesInput: FeatureToggles = {
         enableMcpIntegration: formData.has("enableMcpIntegration"),
+        enableAssistantsProvider: formData.has("enableAssistantsProvider"),
         enableExperimentalWidgets: formData.has("enableExperimentalWidgets"),
         enableBetaWorkflows: formData.has("enableBetaWorkflows"),
       };
@@ -1048,6 +1050,18 @@ export default function SettingsRoute() {
                       }))
                     }
                     helpText="Controls access to storefront MCP widgets."
+                  />
+                  <Checkbox
+                    label="Enable Assistants provider"
+                    name="enableAssistantsProvider"
+                    checked={toggles.enableAssistantsProvider}
+                    onChange={(value) =>
+                      setToggles((prev) => ({
+                        ...prev,
+                        enableAssistantsProvider: value,
+                      }))
+                    }
+                    helpText="Connects the inbox to the live Assistants service for draft approvals."
                   />
                   <Checkbox
                     label="Enable experimental widgets"

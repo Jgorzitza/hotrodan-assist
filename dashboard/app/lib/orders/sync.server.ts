@@ -1,7 +1,7 @@
+import { createMoney } from "~/lib/currency";
 import type {
-  CurrencyCode,
+  ActionToast,
   InventoryHold,
-  Money,
   Order,
   OrdersDataset,
   OrdersMetrics,
@@ -123,24 +123,6 @@ type SyncInventoryBlock = {
   eta?: string | null;
 };
 
-const DEFAULT_CURRENCY: CurrencyCode = "USD";
-
-const moneyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: DEFAULT_CURRENCY,
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
-const toMoney = (amount: number | null | undefined, currency: CurrencyCode = DEFAULT_CURRENCY): Money => {
-  const safeAmount = Number.isFinite(amount) ? Number(amount) : 0;
-  return {
-    amount: safeAmount,
-    currency,
-    formatted: moneyFormatter.format(safeAmount),
-  };
-};
-
 const resolveStatus = (status?: string | null): Order["status"] => {
   switch (status) {
     case "fulfilled":
@@ -193,7 +175,7 @@ const resolveTimelineType = (event: string): Order["timeline"][number]["type"] =
 
 const mapOrders = (items: SyncOrderItem[]): Order[] =>
   items.map((item, index) => {
-    const total = toMoney(item.value_usd ?? 0);
+    const total = createMoney(item.value_usd ?? 0);
     const normalizedChannel = (item.channel as Order["channel"]) ?? "online";
     return {
       id: item.id ?? `order-${index}`,
@@ -213,7 +195,7 @@ const mapOrders = (items: SyncOrderItem[]): Order[] =>
         : "online",
       total,
       subtotal: total,
-      shipping: toMoney(0),
+      shipping: createMoney(0),
       customer: {
         id: `${item.order_number ?? index}-customer`,
         name: `Customer ${item.order_number ?? index}`,
@@ -256,37 +238,96 @@ const mapMetrics = (metrics: SyncOrdersResponse["metrics"]): OrdersMetrics => ({
   slaBreaches: metrics.breaches,
 });
 
-const mapShipments = (shipments: SyncShipments): ShipmentsPanel => ({
-  trackingPending: (shipments.tracking_pending ?? []).map((entry, index) => ({
-    id: `${entry.order_number ?? index}-tracking`,
-    orderId: entry.order_id ?? entry.order_number ?? `${index}`,
-    orderNumber: entry.order_number ?? "",
-    expectedShipDate: entry.expected_ship_date ?? undefined,
-    owner: (entry.owner as Order["assignedTo"]) ?? "assistant",
-  })),
-  delayed: (shipments.delayed ?? []).map((entry, index) => ({
-    id: `${entry.order_number ?? index}-delay`,
-    orderId: entry.order_id ?? entry.order_number ?? `${index}`,
-    orderNumber: entry.order_number ?? "",
-    carrier: entry.carrier ?? "",
-    delayHours: Number.isFinite(entry.delay_hours) ? Number(entry.delay_hours) : 0,
-    lastUpdate: entry.last_update ?? new Date().toISOString(),
-  })),
+const buildOrderLookup = (orders: Order[]): Map<string, Order> => {
+  const lookup = new Map<string, Order>();
+  orders.forEach((order) => {
+    lookup.set(order.id, order);
+    const numericId = order.id.split("/").pop();
+    if (numericId) {
+      lookup.set(numericId, order);
+    }
+    lookup.set(order.name, order);
+    if (order.name.startsWith("#")) {
+      lookup.set(order.name.slice(1), order);
+    }
+  });
+  return lookup;
+};
+
+const resolveOrderFromLookup = (
+  lookup: Map<string, Order>,
+  orderId?: string | null,
+  orderNumber?: string | null,
+): Order | null => {
+  if (orderId) {
+    const normalizedId = orderId.trim();
+    const byId = lookup.get(normalizedId);
+    if (byId) return byId;
+    const numeric = normalizedId.split("/").pop();
+    if (numeric) {
+      const byNumeric = lookup.get(numeric);
+      if (byNumeric) return byNumeric;
+    }
+  }
+  if (orderNumber) {
+    const normalizedNumber = orderNumber.trim();
+    const byNumber = lookup.get(normalizedNumber);
+    if (byNumber) return byNumber;
+    const withoutHash = normalizedNumber.startsWith("#")
+      ? normalizedNumber.slice(1)
+      : normalizedNumber;
+    const byWithoutHash = lookup.get(withoutHash);
+    if (byWithoutHash) return byWithoutHash;
+    if (!normalizedNumber.startsWith("#")) {
+      const withHash = lookup.get(`#${normalizedNumber}`);
+      if (withHash) return withHash;
+    }
+  }
+  return null;
+};
+
+const mapShipments = (shipments: SyncShipments, lookup: Map<string, Order>): ShipmentsPanel => ({
+  trackingPending: (shipments.tracking_pending ?? []).map((entry, index) => {
+    const resolvedOrder = resolveOrderFromLookup(lookup, entry.order_id, entry.order_number);
+    return {
+      id: `${entry.order_number ?? index}-tracking`,
+      orderId: resolvedOrder?.id ?? entry.order_id ?? entry.order_number ?? `${index}`,
+      orderNumber: resolvedOrder?.name ?? entry.order_number ?? "",
+      expectedShipDate:
+        entry.expected_ship_date ?? resolvedOrder?.fulfillmentDueAt ?? resolvedOrder?.shipBy ?? "",
+      owner:
+        (entry.owner as Order["assignedTo"]) ?? resolvedOrder?.assignedTo ?? "assistant",
+    };
+  }),
+  delayed: (shipments.delayed ?? []).map((entry, index) => {
+    const resolvedOrder = resolveOrderFromLookup(lookup, entry.order_id, entry.order_number);
+    return {
+      id: `${entry.order_number ?? index}-delay`,
+      orderId: resolvedOrder?.id ?? entry.order_id ?? entry.order_number ?? `${index}`,
+      orderNumber: resolvedOrder?.name ?? entry.order_number ?? "",
+      carrier: entry.carrier ?? "",
+      delayHours: Number.isFinite(entry.delay_hours) ? Number(entry.delay_hours) : 0,
+      lastUpdate: entry.last_update ?? new Date().toISOString(),
+    };
+  }),
   deliveredToday: shipments.delivered_today ?? 0,
 });
 
-const mapReturns = (returns: SyncReturns): ReturnsPanel => ({
-  pending: (returns.pending ?? []).map((entry, index) => ({
-    id: `${entry.order_number ?? index}-return`,
-    orderId: entry.order_id ?? entry.order_number ?? `${index}`,
-    orderNumber: entry.order_number ?? "",
-    reason: entry.reason ?? "",
-    stage: (entry.stage as ReturnEntry["stage"]) ?? "inspection",
-    ageDays: Number.isFinite(entry.age_days) ? Number(entry.age_days) : 0,
-    refundAmount: toMoney(entry.refund_amount ?? 0),
-  })),
+const mapReturns = (returns: SyncReturns, lookup: Map<string, Order>): ReturnsPanel => ({
+  pending: (returns.pending ?? []).map((entry, index) => {
+    const resolvedOrder = resolveOrderFromLookup(lookup, entry.order_id, entry.order_number);
+    return {
+      id: `${entry.order_number ?? index}-return`,
+      orderId: resolvedOrder?.id ?? entry.order_id ?? entry.order_number ?? `${index}`,
+      orderNumber: resolvedOrder?.name ?? entry.order_number ?? "",
+      reason: entry.reason ?? "",
+      stage: (entry.stage as ReturnEntry["stage"]) ?? "inspection",
+      ageDays: Number.isFinite(entry.age_days) ? Number(entry.age_days) : 0,
+      refundAmount: createMoney(entry.refund_amount ?? 0),
+    };
+  }),
   refundsDue: returns.refunds_due ?? 0,
-  refundValue: toMoney(returns.refund_value_usd ?? 0),
+  refundValue: createMoney(returns.refund_value_usd ?? 0),
 });
 
 const mapInventory = (blocks: SyncInventoryBlock[]): InventoryHold[] =>
@@ -297,6 +338,11 @@ const mapInventory = (blocks: SyncInventoryBlock[]): InventoryHold[] =>
     onHand: block.on_hand,
     eta: block.eta ?? undefined,
   }));
+
+type SyncActionToast = {
+  status?: ActionToast["status"];
+  message: string;
+};
 
 export const fetchOrdersFromSync = async (
   params: FetchOrdersFromSyncParams,
@@ -332,6 +378,7 @@ export const fetchOrdersFromSync = async (
 
   const payload = (await response.json()) as SyncOrdersResponse;
   const orders = mapOrders(payload.orders.items ?? []);
+  const orderLookup = buildOrderLookup(orders);
   const pageInfo = payload.orders.page_info;
 
   return {
@@ -356,10 +403,70 @@ export const fetchOrdersFromSync = async (
       },
     },
     metrics: mapMetrics(payload.metrics),
-    shipments: mapShipments(payload.shipments ?? {}),
-    returns: mapReturns(payload.returns ?? {}),
+    shipments: mapShipments(payload.shipments ?? {}, orderLookup),
+    returns: mapReturns(payload.returns ?? {}, orderLookup),
     inventory: mapInventory(payload.inventory_blocks ?? []),
     alerts: payload.alerts ?? [],
     dataGaps: payload.data_gaps ?? [],
   };
+};
+
+export type SyncOrdersActionResult = {
+  success?: boolean;
+  message?: string;
+  toast?: SyncActionToast;
+  updatedOrders?: unknown;
+  updatedOrder?: unknown;
+};
+
+export type PostOrdersSyncActionParams = {
+  path: string;
+  payload: Record<string, unknown>;
+  baseUrl?: string;
+  shopDomain?: string | null;
+  signal?: AbortSignal;
+  transformPayload?: (input: Record<string, unknown>) => Record<string, unknown>;
+};
+
+export const postOrdersSyncAction = async ({
+  path,
+  payload,
+  baseUrl,
+  shopDomain,
+  signal,
+  transformPayload,
+}: PostOrdersSyncActionParams): Promise<SyncOrdersActionResult> => {
+  const resolvedBaseUrl = baseUrl ?? process.env.SYNC_SERVICE_URL;
+  if (!resolvedBaseUrl) {
+    throw new Error("Missing SYNC_SERVICE_URL environment variable");
+  }
+
+  const url = new URL(path, resolvedBaseUrl);
+  const bodyPayload = transformPayload ? transformPayload(payload) : payload;
+
+  const response = await fetch(url.toString(), {
+    method: "POST",
+    signal,
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      ...(shopDomain ? { "X-Shop-Domain": shopDomain } : {}),
+    },
+    body: JSON.stringify({ ...bodyPayload, shop_domain: shopDomain ?? undefined }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(
+      `Sync orders action failed (${response.status} ${response.statusText}): ${text || "<empty>"}`,
+    );
+  }
+
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    return {} as SyncOrdersActionResult;
+  }
+
+  const result = (await response.json()) as SyncOrdersActionResult;
+  return result ?? {};
 };

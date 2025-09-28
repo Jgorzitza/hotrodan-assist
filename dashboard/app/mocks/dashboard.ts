@@ -45,6 +45,7 @@ export type InventorySnapshot = {
 export type SeoHighlight = {
   trafficDelta: number;
   risingQueries: number;
+  risingPages: number;
   criticalIssues: number;
   summary: string;
 };
@@ -81,8 +82,8 @@ const toMetrics = (
   deltaPeriod: DashboardMetric["deltaPeriod"],
 ): DashboardMetric[] => {
   const sales = mocks.sales;
-  const orders = mocks.orders;
-  const refundedTotal = orders.orders
+  const orders = mocks.orders.orders.items;
+  const refundedTotal = orders
     .filter((order) => order.status === "refunded")
     .reduce((total, order) => total + order.total.amount, 0);
 
@@ -97,7 +98,7 @@ const toMetrics = (
     {
       id: "orders",
       label: "Orders",
-      value: orders.count.toLocaleString("en-US"),
+      value: mocks.orders.orders.count.toLocaleString("en-US"),
       delta: sales.totals.deltaPercentage * 0.75,
       deltaPeriod,
     },
@@ -119,13 +120,14 @@ const toMetrics = (
 };
 
 const toOrderBuckets = ({ orders }: DashboardMocks): OrdersBucket[] => {
-  const unfulfilled = orders.orders.filter(
+  const orderItems = orders.orders.items;
+  const unfulfilled = orderItems.filter(
     (order) => order.fulfillmentStatus !== "fulfilled",
   ).length;
-  const stalled = orders.orders.filter(
+  const stalled = orderItems.filter(
     (order) => order.fulfillmentStatus === "partial",
   ).length;
-  const issues = orders.orders.filter(
+  const issues = orderItems.filter(
     (order) => order.status === "refunded" || order.status === "cancelled",
   ).length;
 
@@ -139,7 +141,7 @@ const toOrderBuckets = ({ orders }: DashboardMocks): OrdersBucket[] => {
     },
     {
       id: "tracking",
-      label: "Tracking stalled",
+      label: "Tracking issues",
       count: stalled,
       description: "No carrier movement in 48h",
       href: "/app/orders?tab=tracking",
@@ -182,9 +184,15 @@ const toInventorySnapshot = ({ inventory }: DashboardMocks): InventorySnapshot =
 };
 
 const toSeoHighlight = ({ seo }: DashboardMocks): SeoHighlight => {
-  const risingQueries = seo.insights.filter(
-    (insight) => insight.severity !== "critical",
-  ).length;
+  const risingKeywordRows = seo.keywords.filter((keyword) => keyword.delta > 0);
+  const risingQueries = risingKeywordRows.length;
+  const risingPages = risingKeywordRows.reduce((pages, keyword) => {
+    if (!keyword.topPage) {
+      return pages;
+    }
+    pages.add(keyword.topPage);
+    return pages;
+  }, new Set<string>()).size;
   const criticalIssues = seo.insights.filter(
     (insight) => insight.severity === "critical",
   ).length;
@@ -199,6 +207,7 @@ const toSeoHighlight = ({ seo }: DashboardMocks): SeoHighlight => {
   return {
     trafficDelta: seo.scorecard.clickThroughRate,
     risingQueries,
+    risingPages,
     criticalIssues,
     summary,
   };
@@ -230,18 +239,20 @@ export const getDashboardOverview = async (
 };
 
 export const getOrderFulfillmentRatio = (orders: OrdersDataset): number => {
-  if (!orders.orders.length) {
+  const items = orders.orders.items;
+  if (!items.length) {
     return 0;
   }
-  const fulfilled = orders.orders.filter(
+  const fulfilled = items.filter(
     (order) => order.fulfillmentStatus === "fulfilled",
   ).length;
-  return percentage(fulfilled, orders.orders.length, 0);
+  return percentage(fulfilled, items.length, 0);
 };
 
 export const getSalesToOrderRatio = (sales: SalesDataset, orders: OrdersDataset) => {
-  if (!orders.orders.length) {
+  const items = orders.orders.items;
+  if (!items.length) {
     return 0;
   }
-  return sales.totals.currentTotal.amount / orders.orders.length;
+  return sales.totals.currentTotal.amount / items.length;
 };

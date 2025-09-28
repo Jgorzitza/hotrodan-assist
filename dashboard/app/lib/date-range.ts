@@ -84,8 +84,34 @@ export const resolveDashboardRange = (
   return createSelection(key, referenceDate);
 };
 
-export const withDashboardRangeParam = (path: string, key: DashboardRangeKey): string => {
+export type WithDashboardRangeParamOptions = {
+  searchParams?: URLSearchParams | URLSearchParamsInit;
+  includeKeys?: string[];
+};
+
+const DEFAULT_SHARED_PARAM_KEYS = ["mockState"] as const;
+
+export const withDashboardRangeParam = (
+  path: string,
+  key: DashboardRangeKey,
+  options?: WithDashboardRangeParamOptions,
+): string => {
   const url = new URL(path, "https://dashboard.internal");
+
+  if (options?.searchParams) {
+    const params =
+      options.searchParams instanceof URLSearchParams
+        ? options.searchParams
+        : new URLSearchParams(options.searchParams);
+
+    const allowedKeys = new Set(options.includeKeys ?? DEFAULT_SHARED_PARAM_KEYS);
+    params.forEach((value, paramKey) => {
+      if (!allowedKeys.has(paramKey)) return;
+      if (!value) return;
+      url.searchParams.set(paramKey, value);
+    });
+  }
+
   url.searchParams.set("range", key);
   return `${url.pathname}${url.search}${url.hash}`;
 };

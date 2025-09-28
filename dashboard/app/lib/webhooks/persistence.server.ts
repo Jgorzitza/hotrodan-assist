@@ -25,7 +25,7 @@ type WebhookRegistrationRecord = {
   recordedAt: Date;
 };
 
-type WebhookEventRecord = {
+export type WebhookEventRecord = {
   id: string;
   webhookId: string;
   shopDomain: string;
@@ -273,6 +273,32 @@ export const markWebhookEventStatus = async (
       processedAt: updatedAt.toISOString(),
     };
   }
+};
+
+export const loadWebhookEvent = async (webhookId: string): Promise<WebhookEventRecord | null> => {
+  if (!webhookId) return null;
+
+  if (hasModel("webhookEvent")) {
+    try {
+      const event = await db.webhookEvent.findUnique({ where: { webhookId } });
+      if (!event) return null;
+      return {
+        id: event.id,
+        webhookId: event.webhookId,
+        shopDomain: event.shopDomain,
+        topic: event.topic,
+        payload: event.payload,
+        status: event.status as WebhookEventRecord["status"],
+        errorMessage: event.errorMessage ?? undefined,
+        createdAt: event.createdAt,
+        updatedAt: event.updatedAt,
+      } satisfies WebhookEventRecord;
+    } catch (error) {
+      console.warn("[webhooks:persistence] Failed to load webhookEvent", { webhookId, error });
+    }
+  }
+
+  return inMemoryWebhookEvents.get(webhookId) ?? null;
 };
 
 const normalizeGid = (value: unknown): string => {

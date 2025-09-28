@@ -1,13 +1,10 @@
 import { Faker, en } from "@faker-js/faker";
 
-import type {
-  CurrencyCode,
-  DatasetState,
-  MockScenario,
-  Money,
-} from "~/types/dashboard";
+import type { DatasetState, MockScenario } from "~/types/dashboard";
 
 import { deltaPercentage, percentage, roundTo } from "./factories/numbers";
+
+export { DEFAULT_CURRENCY, createMoney, formatCurrency } from "~/lib/currency";
 
 const DEFAULT_SEED = 1337;
 
@@ -17,8 +14,6 @@ const SCENARIO_SEEDS: Record<MockScenario, number> = {
   warning: DEFAULT_SEED + 202,
   error: DEFAULT_SEED + 303,
 };
-
-export const DEFAULT_CURRENCY: CurrencyCode = "USD";
 
 export const createSeededFaker = (seed = DEFAULT_SEED) => {
   const faker = new Faker({ locale: [en] });
@@ -34,26 +29,6 @@ export const createScenarioFaker = (
   return createSeededFaker(baseSeed + offset);
 };
 
-export const formatCurrency = (
-  amount: number,
-  currency: CurrencyCode = DEFAULT_CURRENCY,
-): string => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(roundTo(amount));
-};
-
-export const createMoney = (
-  amount: number,
-  currency: CurrencyCode = DEFAULT_CURRENCY,
-): Money => ({
-  amount: roundTo(amount),
-  currency,
-  formatted: formatCurrency(amount, currency),
-});
 
 export const clone = <T>(value: T): T => {
   if (typeof structuredClone === "function") {
