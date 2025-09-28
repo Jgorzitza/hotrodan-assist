@@ -2,7 +2,7 @@
 
 client_id = "d919fc39ded7df2bd0ba2fe02b666b25"
 name = "Dashboard"
-application_url = "https://hotrodan.com/dashboard"
+application_url = "https://hotrodan.com/dashboad"
 embedded = true
 
 [webhooks]
@@ -20,11 +20,11 @@ redirect_urls = [ ]
 [[web]]
 name = "Remix Dashboard"
 type = "node"
-roles = ["backend"]
+roles = [ "backend" ]
 path = "dashboard"
 
 [[web]]
 name = "Approval App"
 type = "python"
-roles = ["frontend"]
+roles = [ "frontend" ]
 path = "app/approval-app"

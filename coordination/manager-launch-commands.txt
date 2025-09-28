@@ -1,0 +1,225 @@
+# Morning Launch Commands (Paste Path Block First, Then Instruction Block)
+
+## Program Manager – Coordinator
+Paths:
+- prompts/tooling/program-manager.md
+- coordination/status-dashboard.md
+- coordination/blockers-log.md
+- coordination/dependency-matrix.md
+- SESSION_SUMMARY_2025-09-27_1145.md
+- coordination/inbox/manager/2025-09-29-notes.md
+
+Instruction:
+Take the role of Program Manager – Coordinator.
+Rules: Only you edit shared docs. Append a new entry to coordination/inbox/manager/<today>-notes.md after each sweep.
+Tasks:
+1. Review new agent notes; update coordination/status-dashboard.md and coordination/blockers-log.md accordingly.
+2. Ensure SESSION_SUMMARY reflects latest ingest/dashboard state; adjust if needed.
+3. Capture Shopify CLI tunnel findings from the dashboard agent and flag blockers or escalations.
+
+## RAG & Corrections
+Paths:
+- agent/rag/INSTRUCTIONS.md
+- agents.md
+- coordination/inbox/rag/2025-09-27-notes.md
+- urls_with_lastmod.tsv
+- run_goldens.py
+
+Instruction:
+Take the role of RAG & Corrections.
+Rules: Append results only to coordination/inbox/rag/<today>-notes.md.
+Tasks:
+1. Check urls_with_lastmod.tsv; if timestamps > 2025-09-27T17:58:57-06:00, run discover → ingest_incremental_chroma.py → run_goldens.py.
+2. Record commands/output and any diffs in the new note; skip ingest if sitemap unchanged.
+
+## Sync & Webhooks
+Paths:
+- agent/sync/INSTRUCTIONS.md
+- prompts/dashboard/webhooks.md
+- coordination/2025-09-27_orders-sync-contract.md
+- coordination/inbox/sync/2025-09-27-notes.md
+- coordination/blockers-log.md
+- sync/API_ENVELOPE_V1_2.md
+
+Instruction:
+Take the role of Sync & Webhooks.
+Rules: Append results only to coordination/inbox/sync/<today>-notes.md.
+Tasks:
+1. Reconcile sync/API_ENVELOPE_V1_2.md with current handler code; note any drift in the contract memo.
+2. Run `npm run test:sync:webhooks`; copy the summary into your note.
+3. If Orders still needs confirmation, list outstanding questions for them; no other file edits.
+
+## Orders Operations UI
+Paths:
+- agent/orders/INSTRUCTIONS.md
+- prompts/dashboard/route-orders.md
+- coordination/2025-09-27_orders-sync-contract.md
+- coordination/inbox/orders/2025-09-27-notes.md
+- coordination/blockers-log.md
+- dashboard/app/routes/app.orders.test.ts
+
+Instruction:
+Take the role of Orders Operations UI.
+Rules: Append results only to coordination/inbox/orders/<today>-notes.md.
+Tasks:
+1. Run `USE_MOCK_DATA=false npx vitest run app/routes/__tests__/app.orders.test.ts --root dashboard`; log results.
+2. Verify live `/sync/orders/{assign|fulfill|support|returns}` calls still match the v1.2 envelope; record any mismatches in the memo and your note.
+3. State whether Orders can flip off mocks or what’s pending from Sync.
+
+## Data & Prisma
+Paths:
+- agent/data/INSTRUCTIONS.md
+- prompts/dashboard/data-layer.md
+- coordination/inbox/data/2025-10-09-notes.md
+- coordination/dependency-matrix.md
+- coordination/blockers-log.md
+- prisma/schema.prisma
+
+Instruction:
+Take the role of Data & Prisma.
+Rules: Append results only to coordination/inbox/data/<today>-notes.md.
+Tasks:
+1. Run `npm run prisma:generate`, `DATABASE_URL="file:./prisma/dev.sqlite" npm run prisma:db-push:sqlite`, and `DATABASE_URL="file:./prisma/dev.sqlite" npm run prisma:seed`; note outputs.
+2. Document retention cron hosting decision status so Tooling/DevOps can follow up.
+3. Reaffirm analytics cache response shape for Sales/Dashboard in your note.
+
+## Sales Analytics UI
+Paths:
+- agent/sales/INSTRUCTIONS.md
+- prompts/dashboard/route-sales.md
+- coordination/inbox/sales/2025-10-09-notes.md
+- coordination/dependency-matrix.md
+- coordination/blockers-log.md
+- dashboard/app/routes/app.sales.test.ts
+
+Instruction:
+Take the role of Sales Analytics UI.
+Rules: Append results only to coordination/inbox/sales/<today>-notes.md.
+Tasks:
+1. Confirm analytics fixtures align with Data’s cache schema.
+2. Run `USE_MOCK_DATA=false npx vitest run app/routes/__tests__/app.sales.test.ts --root dashboard`; log results.
+3. List what’s needed once the live analytics feed arrives.
+
+## Dashboard Home UI
+Paths:
+- agent/dashboard/INSTRUCTIONS.md
+- prompts/dashboard/route-dashboard.md
+- coordination/inbox/dashboard/2025-09-27-notes.md
+- coordination/blockers-log.md
+- dashboard/app/routes/app._index.test.ts
+- dashboard/shopify.web.toml
+
+Instruction:
+Take the role of Dashboard Home UI.
+Rules: Append results only to coordination/inbox/dashboard/<today>-notes.md.
+Tasks:
+1. Diagnose Shopify CLI tunnel/module issue (`Cannot find module '~/db.server'`): check node_modules, shopify.web.toml, vite aliases.
+2. Run `npx vitest run app/routes/__tests__/app._index.test.ts --root dashboard`; log output and tunnel attempts.
+3. Document current failure mode and help needed if smoke stays blocked.
+
+## Settings Admin UI
+Paths:
+- agent/settings/INSTRUCTIONS.md
+- prompts/dashboard/route-settings.md
+- coordination/inbox/settings/2025-09-27-notes.md
+- coordination/dependency-matrix.md
+- coordination/blockers-log.md
+- dashboard/app/routes/app.settings.test.ts
+
+Instruction:
+Take the role of Settings Admin UI.
+Rules: Append results only to coordination/inbox/settings/<today>-notes.md.
+Tasks:
+1. Validate Prisma stub helper + fixtures from Data; ensure loaders/actions stay green.
+2. Run `USE_MOCK_DATA=false npx vitest run app/routes/__tests__/app.settings.test.ts --root dashboard`; log output.
+3. Document outstanding GA4/GSC/Bing credential needs.
+
+## Inventory Planner UI
+Paths:
+- agent/inventory/INSTRUCTIONS.md
+- prompts/dashboard/route-inventory.md
+- coordination/inbox/inventory/2025-09-27-notes.md
+- coordination/dependency-matrix.md
+- coordination/blockers-log.md
+- dashboard/app/routes/app.inventory.test.ts
+
+Instruction:
+Take the role of Inventory Planner UI.
+Rules: Append results only to coordination/inbox/inventory/<today>-notes.md.
+Tasks:
+1. Sync planner mocks with current analytics fixtures.
+2. Run `npx vitest run app/routes/__tests__/app.inventory.test.ts --root dashboard`; record output.
+3. Reiterate charts/persistence remain deferred until live analytics feed ships.
+
+## Assistants API & Drafts
+Paths:
+- agent/assistants/INSTRUCTIONS.md
+- prompts/dashboard/data-layer.md
+- coordination/inbox/assistants/2025-09-27-notes.md
+- coordination/dependency-matrix.md
+- coordination/blockers-log.md
+
+Instruction:
+Take the role of Assistants API & Drafts.
+Rules: Append results only to coordination/inbox/assistants/<today>-notes.md.
+Tasks:
+1. Confirm Prisma stub helper stays aligned with Settings/Orders requirements.
+2. Run loaders/actions integration tests you touch; list commands and outcomes.
+3. Flag new schema requests in your note for Data/Program Manager.
+
+## Approval App UI
+Paths:
+- agent/approval/INSTRUCTIONS.md
+- prompts/dashboard/route-inbox.md
+- coordination/inbox/approval/2025-09-27-notes.md
+- coordination/blockers-log.md
+
+Instruction:
+Take the role of Approval App UI.
+Rules: Append results only to coordination/inbox/approval/<today>-notes.md.
+Tasks:
+1. Maintain focus on SSE lint fixes and provider wiring; run targeted lint/tests as needed.
+2. Document credential blockers or QA gaps; leave prompts untouched.
+
+## SEO Insights UI
+Paths:
+- agent/seo/INSTRUCTIONS.md
+- prompts/dashboard/route-seo.md
+- coordination/inbox/seo/2025-09-27-notes.md
+- coordination/blockers-log.md
+
+Instruction:
+Take the role of SEO Insights UI.
+Rules: Append results only to coordination/inbox/seo/<today>-notes.md.
+Tasks:
+1. Keep GA4/GSC/Bing mocks tidy; note missing credentials.
+2. Run lint/tests if code changes; document results in your note.
+
+## MCP Integration
+Paths:
+- agent/mcp/INSTRUCTIONS.md
+- prompts/dashboard/mcp.md
+- coordination/inbox/mcp/2025-09-27-notes.md
+- coordination/blockers-log.md
+
+Instruction:
+Take the role of MCP Integration.
+Rules: Append results only to coordination/inbox/mcp/<today>-notes.md.
+Tasks:
+1. Ensure mock client + telemetry overrides stay green; run relevant tests if needed.
+2. Document credential/persistence blockers in your note.
+
+## Tooling – Prisma Config
+Paths:
+- agent/tooling/INSTRUCTIONS.md
+- prompts/tooling/prisma-config.md
+- coordination/2025-09-26_prisma-config-plan.md
+- coordination/inbox/tooling/2025-10-10-notes.md
+- coordination/blockers-log.md
+
+Instruction:
+Take the role of Tooling – Prisma Config.
+Rules: Append results only to coordination/inbox/tooling/<today>-notes.md.
+Tasks:
+1. Run `npm run prisma:generate`; log output.
+2. Outline steps needed for the verify-managed-files CI smoke and capture dependencies in your note.
