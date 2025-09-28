@@ -51,6 +51,11 @@ import { getMcpClientOverridesForShop } from "~/lib/mcp/config.server";
 import { getInventoryScenario, scenarioFromRequest } from "~/mocks";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
 import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
+import {
+  aggregateTrendSeries,
+  calculateTrendStats,
+  type InventoryTrendStats,
+} from "~/lib/inventory/math";
 import type {
   InventoryBucketId,
   InventoryDashboardPayload,
@@ -110,14 +115,6 @@ type ActionResult = {
   ok: boolean;
   message: string;
 } & Partial<PlannerExport>;
-
-type DetailTrendStats = {
-  average: number;
-  latest: InventoryDemandTrendPoint;
-  deltaPercentage: number | null;
-  highest: InventoryDemandTrendPoint;
-  lowest: InventoryDemandTrendPoint;
-};
 
 const clampCount = (value: unknown, fallback = 18): number => {
   const parsed = typeof value === "string" ? Number(value) : Number(value);
@@ -426,43 +423,48 @@ export default function InventoryRoute() {
         name: "Weekly units",
         data: detailSku.trend.map((point) => ({
           key: point.label,
-          value: point.units,
+          value: Number.isFinite(point.units) ? point.units : 0,
         })),
       },
     ];
   }, [detailSku]);
 
-  const detailTrendStats = useMemo<DetailTrendStats | null>(() => {
-    if (!detailSku?.trend?.length) return null;
-
-    const points = detailSku.trend;
-    const units = points.map((point) => point.units);
-    const average = Math.round(
-      units.reduce((total, value) => total + value, 0) / points.length,
-    );
-    const latest = points[points.length - 1];
-    const prior = points.length > 1 ? points[points.length - 2] : null;
-    const deltaPercentage =
-      prior && prior.units > 0
-        ? Math.round(((latest.units - prior.units) / prior.units) * 100)
-        : null;
-    const highestUnits = Math.max(...units);
-    const lowestUnits = Math.min(...units);
-    const highest = points[units.indexOf(highestUnits)] ?? latest;
-    const lowest = points[units.indexOf(lowestUnits)] ?? latest;
-
-    return {
-      average,
-      latest,
-      deltaPercentage,
-      highest,
-      lowest,
-    };
+  const detailTrendStats = useMemo<InventoryTrendStats | null>(() => {
+    if (!detailSku) return null;
+    return calculateTrendStats(detailSku.trend);
   }, [detailSku]);
 
   const filteredSkus = useMemo(
     () => payload.skus.filter((sku) => sku.bucketId === activeBucket),
     [payload.skus, activeBucket],
+  );
+
+  const activeBucketMeta = useMemo(
+    () => payload.buckets.find((bucket) => bucket.id === activeBucket) ?? null,
+    [payload.buckets, activeBucket],
+  );
+
+  const bucketTrendPoints = useMemo(
+    () => aggregateTrendSeries(filteredSkus.map((sku) => sku.trend)),
+    [filteredSkus],
+  );
+
+  const bucketTrendDataset = useMemo<DataSeries[]>(() => {
+    if (bucketTrendPoints.length === 0) return [];
+    return [
+      {
+        name: "Bucket weekly units",
+        data: bucketTrendPoints.map((point, index) => ({
+          key: point.label || String(index),
+          value: Number.isFinite(point.units) ? point.units : 0,
+        })),
+      },
+    ];
+  }, [bucketTrendPoints]);
+
+  const bucketTrendStats = useMemo<InventoryTrendStats | null>(
+    () => calculateTrendStats(bucketTrendPoints),
+    [bucketTrendPoints],
   );
 
   const bucketTabs = useMemo(
@@ -685,72 +687,94 @@ export default function InventoryRoute() {
               <Divider />
 
               <Card.Section>
-                {filteredSkus.length === 0 ? (
-                  <BlockStack gap="200" align="center">
-                    <Text variant="bodyMd">No SKUs in this bucket yet.</Text>
-                  </BlockStack>
-                ) : (
-                  <IndexTable
-                    resourceName={{ singular: "SKU", plural: "SKUs" }}
-                    itemCount={filteredSkus.length}
-                    selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
-                    onSelectionChange={handleSelectionChange}
-                    headings={[
-                      { title: "SKU" },
-                      { title: "Vendor" },
-                      { title: "On hand" },
-                      { title: "Inbound" },
-                      { title: "Committed" },
-                      { title: "Cover (days)" },
-                      { title: "Trend (6w)" },
-                      { title: "Stockout" },
-                      { title: "Recommended" },
-                      { title: "" },
-                    ]}
-                  >
-                    {filteredSkus.map((sku, index) => (
-                      <IndexTable.Row
-                        id={sku.id}
-                        key={sku.id}
-                        position={index}
-                        selected={selectedResources.includes(sku.id)}
+                <BlockStack gap="300">
+                  {activeBucketMeta?.description && (
+                    <Text variant="bodySm" tone="subdued">
+                      {activeBucketMeta.description}
+                    </Text>
+                  )}
+
+                  {filteredSkus.length === 0 ? (
+                    <BlockStack gap="200" align="center">
+                      <Text variant="bodyMd">No SKUs in this bucket yet.</Text>
+                    </BlockStack>
+                  ) : (
+                    <>
+                      {bucketTrendDataset.length > 0 ? (
+                        <BucketTrendSummary
+                          bucketLabel={activeBucketMeta?.label ?? activeBucket}
+                          dataset={bucketTrendDataset}
+                          stats={bucketTrendStats}
+                        />
+                      ) : (
+                        <Text variant="bodySm" tone="subdued">
+                          Demand trend data unavailable for this bucket.
+                        </Text>
+                      )}
+
+                      <IndexTable
+                        resourceName={{ singular: "SKU", plural: "SKUs" }}
+                        itemCount={filteredSkus.length}
+                        selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
+                        onSelectionChange={handleSelectionChange}
+                        headings={[
+                          { title: "SKU" },
+                          { title: "Vendor" },
+                          { title: "On hand" },
+                          { title: "Inbound" },
+                          { title: "Committed" },
+                          { title: "Cover (days)" },
+                          { title: "Trend (6w)" },
+                          { title: "Stockout" },
+                          { title: "Recommended" },
+                          { title: "" },
+                        ]}
                       >
-                        <IndexTable.Cell>
-                          <BlockStack gap="050">
-                            <Text variant="bodyMd" as="span">
-                              {sku.title}
-                            </Text>
-                            <Text tone="subdued" variant="bodySm" as="span">
-                              {sku.sku}
-                            </Text>
-                          </BlockStack>
-                        </IndexTable.Cell>
-                        <IndexTable.Cell>
-                          <Text variant="bodySm" as="span">
-                            {sku.vendorName}
-                          </Text>
-                        </IndexTable.Cell>
-                        <IndexTable.Cell>{formatNumber(sku.onHand)}</IndexTable.Cell>
-                        <IndexTable.Cell>{formatNumber(sku.inbound)}</IndexTable.Cell>
-                        <IndexTable.Cell>{formatNumber(sku.committed)}</IndexTable.Cell>
-                        <IndexTable.Cell>{formatNumber(sku.coverDays)}</IndexTable.Cell>
-                        <IndexTable.Cell>
-                          <SkuTrendSparkline skuTitle={sku.title} trend={sku.trend} />
-                        </IndexTable.Cell>
-                        <IndexTable.Cell>{formatDate(sku.stockoutDate)}</IndexTable.Cell>
-                        <IndexTable.Cell>{formatNumber(sku.recommendedOrder)}</IndexTable.Cell>
-                        <IndexTable.Cell>
-                          <InlineStack align="end" gap="200">
-                            <Badge tone={STATUS_TONE[sku.status]}>{sku.status}</Badge>
-                            <Button onClick={() => setDetailSku(sku)}>
-                              View details
-                            </Button>
-                          </InlineStack>
-                        </IndexTable.Cell>
-                      </IndexTable.Row>
-                    ))}
-                  </IndexTable>
-                )}
+                        {filteredSkus.map((sku, index) => (
+                          <IndexTable.Row
+                            id={sku.id}
+                            key={sku.id}
+                            position={index}
+                            selected={selectedResources.includes(sku.id)}
+                          >
+                            <IndexTable.Cell>
+                              <BlockStack gap="050">
+                                <Text variant="bodyMd" as="span">
+                                  {sku.title}
+                                </Text>
+                                <Text tone="subdued" variant="bodySm" as="span">
+                                  {sku.sku}
+                                </Text>
+                              </BlockStack>
+                            </IndexTable.Cell>
+                            <IndexTable.Cell>
+                              <Text variant="bodySm" as="span">
+                                {sku.vendorName}
+                              </Text>
+                            </IndexTable.Cell>
+                            <IndexTable.Cell>{formatNumber(sku.onHand)}</IndexTable.Cell>
+                            <IndexTable.Cell>{formatNumber(sku.inbound)}</IndexTable.Cell>
+                            <IndexTable.Cell>{formatNumber(sku.committed)}</IndexTable.Cell>
+                            <IndexTable.Cell>{formatNumber(sku.coverDays)}</IndexTable.Cell>
+                            <IndexTable.Cell>
+                              <SkuTrendSparkline skuTitle={sku.title} trend={sku.trend} />
+                            </IndexTable.Cell>
+                            <IndexTable.Cell>{formatDate(sku.stockoutDate)}</IndexTable.Cell>
+                            <IndexTable.Cell>{formatNumber(sku.recommendedOrder)}</IndexTable.Cell>
+                            <IndexTable.Cell>
+                              <InlineStack align="end" gap="200">
+                                <Badge tone={STATUS_TONE[sku.status]}>{sku.status}</Badge>
+                                <Button onClick={() => setDetailSku(sku)}>
+                                  View details
+                                </Button>
+                              </InlineStack>
+                            </IndexTable.Cell>
+                          </IndexTable.Row>
+                        ))}
+                      </IndexTable>
+                    </>
+                  )}
+                </BlockStack>
               </Card.Section>
             </Card>
           </Layout.Section>
@@ -1024,9 +1048,10 @@ function SkuTrendSparkline({ trend, skuTitle }: SkuTrendSparklineProps) {
 
   const data = trend.map((point, index) => ({
     key: index,
-    value: point.units,
+    value: Number.isFinite(point.units) ? point.units : 0,
   }));
-  const latest = trend[trend.length - 1];
+  const latest = trend[trend.length - 1]!;
+  const latestUnits = Number.isFinite(latest.units) ? latest.units : 0;
 
   return (
     <BlockStack gap="050">
@@ -1043,7 +1068,7 @@ function SkuTrendSparkline({ trend, skuTitle }: SkuTrendSparklineProps) {
         />
       </div>
       <Text variant="bodySm" tone="subdued" as="span">
-        {latest.label}: {formatNumber(latest.units)}
+        {latest.label}: {formatNumber(latestUnits)}
       </Text>
     </BlockStack>
   );
@@ -1059,5 +1084,48 @@ function Metric({ label, value }: { label: string; value: string }) {
         {value}
       </Text>
     </BlockStack>
+  );
+}
+
+type BucketTrendSummaryProps = {
+  bucketLabel: string;
+  dataset: DataSeries[];
+  stats: InventoryTrendStats | null;
+};
+
+function BucketTrendSummary({ bucketLabel, dataset, stats }: BucketTrendSummaryProps) {
+  if (!dataset.length) {
+    return null;
+  }
+
+  return (
+    <InlineStack align="space-between" blockAlign="center" gap="300" wrap>
+      <div style={{ flex: "1 1 240px", minWidth: 220, maxWidth: 360, height: 100 }}>
+        <SparkLineChart
+          data={dataset}
+          isAnimated={false}
+          accessibilityLabel={`Weekly units sold across ${bucketLabel} bucket`}
+        />
+      </div>
+      {stats && (
+        <BlockStack gap="050" align="end">
+          <InlineStack gap="200" blockAlign="center">
+            <Text variant="bodyMd" as="span">
+              Last week: {formatNumber(stats.latest.units)} units
+            </Text>
+            {stats.deltaPercentage !== null && (
+              <Badge tone={stats.deltaPercentage >= 0 ? "success" : "critical"}>
+                {stats.deltaPercentage >= 0 ? "+" : ""}
+                {stats.deltaPercentage}% WoW
+              </Badge>
+            )}
+          </InlineStack>
+          <Text variant="bodySm" tone="subdued" as="span">
+            Avg {formatNumber(stats.average)} units • Range {formatNumber(stats.lowest.units)}-
+            {formatNumber(stats.highest.units)} units
+          </Text>
+        </BlockStack>
+      )}
+    </InlineStack>
   );
 }

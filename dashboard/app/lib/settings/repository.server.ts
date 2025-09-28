@@ -28,6 +28,7 @@ import {
   encryptSecret,
   maskSecret,
 } from "../security/secrets.server";
+import { isMockMode } from "../env.server";
 import prisma from "../../db.server";
 
 const PROVIDERS: SettingsProvider[] = ["ga4", "gsc", "bing", "mcp"];
@@ -279,6 +280,7 @@ const DEFAULT_TOGGLES: FeatureToggles = {
   enableMcpIntegration: true,
   enableExperimentalWidgets: false,
   enableBetaWorkflows: false,
+  enableAssistantsProvider: false,
 };
 
 const createDefaultConnections = (): SettingsConnections => ({
@@ -644,7 +646,12 @@ class PrismaStoreSettingsRepository implements SettingsRepositoryContract {
     });
 
     const ciphertext = encryptSecret(input.secret);
-    const maskedValue = existing?.maskedValue ?? maskSecret(input.secret);
+    const existingPlaintext = existing ? decryptSecret(existing.ciphertext) : null;
+    const secretChanged = existingPlaintext !== input.secret;
+    const maskedValue =
+      secretChanged || !existing?.maskedValue
+        ? maskSecret(input.secret)
+        : existing.maskedValue;
 
     const rotationReminderAt =
       input.rotationReminderAt === null
@@ -931,6 +938,10 @@ class PrismaStoreSettingsRepository implements SettingsRepositoryContract {
           record.enableMcpIntegration,
           DEFAULT_TOGGLES.enableMcpIntegration,
         ),
+        enableAssistantsProvider: parseBoolean(
+          record.enableAssistantsProvider,
+          DEFAULT_TOGGLES.enableAssistantsProvider,
+        ),
         enableExperimentalWidgets: parseBoolean(
           record.enableExperimentalWidgets,
           DEFAULT_TOGGLES.enableExperimentalWidgets,
@@ -1068,7 +1079,7 @@ class PrismaStoreSettingsRepository implements SettingsRepositoryContract {
 export class StoreSettingsRepository implements SettingsRepositoryContract {
   private readonly impl: SettingsRepositoryContract;
 
-  constructor(useMockData: boolean = process.env.USE_MOCK_DATA === "true") {
+  constructor(useMockData: boolean = isMockMode()) {
     this.impl = useMockData
       ? new MockStoreSettingsRepository()
       : new PrismaStoreSettingsRepository();

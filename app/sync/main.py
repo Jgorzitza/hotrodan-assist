@@ -6,7 +6,7 @@ import hmac
 import json
 import os
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 from uuid import uuid4
 
 import httpx
@@ -261,6 +261,82 @@ async def _process_shopify_topic(session: AsyncSession, topic: str, payload: Dic
         await _upsert_inventory_level(session, payload)
 
 
+def _utcnow() -> datetime:
+    return datetime.utcnow()
+
+
+async def _parse_json_body(request: Request) -> Dict[str, Any]:
+    try:
+        payload = await request.json()
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid JSON payload: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Request body must be a JSON object")
+    return payload
+
+
+def _normalize_order_id(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    raw = str(value)
+    if raw.startswith("gid://shopify/Order/"):
+        return raw.rsplit("/", 1)[-1]
+    return raw
+
+
+def _prepare_order_ids(values: Iterable[Any]) -> tuple[list[str], Dict[str, str]]:
+    normalized: list[str] = []
+    lookup: Dict[str, str] = {}
+    for value in values:
+        if value is None:
+            continue
+        raw = str(value).strip()
+        if not raw:
+            continue
+        item = _normalize_order_id(raw)
+        if not item:
+            continue
+        normalized.append(item)
+        lookup.setdefault(item, raw)
+    return normalized, lookup
+
+
+def _set_note_attribute(raw: Dict[str, Any], key: str, value: str) -> None:
+    note_attributes = raw.get("note_attributes") or []
+    if not isinstance(note_attributes, list):
+        note_attributes = []
+    normalized_key = key.lower()
+    filtered = []
+    for attr in note_attributes:
+        name = str(attr.get("name") or attr.get("key") or "").lower()
+        if name and name == normalized_key:
+            continue
+        filtered.append(attr)
+    filtered.append({"name": key, "value": str(value)})
+    raw["note_attributes"] = filtered
+
+
+def _orders_action_response(
+    *,
+    success: bool,
+    message: Optional[str] = None,
+    updated: Optional[List[Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
+    response: Dict[str, Any] = {"success": success}
+    if message is not None:
+        response["message"] = message
+    response["updatedOrders"] = updated or []
+    return response
+
+
+async def _load_orders(session: AsyncSession, order_ids: List[str]) -> List[ShopifyOrder]:
+    if not order_ids:
+        return []
+    stmt = select(ShopifyOrder).where(ShopifyOrder.id.in_(order_ids))
+    result = await session.execute(stmt)
+    return result.scalars().all()
+
+
 @app.post("/zoho/incoming")
 async def zoho_incoming(req: Request) -> Dict[str, Any]:
     payload = await req.json()
@@ -316,6 +392,176 @@ async def shopify_webhook(req: Request) -> Dict[str, Any]:
         await _process_shopify_topic(session, topic, payload)
         await session.commit()
     return {"ok": True, "topic": topic, "event_id": event.id}
+
+
+@app.post("/sync/orders/assign")
+async def sync_orders_assign(request: Request) -> Dict[str, Any]:
+    payload = await _parse_json_body(request)
+    order_ids_raw = payload.get("orderIds")
+    if not isinstance(order_ids_raw, list) or not order_ids_raw:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="orderIds must be a non-empty array")
+    assignee = str(payload.get("assignee") or "").strip()
+    if not assignee:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="assignee is required")
+
+    normalized_ids, id_lookup = _prepare_order_ids(order_ids_raw)
+    async with SESSION() as session:
+        orders = await _load_orders(session, normalized_ids)
+        updated: List[Dict[str, Any]] = []
+        now = _utcnow()
+        for order in orders:
+            raw = dict(order.raw or {})
+            _set_note_attribute(raw, "orders_control_tower.assignee", assignee)
+            raw["assigned_to"] = assignee
+            order.raw = raw
+            order.updated_at = now
+            updated.append({
+                "id": id_lookup.get(order.id, order.id),
+                "assignedTo": assignee,
+            })
+        await session.commit()
+
+    message = (
+        f"Assigned {len(updated)} order(s) to {assignee}."
+        if updated
+        else "No matching orders found for assignment."
+    )
+    return _orders_action_response(success=True, message=message, updated=updated)
+
+
+@app.post("/sync/orders/fulfill")
+async def sync_orders_fulfill(request: Request) -> Dict[str, Any]:
+    payload = await _parse_json_body(request)
+    order_ids_raw = payload.get("orderIds")
+    if not isinstance(order_ids_raw, list) or not order_ids_raw:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="orderIds must be a non-empty array")
+
+    tracking_payload = payload.get("tracking")
+    tracking: Optional[Dict[str, str]] = None
+    if isinstance(tracking_payload, dict):
+        number = str(tracking_payload.get("number") or "").strip()
+        carrier = str(tracking_payload.get("carrier") or "").strip()
+        if number and carrier:
+            tracking = {"number": number, "carrier": carrier}
+
+    normalized_ids, id_lookup = _prepare_order_ids(order_ids_raw)
+    async with SESSION() as session:
+        orders = await _load_orders(session, normalized_ids)
+        updated: List[Dict[str, Any]] = []
+        now = _utcnow()
+        for order in orders:
+            raw = dict(order.raw or {})
+            raw["fulfillment_status"] = "fulfilled"
+            if tracking:
+                raw["latest_tracking"] = tracking
+            order.raw = raw
+            order.fulfillment_status = "fulfilled"
+            order.updated_at = now
+            updated.append({
+                "id": id_lookup.get(order.id, order.id),
+                "fulfillmentStatus": "fulfilled",
+                "tracking": tracking,
+            })
+        await session.commit()
+
+    message_base = (
+        f"Marked {len(updated)} order(s) fulfilled"
+        if updated
+        else "No matching orders found to mark fulfilled"
+    )
+    if tracking and updated:
+        message_base = f"{message_base} with tracking {tracking['number']}"
+    message = f"{message_base}."
+    return _orders_action_response(success=True, message=message, updated=updated)
+
+
+@app.post("/sync/orders/support")
+async def sync_orders_support(request: Request) -> Dict[str, Any]:
+    payload = await _parse_json_body(request)
+    order_id_raw = payload.get("orderId")
+    if not isinstance(order_id_raw, str) or not order_id_raw:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="orderId is required")
+    normalized_id = _normalize_order_id(order_id_raw)
+    if not normalized_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="orderId is invalid")
+
+    conversation_id = str(payload.get("conversationId") or f"support-{uuid4().hex[:8]}")
+    note = str(payload.get("note") or "").strip()
+
+    async with SESSION() as session:
+        order = await session.get(ShopifyOrder, normalized_id)
+        if not order:
+            return _orders_action_response(
+                success=False,
+                message=f"Order {order_id_raw} not found.",
+                updated=[],
+            )
+        raw = dict(order.raw or {})
+        _set_note_attribute(raw, "support_thread", conversation_id)
+        thread_notes = raw.get("support_notes") or []
+        if not isinstance(thread_notes, list):
+            thread_notes = []
+        now = _utcnow()
+        if note:
+            thread_notes.append({
+                "note": note,
+                "created_at": now.isoformat(),
+            })
+        raw["support_notes"] = thread_notes
+        raw["support_thread"] = conversation_id
+        order.raw = raw
+        order.updated_at = now
+        await session.commit()
+
+    message = f"Support requested for {order_id_raw}."
+    return _orders_action_response(
+        success=True,
+        message=message,
+        updated=[{"id": order_id_raw, "supportThread": conversation_id}],
+    )
+
+
+@app.post("/sync/orders/returns")
+async def sync_orders_returns(request: Request) -> Dict[str, Any]:
+    payload = await _parse_json_body(request)
+    order_id_raw = payload.get("orderId")
+    if not isinstance(order_id_raw, str) or not order_id_raw:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="orderId is required")
+    normalized_id = _normalize_order_id(order_id_raw)
+    if not normalized_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="orderId is invalid")
+
+    action = str(payload.get("action") or "").strip()
+    allowed_actions = {"approve_refund", "deny", "request_inspection"}
+    if action not in allowed_actions:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported return action")
+    note = str(payload.get("note") or "").strip()
+
+    async with SESSION() as session:
+        order = await session.get(ShopifyOrder, normalized_id)
+        if not order:
+            return _orders_action_response(
+                success=False,
+                message=f"Order {order_id_raw} not found.",
+                updated=[],
+            )
+        raw = dict(order.raw or {})
+        returns_log = raw.get("returns") or []
+        if not isinstance(returns_log, list):
+            returns_log = []
+        now = _utcnow()
+        returns_log.append({
+            "action": action,
+            "note": note or None,
+            "recorded_at": now.isoformat(),
+        })
+        raw["returns"] = returns_log
+        order.raw = raw
+        order.updated_at = now
+        await session.commit()
+
+    message = f"Return updated ({action}) for {order_id_raw}."
+    return _orders_action_response(success=True, message=message, updated=[])
 
 
 @app.get("/sync/orders")

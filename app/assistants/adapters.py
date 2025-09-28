@@ -6,16 +6,18 @@ register channel-specific delivery handlers without breaking import time.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional
+from inspect import isawaitable
+from typing import Any, Awaitable, Callable, Dict, Optional
 
-AdapterFn = Callable[[Dict[str, Any]], Optional[str]]
+AdapterResult = Optional[str]
+AdapterFn = Callable[[Dict[str, Any]], Awaitable[AdapterResult] | AdapterResult]
 
 
 @dataclass(slots=True)
 class _NoOpAdapter:
     """Fallback adapter used when no channel-specific handler is registered."""
 
-    def send(self, payload: Dict[str, Any]) -> Optional[str]:  # pragma: no cover - trivial
+    async def send(self, payload: Dict[str, Any]) -> Optional[str]:  # pragma: no cover - trivial
         return None
 
 
@@ -23,8 +25,11 @@ class _NoOpAdapter:
 class _CallableAdapter:
     handler: AdapterFn
 
-    def send(self, payload: Dict[str, Any]) -> Optional[str]:  # pragma: no cover - trivial
-        return self.handler(payload)
+    async def send(self, payload: Dict[str, Any]) -> Optional[str]:  # pragma: no cover - trivial
+        result = self.handler(payload)
+        if isawaitable(result):
+            return await result
+        return result
 
 
 class DeliveryAdapterRegistry:
@@ -43,8 +48,11 @@ class DeliveryAdapterRegistry:
             return self._noop
         return _CallableAdapter(handler)
 
-    def send(self, channel: str, payload: Dict[str, Any]) -> Optional[str]:
-        return self.adapter_for_channel(channel).send(payload)
+    async def send(self, channel: str, payload: Dict[str, Any]) -> Optional[str]:
+        return await self.adapter_for_channel(channel).send(payload)
+
+    def clear(self) -> None:
+        self._adapters.clear()
 
 
 __all__ = ["DeliveryAdapterRegistry", "AdapterFn"]

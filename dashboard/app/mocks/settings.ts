@@ -23,6 +23,7 @@ const baseToggles: FeatureToggles = {
   enableMcpIntegration: true,
   enableExperimentalWidgets: false,
   enableBetaWorkflows: false,
+  enableAssistantsProvider: false,
 };
 
 const baseSecretMetadata: Record<SettingsProvider, SecretMetadata | null> = {

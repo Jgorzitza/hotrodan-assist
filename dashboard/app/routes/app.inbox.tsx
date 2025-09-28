@@ -1,11 +1,12 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   useFetcher,
   useLoaderData,
   useNavigate,
   useSearchParams,
+  useRevalidator,
 } from "@remix-run/react";
 import {
   Badge,
@@ -27,8 +28,17 @@ import { ThumbsDownIcon, ThumbsUpIcon } from "@shopify/polaris-icons";
 import { TitleBar } from "@shopify/app-bridge-react";
 
 import { authenticate } from "../shopify.server";
+import { storeSettingsRepository } from "../lib/settings/repository.server";
+import {
+  approveAssistantsDraft,
+  editAssistantsDraft,
+  fetchAssistantsDraft,
+  fetchAssistantsInbox,
+  submitAssistantsDraftFeedback,
+} from "~/lib/inbox/assistants.server";
 import { publishInboxActionEvent } from "~/lib/inbox/events.server";
-import type { InboxStreamEnvelope } from "~/lib/inbox/events.server";
+import type { InboxStreamEnvelope, InboxStreamHandshake } from "~/lib/inbox/events.server";
+import { logInboxConnectionTelemetry } from "~/lib/inbox/telemetry.client";
 import {
   approveInboxDraft,
   getInboxDraft,
@@ -39,8 +49,12 @@ import {
 } from "~/mocks";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
 import type {
+  InboxConnectionStatus,
+  InboxConnectionTelemetryEventType,
   InboxActionResponse,
+  InboxBridgeStatusEventPayload,
   InboxDataset,
+  InboxDraftFeedback,
   InboxFeedbackVote,
   InboxProvider,
   InboxTicket,
@@ -60,6 +74,9 @@ const VALID_CHANNELS: ReadonlyArray<InboxProvider> = [
   "shopify",
   "instagram",
   "tiktok",
+  "chat",
+  "sms",
+  "social",
 ];
 
 const VALID_STATUSES: ReadonlyArray<InboxTicketStatus> = [
@@ -74,6 +91,9 @@ const CHANNEL_LABELS: Record<InboxProvider, string> = {
   shopify: "Shopify",
   instagram: "Instagram",
   tiktok: "TikTok",
+  chat: "Chat",
+  sms: "SMS",
+  social: "Social",
 };
 
 const STATUS_LABELS: Record<InboxTicketStatus, string> = {
@@ -128,6 +148,53 @@ const feedbackVoteLabel = {
 
 type InboxEventEnvelope = Extract<InboxStreamEnvelope, { type: "event" }>;
 
+type ConnectionStatus = InboxConnectionStatus;
+
+const CONNECTION_STATUS_LABEL: Record<ConnectionStatus, string> = {
+  connecting: "Connecting",
+  connected: "Live",
+  reconnecting: "Reconnecting",
+  offline: "Offline",
+};
+
+const CONNECTION_STATUS_DESCRIPTION: Record<ConnectionStatus, string> = {
+  connecting: "Establishing realtime sync…",
+  connected: "Realtime inbox updates are active.",
+  reconnecting: "Connection dropped. Retrying shortly…",
+  offline: "Realtime sync unavailable. Manual refresh recommended until reconnected.",
+};
+
+const CONNECTION_STATUS_TONE: Record<ConnectionStatus, "info" | "success" | "warning" | "critical"> = {
+  connecting: "info",
+  connected: "success",
+  reconnecting: "warning",
+  offline: "critical",
+};
+
+const isConnectionStatus = (value: string): value is ConnectionStatus =>
+  Object.prototype.hasOwnProperty.call(CONNECTION_STATUS_LABEL, value);
+
+const HANDSHAKE_CAPABILITY_LABELS: Record<
+  InboxStreamHandshake["capabilities"][number],
+  string
+> = {
+  drafts: "Drafts",
+  feedback: "Feedback",
+  attachments: "Attachments",
+};
+
+const formatHandshakeCapabilities = (
+  capabilities: InboxStreamHandshake["capabilities"],
+) => {
+  if (!capabilities.length) {
+    return "None";
+  }
+
+  return capabilities
+    .map((capability) => HANDSHAKE_CAPABILITY_LABELS[capability] ?? capability)
+    .join(" • ");
+};
+
 const FILTER_OPTIONS: Array<{ label: string; value: InboxDataset["filter"] }> = [
   { label: "All", value: "all" },
   { label: "Unassigned", value: "unassigned" },
@@ -175,6 +242,7 @@ type LoaderData = {
   dataset: InboxDataset;
   scenario: MockScenario;
   useMockData: boolean;
+  refreshAfterSeconds: number | null;
 };
 
 const clampPageSize = (value: number) => {
@@ -187,22 +255,78 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { filter, channelFilter, statusFilter, assignedFilter } = parseFilters(url);
   const pageSize = clampPageSize(Number(url.searchParams.get("pageSize") ?? "12"));
   const scenario = scenarioFromRequest(request);
+  let dataset: InboxDataset | null = null;
+  let refreshAfterSeconds: number | null = null;
+  let useMockDataset = true;
+  let fallbackBecauseAssistantsDisabled = false;
 
   if (!USE_MOCK_DATA) {
-    await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
+    const shopDomain = session.shop;
+    const settings = await storeSettingsRepository.getSettings(shopDomain);
+    const assistantsEnabled = Boolean(settings.toggles.enableAssistantsProvider);
+
+    if (assistantsEnabled) {
+      try {
+        const { dataset: serviceDataset, refreshAfterSeconds: serviceRefresh } =
+          await fetchAssistantsInbox({
+            filter,
+            channelFilter,
+            statusFilter,
+            assignedFilter,
+            pageSize,
+            signal: request.signal,
+          });
+        dataset = serviceDataset;
+        refreshAfterSeconds = serviceRefresh;
+        useMockDataset = false;
+      } catch (error) {
+        console.error("inbox loader: assistants fetch failed", error);
+        dataset = getInboxScenario({
+          scenario,
+          filter,
+          channelFilter,
+          statusFilter,
+          assignedFilter,
+          pageSize,
+        });
+        const fallbackAlert =
+          "Assistants service unavailable — showing mock data.";
+        dataset.alert = dataset.alert ? `${fallbackAlert} ${dataset.alert}` : fallbackAlert;
+        if (dataset.state === "ok") {
+          dataset.state = "warning";
+        }
+        refreshAfterSeconds = null;
+        useMockDataset = true;
+      }
+    } else {
+      fallbackBecauseAssistantsDisabled = true;
+    }
   }
 
-  const dataset = getInboxScenario({
-    scenario,
-    filter,
-    channelFilter,
-    statusFilter,
-    assignedFilter,
-    pageSize,
-  });
+  if (!dataset) {
+    dataset = getInboxScenario({
+      scenario,
+      filter,
+      channelFilter,
+      statusFilter,
+      assignedFilter,
+      pageSize,
+    });
+    refreshAfterSeconds = null;
+    useMockDataset = true;
+  }
+
+  if (fallbackBecauseAssistantsDisabled) {
+    const disabledAlert = "Assistants provider disabled in Settings — showing mock data.";
+    dataset.alert = dataset.alert ? `${disabledAlert} ${dataset.alert}` : disabledAlert;
+    if (dataset.state === "ok") {
+      dataset.state = "warning";
+    }
+  }
 
   return json<LoaderData>(
-    { dataset, scenario, useMockData: USE_MOCK_DATA },
+    { dataset, scenario, useMockData: useMockDataset, refreshAfterSeconds },
     {
       headers: {
         "Cache-Control": "private, max-age=0, must-revalidate",
@@ -237,16 +361,202 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   const ticketId = ticketIdEntry;
+  const now = new Date().toISOString();
+
+  let useAssistantsService = false;
+
+  if (!USE_MOCK_DATA) {
+    const { session } = await authenticate.admin(request);
+    try {
+      const settings = await storeSettingsRepository.getSettings(session.shop);
+      useAssistantsService = Boolean(settings.toggles.enableAssistantsProvider);
+    } catch (error) {
+      console.error("inbox action: failed to load settings, falling back to mocks", error);
+      useAssistantsService = false;
+    }
+  }
+
+  if (useAssistantsService) {
+    if (intent === "feedback") {
+      const draftIdEntry = formData.get("draftId");
+      const voteEntry = formData.get("vote");
+
+      if (voteEntry !== "up" && voteEntry !== "down") {
+        return json<InboxActionResponse>(
+          {
+            success: false,
+            message: "Feedback vote must be 'up' or 'down'.",
+          },
+          { status: 400 },
+        );
+      }
+
+      if (typeof draftIdEntry !== "string" || draftIdEntry.length === 0) {
+        return json<InboxActionResponse>(
+          {
+            success: false,
+            message: "Missing draft reference for feedback.",
+          },
+          { status: 400 },
+        );
+      }
+
+      const commentEntry = formData.get("comment");
+      const submittedByEntry = formData.get("submittedBy");
+      const submittedBy =
+        typeof submittedByEntry === "string" && submittedByEntry.length > 0
+          ? submittedByEntry
+          : "Operator";
+      const comment =
+        typeof commentEntry === "string" && commentEntry.trim().length > 0
+          ? commentEntry.trim()
+          : undefined;
+
+      try {
+        await submitAssistantsDraftFeedback({
+          draftId: draftIdEntry,
+          actor: submittedBy,
+          vote: voteEntry,
+          comment,
+          signal: request.signal,
+        });
+
+        const ticket = await fetchAssistantsDraft({
+          draftId: ticketId,
+          signal: request.signal,
+        });
+        const draft = ticket.aiDraft;
+        const history = draft.feedback;
+        const feedback: InboxDraftFeedback =
+          history[history.length - 1] ??
+          {
+            id: `${draft.id}-feedback-${Date.now()}`,
+            draftId: draft.id,
+            ticketId: ticket.id,
+            vote: voteEntry,
+            comment,
+            submittedAt: now,
+            submittedBy,
+          };
+
+        const payload: InboxActionResponse = {
+          success: true,
+          message:
+            voteEntry === "up"
+              ? "Positive feedback logged."
+              : "Constructive feedback captured.",
+          ticket,
+          draft,
+          feedback,
+          event: {
+            type: "draft:feedback",
+            timestamp: now,
+            payload: {
+              ticketId,
+              draftId: draft.id,
+              vote: voteEntry,
+            },
+          },
+        };
+
+        publishInboxActionEvent(payload);
+
+        return json<InboxActionResponse>(payload);
+      } catch (error) {
+        console.error("inbox action: assistants feedback failed", error);
+        return json<InboxActionResponse>(
+          {
+            success: false,
+            message: "Assistants service temporarily unavailable.",
+          },
+          { status: 502 },
+        );
+      }
+    }
+
+    const contentEntry = formData.get("content");
+    if (typeof contentEntry !== "string") {
+      return json<InboxActionResponse>(
+        {
+          success: false,
+          message: "Missing draft content.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const trimmedContent = contentEntry.trim();
+    if (!trimmedContent) {
+      return json<InboxActionResponse>(
+        {
+          success: false,
+          message: "Draft content cannot be empty.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const updatedByEntry = formData.get("updatedBy");
+    const updatedBy =
+      typeof updatedByEntry === "string" && updatedByEntry.length > 0
+        ? updatedByEntry
+        : "Operator";
+
+    try {
+      if (intent === "approve") {
+        await approveAssistantsDraft({
+          draftId: ticketId,
+          actor: updatedBy,
+          signal: request.signal,
+        });
+      } else {
+        await editAssistantsDraft({
+          draftId: ticketId,
+          actor: updatedBy,
+          content: trimmedContent,
+          signal: request.signal,
+        });
+      }
+
+      const ticket = await fetchAssistantsDraft({
+        draftId: ticketId,
+        signal: request.signal,
+      });
+
+      const payload: InboxActionResponse = {
+        success: true,
+        message: intent === "approve" ? "Draft approved." : "Draft sent with edits.",
+        ticket,
+        draft: ticket.aiDraft,
+        event: {
+          type: intent === "approve" ? "draft:approved" : "draft:updated",
+          timestamp: now,
+          payload: {
+            ticketId,
+            revision: ticket.aiDraft.revision,
+          },
+        },
+      };
+
+      publishInboxActionEvent(payload);
+
+      return json<InboxActionResponse>(payload);
+    } catch (error) {
+      console.error("inbox action: assistants mutation failed", error);
+      return json<InboxActionResponse>(
+        {
+          success: false,
+          message: "Assistants service temporarily unavailable.",
+        },
+        { status: 502 },
+      );
+    }
+  }
+
   const url = new URL(request.url);
   const { filter, channelFilter, statusFilter, assignedFilter } = parseFilters(url);
   const pageSize = clampPageSize(Number(url.searchParams.get("pageSize") ?? "12"));
   const scenario = scenarioFromRequest(request);
-
-  if (!USE_MOCK_DATA) {
-    await authenticate.admin(request);
-  }
-
-  const now = new Date().toISOString();
 
   const findTicketWithFallback = (): InboxTicket | undefined => {
     const scopedDataset = getInboxScenario({
@@ -466,11 +776,12 @@ const formatTimeAgo = (value: string) => {
 };
 
 export default function InboxRoute() {
-  const { dataset, scenario, useMockData } = useLoaderData<typeof loader>();
+  const { dataset, scenario, useMockData, refreshAfterSeconds } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const draftFetcher = useFetcher<typeof action>();
   const feedbackFetcher = useFetcher<typeof action>();
+  const { revalidate: revalidatePage } = useRevalidator();
 
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(
     dataset.tickets[0]?.id ?? null,
@@ -483,6 +794,112 @@ export default function InboxRoute() {
     Record<string, InboxTicket["aiDraft"]["feedback"]>
   >(() => buildFeedbackIndex(dataset.tickets));
   const [toast, setToast] = useState<string | null>(null);
+  const initialProviderStatus: ConnectionStatus = useMockData ? "connected" : "connecting";
+  const [eventStreamStatus, setEventStreamStatus] = useState<ConnectionStatus>("connecting");
+  const [providerStatus, setProviderStatus] = useState<ConnectionStatus>(initialProviderStatus);
+  const [streamHandshake, setStreamHandshake] = useState<InboxStreamHandshake | null>(null);
+  const connectionRetryRef = useRef<() => void>(() => {});
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const revalidatePendingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const processedEventIdsRef = useRef<Set<string>>(new Set());
+
+  const updateProviderStatus = useCallback(
+    (nextStatus: ConnectionStatus, options?: { suppressToast?: boolean; retryDelayMs?: number }) => {
+      setProviderStatus((current) => {
+        if (current === nextStatus) {
+          return current;
+        }
+
+        if (!options?.suppressToast && !useMockData) {
+          if (nextStatus === "reconnecting" && current === "connected") {
+            const retrySeconds =
+              typeof options?.retryDelayMs === "number"
+                ? Math.max(Math.round(options.retryDelayMs / 1000), 1)
+                : null;
+            setToast(
+              retrySeconds
+                ? `Assistants realtime bridge interrupted. Retrying in ${retrySeconds}s…`
+                : "Assistants realtime bridge interrupted. Retrying…",
+            );
+          } else if (nextStatus === "offline") {
+            setToast("Assistants realtime bridge offline. We'll keep retrying automatically.");
+          } else if (
+            nextStatus === "connected" &&
+            (current === "offline" || current === "reconnecting")
+          ) {
+            setToast("Assistants realtime bridge reconnected.");
+          }
+        }
+
+        return nextStatus;
+      });
+    },
+    [setToast, useMockData],
+  );
+
+  useEffect(() => {
+    if (useMockData) {
+      updateProviderStatus("connected", { suppressToast: true });
+    }
+  }, [updateProviderStatus, useMockData]);
+
+  const forceReconnect = useCallback(() => {
+    connectionRetryRef.current();
+  }, []);
+
+  const queueDatasetRefresh = useCallback(
+    (eventId: string | undefined) => {
+      if (useMockData || !eventId) {
+        return;
+      }
+
+      const processed = processedEventIdsRef.current;
+      if (processed.has(eventId)) {
+        return;
+      }
+
+      if (processed.size >= 128) {
+        processed.clear();
+      }
+
+      processed.add(eventId);
+
+      if (revalidatePendingRef.current) {
+        return;
+      }
+
+      revalidatePendingRef.current = setTimeout(() => {
+        revalidatePendingRef.current = null;
+        revalidatePage();
+      }, 250);
+    },
+    [revalidatePage, useMockData],
+  );
+
+  const connectionStatus = useMemo(() => {
+    if (eventStreamStatus === "offline" || providerStatus === "offline") {
+      return "offline" as const;
+    }
+
+    if (eventStreamStatus === "reconnecting" || providerStatus === "reconnecting") {
+      return "reconnecting" as const;
+    }
+
+    if (eventStreamStatus === "connecting" || providerStatus === "connecting") {
+      return "connecting" as const;
+    }
+
+    return "connected" as const;
+  }, [eventStreamStatus, providerStatus]);
+
+  useEffect(() => {
+    return () => {
+      if (revalidatePendingRef.current) {
+        clearTimeout(revalidatePendingRef.current);
+        revalidatePendingRef.current = null;
+      }
+    };
+  }, []);
 
   const metrics = useMemo(() => buildMetrics(dataset), [dataset]);
 
@@ -589,13 +1006,83 @@ export default function InboxRoute() {
   }, [selectedTicketId]);
 
   useEffect(() => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+
+    if (useMockData || !refreshAfterSeconds || refreshAfterSeconds <= 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const scheduleNext = () => {
+      if (cancelled) {
+        return;
+      }
+
+      refreshTimerRef.current = setTimeout(() => {
+        refreshTimerRef.current = null;
+        revalidatePage();
+        scheduleNext();
+      }, refreshAfterSeconds * 1000);
+    };
+
+    scheduleNext();
+
+    return () => {
+      cancelled = true;
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
+    };
+  }, [refreshAfterSeconds, revalidatePage, useMockData]);
+
+  useEffect(() => {
     if (typeof window === "undefined" || typeof EventSource === "undefined") {
+      setEventStreamStatus("offline");
       return;
     }
 
     let source: EventSource | null = null;
     let retryHandle: ReturnType<typeof setTimeout> | null = null;
     let closed = false;
+    let consecutiveFailures = 0;
+    let attempt = 0;
+    let attemptStartedAt: number | null = null;
+    let currentEventStreamStatus: ConnectionStatus = "connecting";
+    let offlineLogged = false;
+    let manualOverride = false;
+
+    const setEventStreamState = (next: ConnectionStatus) => {
+      currentEventStreamStatus = next;
+      setEventStreamStatus(next);
+    };
+
+    const latencySinceAttempt = () => {
+      if (attemptStartedAt === null) {
+        return undefined;
+      }
+      return Math.max(Date.now() - attemptStartedAt, 0);
+    };
+
+    const telemetry = (
+      type: InboxConnectionTelemetryEventType,
+      status: ConnectionStatus,
+      extras?: { retryDelayMs?: number; latencyMs?: number; reason?: string },
+    ) => {
+      logInboxConnectionTelemetry({
+        type,
+        status,
+        attempt,
+        consecutiveFailures,
+        scenario,
+        useMockData,
+        ...extras,
+      });
+    };
 
     const updateFeedbackIndex = (payload: InboxEventEnvelope) => {
       setFeedbackIndex((current) => {
@@ -622,10 +1109,36 @@ export default function InboxRoute() {
 
     const handleEnvelope = (payload: InboxStreamEnvelope) => {
       if (payload.type === "handshake") {
+        setStreamHandshake(payload);
+        consecutiveFailures = 0;
+        offlineLogged = false;
+        telemetry("connection:handshake", "connected", { latencyMs: latencySinceAttempt() });
+        attemptStartedAt = null;
+        setEventStreamState("connected");
+        const bridgeStatus = payload.bridge?.status;
+        if (bridgeStatus && isConnectionStatus(bridgeStatus)) {
+          updateProviderStatus(bridgeStatus, { suppressToast: true });
+        } else if (!useMockData) {
+          updateProviderStatus("connecting", { suppressToast: true });
+        } else {
+          updateProviderStatus("connected", { suppressToast: true });
+        }
+        return;
+      }
+
+      if (payload.type === "event" && payload.event?.type === "bridge:status") {
+        const bridgePayload = payload.event.payload as Partial<InboxBridgeStatusEventPayload>;
+        const status = bridgePayload?.status;
+        if (status && isConnectionStatus(status)) {
+          const retryDelayMs =
+            typeof bridgePayload?.retryDelayMs === "number" ? bridgePayload.retryDelayMs : undefined;
+          updateProviderStatus(status, { retryDelayMs });
+        }
         return;
       }
 
       updateFeedbackIndex(payload);
+      queueDatasetRefresh(payload.id);
 
       if (payload.draft && payload.draft.ticketId === selectedTicketIdRef.current) {
         setDraftContent(payload.draft.content);
@@ -642,9 +1155,51 @@ export default function InboxRoute() {
       }
     };
 
+    const scheduleReconnect = (delay: number) => {
+      if (closed || retryHandle) {
+        return;
+      }
+
+      telemetry("connection:retry", currentEventStreamStatus, { retryDelayMs: delay });
+
+      retryHandle = setTimeout(() => {
+        retryHandle = null;
+        connect();
+      }, delay);
+    };
+
     const connect = () => {
+      if (closed) {
+        return;
+      }
+
+      attempt += 1;
+      attemptStartedAt = Date.now();
+      setStreamHandshake(null);
+      const status: ConnectionStatus = manualOverride
+        ? "connecting"
+        : consecutiveFailures > 0
+          ? "reconnecting"
+          : "connecting";
+      setEventStreamState(status);
+      telemetry("connection:attempt", status);
+      if (manualOverride) {
+        telemetry("connection:manual-retry", status);
+        manualOverride = false;
+      }
+
       source?.close();
       source = new EventSource("/app/inbox/stream");
+      source.onopen = () => {
+        consecutiveFailures = 0;
+        offlineLogged = false;
+        telemetry("connection:open", "connected", { latencyMs: latencySinceAttempt() });
+        setEventStreamState("connected");
+        if (retryHandle) {
+          clearTimeout(retryHandle);
+          retryHandle = null;
+        }
+      };
       source.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data) as InboxStreamEnvelope;
@@ -657,26 +1212,58 @@ export default function InboxRoute() {
         if (closed) {
           return;
         }
-        if (retryHandle) {
-          return;
+
+        consecutiveFailures += 1;
+        const delay = Math.min(consecutiveFailures * 2000, 15000);
+        const nextStatus: ConnectionStatus = consecutiveFailures >= 3 ? "offline" : "reconnecting";
+        telemetry("connection:error", nextStatus, { retryDelayMs: delay });
+        if (nextStatus === "offline" && !offlineLogged) {
+          telemetry("connection:offline", "offline", { reason: "max-retries-exceeded" });
+          offlineLogged = true;
         }
-        retryHandle = setTimeout(() => {
-          retryHandle = null;
-          connect();
-        }, 3000);
+
+        setEventStreamState(nextStatus);
+
+        if (consecutiveFailures === 1) {
+          setToast("Realtime updates interrupted. Attempting to reconnect…");
+        } else if (nextStatus === "offline" && consecutiveFailures === 3) {
+          setToast("Realtime updates are offline. We'll keep retrying in the background.");
+        }
+
+        scheduleReconnect(delay);
       };
     };
+
+    const reconnect = () => {
+      if (closed) {
+        return;
+      }
+
+      consecutiveFailures = 0;
+      offlineLogged = false;
+      manualOverride = true;
+
+      if (retryHandle) {
+        clearTimeout(retryHandle);
+        retryHandle = null;
+      }
+
+      connect();
+    };
+
+    connectionRetryRef.current = reconnect;
 
     connect();
 
     return () => {
       closed = true;
+      connectionRetryRef.current = () => {};
       source?.close();
       if (retryHandle) {
         clearTimeout(retryHandle);
       }
     };
-  }, []);
+  }, [queueDatasetRefresh, scenario, updateProviderStatus, useMockData]);
 
   useEffect(() => {
     if (draftFetcher.state !== "idle" || !draftFetcher.data) return;
@@ -801,6 +1388,24 @@ export default function InboxRoute() {
   const feedbackHistory = currentFeedback.slice(-3).reverse();
   const lastFeedback = currentFeedback[currentFeedback.length - 1];
 
+  const providerBadgeLabel = streamHandshake
+    ? streamHandshake.provider.label
+    : useMockData
+      ? "Mock inbox provider"
+      : "Assistants bridge";
+
+  const providerCapabilitiesLabel = streamHandshake
+    ? `Capabilities: ${formatHandshakeCapabilities(streamHandshake.capabilities)}`
+    : useMockData
+      ? "Mock provider handshake pending…"
+      : "Negotiating Assistants handshake…";
+
+  const providerStatusLabel = `Bridge status: ${CONNECTION_STATUS_LABEL[providerStatus]}`;
+
+  const providerTransportLabel = streamHandshake?.provider.transport
+    ? streamHandshake.provider.transport.toUpperCase()
+    : null;
+
   return (
     <Page
       title="Inbox"
@@ -831,6 +1436,47 @@ export default function InboxRoute() {
                   </Banner>
                 )}
               </BlockStack>
+            )}
+
+            <InlineStack gap="200" blockAlign="center">
+              <Badge tone={CONNECTION_STATUS_TONE[connectionStatus]}>
+                {CONNECTION_STATUS_LABEL[connectionStatus]}
+              </Badge>
+              <Text variant="bodySm" tone="subdued">
+                {CONNECTION_STATUS_DESCRIPTION[connectionStatus]}
+              </Text>
+              {connectionStatus === "reconnecting" && (
+                <Button
+                  size="slim"
+                  variant="plain"
+                  onClick={forceReconnect}
+                  accessibilityLabel="Retry realtime connection"
+                >
+                  Retry
+                </Button>
+              )}
+            </InlineStack>
+            <InlineStack gap="150" blockAlign="center">
+              <Badge tone="info">{providerBadgeLabel}</Badge>
+              {providerTransportLabel ? (
+                <Badge tone="subdued">{providerTransportLabel}</Badge>
+              ) : null}
+              <Text variant="bodySm" tone="subdued">
+                {providerCapabilitiesLabel}
+              </Text>
+              <Text variant="bodySm" tone="subdued">
+                {providerStatusLabel}
+              </Text>
+            </InlineStack>
+
+            {connectionStatus === "offline" && (
+              <Banner
+                tone="critical"
+                title="Realtime updates paused"
+                action={{ content: "Retry connection", onAction: forceReconnect }}
+              >
+                <p>We will keep retrying automatically. Approvals continue, but updates may be stale.</p>
+              </Banner>
             )}
 
             <Card title="Tickets overview" sectioned>

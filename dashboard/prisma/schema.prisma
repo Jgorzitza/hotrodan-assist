@@ -187,6 +187,7 @@ model StoreSecret {
   store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@unique([storeId, provider])
+  @@index([rotationReminderAt], map: "StoreSecret_rotationReminderAt_idx")
 }
 
 model KpiCache {
@@ -398,6 +399,7 @@ model ConnectionEvent {
   store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@index([storeId, integration, createdAt])
+  @@index([createdAt], map: "ConnectionEvent_createdAt_idx")
 }
 
 model WebhookEvent {

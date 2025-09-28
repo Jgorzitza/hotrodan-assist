@@ -10,7 +10,8 @@
     "test:integration": "vitest run --dir app/tests/integration",
     "test:watch": "vitest --watch",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:sync:webhooks": "npx vitest run --root dashboard --config vitest.config.ts dashboard/app/lib/webhooks/__tests__/handlers.server.test.ts dashboard/app/lib/webhooks/__tests__/queue.server.test.ts dashboard/app/lib/webhooks/__tests__/processors.server.test.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.43.1",

@@ -20,6 +20,7 @@ const createSettingsPayload = (): SettingsPayload => ({
     enableMcpIntegration: true,
     enableExperimentalWidgets: false,
     enableBetaWorkflows: false,
+    enableAssistantsProvider: false,
   },
   secrets: {
     ga4: {

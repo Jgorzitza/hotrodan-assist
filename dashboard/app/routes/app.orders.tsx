@@ -52,8 +52,13 @@ import {
   DEFAULT_DASHBOARD_RANGE,
   resolveDashboardRangeKey,
 } from "~/lib/date-range";
-import { fetchOrdersFromSync } from "~/lib/orders/sync.server";
+import {
+  fetchOrdersFromSync,
+  postOrdersSyncAction,
+  type SyncOrdersActionResult,
+} from "~/lib/orders/sync.server";
 import type {
+  ActionToast,
   DashboardRangeKey,
   Order,
   OrderOwner,
@@ -62,6 +67,13 @@ import type {
   OrdersMetrics,
   MockScenario,
 } from "~/types/dashboard";
+import type {
+  SyncOrdersActionUpdate,
+  SyncOrdersAssignResponse,
+  SyncOrdersFulfillResponse,
+  SyncOrdersReturnsResponse,
+  SyncOrdersSupportResponse,
+} from "~/types/orders-sync";
 import { z } from "zod";
 
 const TAB_IDS = ["all", "unfulfilled", "overdue", "refunded"] as const;
@@ -245,7 +257,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         direction,
         status,
         priority,
+        channel,
         assignedTo,
+        tag,
         dateStart,
         dateEnd,
       });
@@ -279,61 +293,97 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   );
 };
 
+
+
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const intent = formData.get("intent");
   const scenario = scenarioFromRequest(request);
   const seed = 0;
 
+  type ResponseOverrides = {
+    toast?: Partial<ActionToast> & { message?: string };
+    message?: string;
+    updated?: SyncOrdersActionUpdate[];
+  };
+
+  const buildResponse = (
+    success: boolean,
+    fallbackMessage: string,
+    overrides?: ResponseOverrides,
+  ): OrdersActionResponse => {
+    const message = overrides?.message ?? overrides?.toast?.message ?? fallbackMessage;
+    const status = overrides?.toast?.status ?? (success ? "success" : "error");
+    return {
+      success,
+      message,
+      toast: {
+        status,
+        message,
+      },
+      updatedOrders: overrides?.updated ?? [],
+    };
+  };
+
+  const mergeUpdatedOrders = (
+    ...values: Array<unknown>
+  ): SyncOrdersActionUpdate[] => {
+    const merged: SyncOrdersActionUpdate[] = [];
+    const seen = new Set<string>();
+    values.forEach((value) => {
+      if (!value) return;
+      const entries = Array.isArray(value) ? value : [value];
+      entries.forEach((entry) => {
+        if (!entry || typeof entry !== "object") return;
+        const id = (entry as { id?: unknown }).id;
+        if (typeof id !== "string" || seen.has(id)) return;
+        seen.add(id);
+        merged.push(entry as SyncOrdersActionUpdate);
+      });
+    });
+    return merged;
+  };
+
   if (!intent || typeof intent !== "string") {
-    return json<OrdersActionResponse>(
-      { success: false, message: "Missing action intent.", updatedOrders: [] },
-      { status: 400 },
-    );
+    const message = "Missing action intent.";
+    return json(buildResponse(false, message, { message }), { status: 400 });
   }
 
-  let syncCall: (<T>(path: string, payload: Record<string, unknown>) => Promise<{ success?: boolean; message?: string; updatedOrders?: T }>) | null = null;
+  let syncCall:
+    | (<TUpdate>(
+        path: string,
+        payload: Record<string, unknown>,
+      ) => Promise<SyncOrdersActionResult<TUpdate>>)
+    | null = null;
 
   if (!USE_MOCK_DATA) {
     const { authenticate } = await import("../shopify.server");
     const auth = await authenticate.admin(request);
-    const shopDomain = auth?.session?.shop;
+    const shopDomain = auth?.session?.shop ?? null;
     const baseUrl = process.env.SYNC_SERVICE_URL;
 
     if (!baseUrl) {
-      return json<OrdersActionResponse>(
-        { success: false, message: "Missing SYNC_SERVICE_URL configuration.", updatedOrders: [] },
-        { status: 500 },
-      );
+      const message = "Missing SYNC_SERVICE_URL configuration.";
+      return json(buildResponse(false, message, { message }), { status: 500 });
     }
 
-    syncCall = async <T,>(path: string, payload: Record<string, unknown>) => {
-      const response = await fetch(new URL(path, baseUrl).toString(), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(shopDomain ? { "X-Shop-Domain": shopDomain } : {}),
-        },
-        body: JSON.stringify({ ...payload, shop_domain: shopDomain }),
+    syncCall = async <TUpdate,>(path: string, payload: Record<string, unknown>) =>
+      postOrdersSyncAction<TUpdate>({
+        path,
+        payload,
+        baseUrl,
+        shopDomain,
         signal: request.signal,
       });
-
-      if (!response.ok) {
-        const text = await response.text().catch(() => "");
-        throw new Error(`Sync request failed (${response.status}): ${text}`);
-      }
-
-      return (await response.json()) as { success?: boolean; message?: string; updatedOrders?: T };
-    };
   }
 
   const parseIds = () => {
     const idsRaw = formData.get("orderIds");
-    if (typeof idsRaw !== "string") return [];
+    if (typeof idsRaw !== "string") return [] as string[];
     try {
       const parsed = JSON.parse(idsRaw);
       return Array.isArray(parsed) ? parsed.map(String) : [];
-    } catch (error) {
+    } catch {
       return idsRaw.split(",").map((value) => value.trim()).filter(Boolean);
     }
   };
@@ -342,38 +392,42 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     case "assign": {
       const assignee = (formData.get("assignee") as string) ?? "unassigned";
       const ids = parseIds();
+      const fallbackMessage = `Assigned ${ids.length} order(s) to ${assignee}.`;
       if (syncCall) {
         try {
-          const result = await syncCall<Order[]>("/sync/orders/assign", {
-            orderIds: ids,
-            assignee,
-          });
-          return json<OrdersActionResponse>({
-            success: result.success ?? true,
-            message: result.message ?? `Assigned ${ids.length} order(s) to ${assignee}.`,
-            updatedOrders: result.updatedOrders ?? [],
-          });
+          const result = await syncCall<SyncOrdersAssignResponse["updatedOrders"]>(
+            "/sync/orders/assign",
+            {
+              orderIds: ids,
+              assignee,
+            },
+          );
+          const success = result.success ?? true;
+          const updated = mergeUpdatedOrders(result.updatedOrders, result.updatedOrder);
+          return json(
+            buildResponse(success, fallbackMessage, {
+              message: result.message,
+              toast: result.toast,
+              updated,
+            }),
+          );
         } catch (error) {
           console.error("orders assign sync error", error);
-          return json<OrdersActionResponse>(
-            { success: false, message: "Failed to assign orders via Sync.", updatedOrders: [] },
-            { status: 502 },
-          );
+          const message = "Failed to assign orders via Sync.";
+          return json(buildResponse(false, message, { message }), { status: 502 });
         }
       }
       const updated = assignOrders(scenario, seed, ids, assignee);
-      return json<OrdersActionResponse>({
-        success: true,
-        message: `Assigned ${ids.length} order(s) to ${assignee}.`,
-        updatedOrders: updated,
-      });
+      const patches = updated.map((order) => ({
+        id: order.id,
+        assignedTo: order.assignedTo ?? assignee,
+      }));
+      return json(buildResponse(true, fallbackMessage, { updated: patches }));
     }
     case "markFulfilled": {
       const ids = parseIds();
       const trackingRaw = formData.get("tracking");
-      let tracking:
-        | { number: string; carrier: string }
-        | undefined;
+      let tracking: { number: string; carrier: string } | undefined;
       if (typeof trackingRaw === "string") {
         try {
           const parsed = JSON.parse(trackingRaw);
@@ -383,45 +437,50 @@ export const action = async ({ request }: ActionFunctionArgs) => {
               carrier: String(parsed.carrier),
             };
           }
-        } catch (error) {
-          // swallow parsing error, optional field
+        } catch {
+          // ignore parsing errors, optional field
         }
       }
+      const fallbackMessage = `Marked ${ids.length} order(s) fulfilled${
+        tracking ? ` with tracking ${tracking.number}` : ""
+      }.`;
       if (syncCall) {
         try {
-          const result = await syncCall<Order[]>("/sync/orders/fulfill", {
-            orderIds: ids,
-            tracking,
-          });
-          return json<OrdersActionResponse>({
-            success: result.success ?? true,
-            message:
-              result.message ??
-              `Marked ${ids.length} order(s) fulfilled${tracking ? ` with tracking ${tracking.number}` : ""}.`,
-            updatedOrders: result.updatedOrders ?? [],
-          });
+          const result = await syncCall<SyncOrdersFulfillResponse["updatedOrders"]>(
+            "/sync/orders/fulfill",
+            {
+              orderIds: ids,
+              tracking,
+            },
+          );
+          const success = result.success ?? true;
+          const updated = mergeUpdatedOrders(result.updatedOrders, result.updatedOrder);
+          return json(
+            buildResponse(success, fallbackMessage, {
+              message: result.message,
+              toast: result.toast,
+              updated,
+            }),
+          );
         } catch (error) {
           console.error("orders fulfill sync error", error);
-          return json<OrdersActionResponse>(
-            { success: false, message: "Failed to mark orders fulfilled via Sync.", updatedOrders: [] },
-            { status: 502 },
-          );
+          const message = "Failed to mark orders fulfilled via Sync.";
+          return json(buildResponse(false, message, { message }), { status: 502 });
         }
       }
       const updated = markOrdersFulfilled(scenario, seed, ids, tracking);
-      return json<OrdersActionResponse>({
-        success: true,
-        message: `Marked ${updated.length} order(s) fulfilled${tracking ? ` with tracking ${tracking.number}` : ""}.`,
-        updatedOrders: updated,
-      });
+      const patches = updated.map((order) => ({
+        id: order.id,
+        fulfillmentStatus: order.fulfillmentStatus,
+        tracking: tracking ?? undefined,
+      }));
+      return json(buildResponse(true, fallbackMessage, { updated: patches }));
     }
     case "requestSupport": {
       const payloadRaw = formData.get("payload");
       if (typeof payloadRaw !== "string") {
-        return json<OrdersActionResponse>(
-          { success: false, message: "Missing payload for support request.", updatedOrders: [] },
-          { status: 400 },
-        );
+        const message = "Missing payload for support request.";
+        return json(buildResponse(false, message, { message }), { status: 400 });
       }
       const payload = JSON.parse(payloadRaw) as {
         orderId?: string;
@@ -429,48 +488,49 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         conversationId?: string;
         note: string;
       };
-      const ids = Array.isArray(payload.orderIds) && payload.orderIds.length
-        ? payload.orderIds.map(String)
-        : payload.orderId
-          ? [String(payload.orderId)]
-          : [];
+      const ids =
+        Array.isArray(payload.orderIds) && payload.orderIds.length
+          ? payload.orderIds.map(String)
+          : payload.orderId
+            ? [String(payload.orderId)]
+            : [];
       if (!ids.length) {
-        return json<OrdersActionResponse>(
-          { success: false, message: "No orders provided for support request.", updatedOrders: [] },
-          { status: 400 },
-        );
+        const message = "No orders provided for support request.";
+        return json(buildResponse(false, message, { message }), { status: 400 });
       }
+      const fallbackMessage = `Support requested for ${ids.length} order${ids.length === 1 ? "" : "s"}.`;
       if (syncCall) {
         try {
           const results = await Promise.all(
             ids.map((id) =>
-              syncCall<Order | null>("/sync/orders/support", {
-                orderId: id,
-                conversationId: payload.conversationId,
-                note: payload.note,
-              }),
+              syncCall<SyncOrdersSupportResponse["updatedOrders"]>(
+                "/sync/orders/support",
+                {
+                  orderId: id,
+                  conversationId: payload.conversationId,
+                  note: payload.note,
+                },
+              ),
             ),
           );
-          const updated = results.flatMap((result) => {
-            if (!result.updatedOrders) return [] as Order[];
-            return Array.isArray(result.updatedOrders)
-              ? result.updatedOrders
-              : [result.updatedOrders];
-          });
           const success = results.every((result) => result.success ?? true);
+          const updated = mergeUpdatedOrders(
+            ...results.map((result) => result.updatedOrders),
+            ...results.map((result) => result.updatedOrder),
+          );
           const firstMessage = results.find((result) => Boolean(result.message))?.message;
-          return json<OrdersActionResponse>({
-            success,
-            message:
-              firstMessage ?? `Support requested for ${ids.length} order${ids.length === 1 ? "" : "s"}.`,
-            updatedOrders: updated,
-          });
+          const firstToast = results.find((result) => result.toast?.message)?.toast;
+          return json(
+            buildResponse(success, fallbackMessage, {
+              message: firstMessage,
+              toast: firstToast,
+              updated,
+            }),
+          );
         } catch (error) {
           console.error("orders support sync error", error);
-          return json<OrdersActionResponse>(
-            { success: false, message: "Failed to request support via Sync.", updatedOrders: [] },
-            { status: 502 },
-          );
+          const message = "Failed to request support via Sync.";
+          return json(buildResponse(false, message, { message }), { status: 502 });
         }
       }
       const updated = ids
@@ -483,56 +543,58 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         )
         .filter((order): order is Order => Boolean(order));
       const success = updated.length === ids.length;
-      return json<OrdersActionResponse>({
-        success,
-        message: updated.length
-          ? `Support requested for ${updated.length} order${updated.length === 1 ? "" : "s"}.`
-          : "Order not found.",
-        updatedOrders: updated,
-      });
+      const message = updated.length
+        ? `Support requested for ${updated.length} order${updated.length === 1 ? "" : "s"}.`
+        : "Order not found.";
+      const patches = updated.map((order) => ({
+        id: order.id,
+        supportThread:
+          order.supportThread ?? payload.conversationId ?? `conversation:${order.id}`,
+      }));
+      return json(buildResponse(success, message, { message, updated: patches }));
     }
     case "updateReturn": {
       const payloadRaw = formData.get("payload");
       if (typeof payloadRaw !== "string") {
-        return json<OrdersActionResponse>(
-          { success: false, message: "Missing payload for return update.", updatedOrders: [] },
-          { status: 400 },
-        );
+        const message = "Missing payload for return update.";
+        return json(buildResponse(false, message, { message }), { status: 400 });
       }
       const payload = JSON.parse(payloadRaw) as {
         orderId: string;
         action: "approve_refund" | "deny" | "request_inspection";
         note?: string;
       };
+      const fallbackMessage = `Return updated (${payload.action}) for ${payload.orderId}.`;
       if (syncCall) {
         try {
-          const result = await syncCall<null>("/sync/orders/returns", payload);
-          return json<OrdersActionResponse>({
-            success: result.success ?? true,
-            message:
-              result.message ?? `Return updated (${payload.action}) for ${payload.orderId}.`,
-            updatedOrders: [],
-          });
+          const result = await syncCall<SyncOrdersReturnsResponse["updatedOrders"]>(
+            "/sync/orders/returns",
+            payload,
+          );
+          const success = result.success ?? true;
+          const updated = mergeUpdatedOrders(result.updatedOrders, result.updatedOrder);
+          return json(
+            buildResponse(success, fallbackMessage, {
+              message: result.message,
+              toast: result.toast,
+              updated,
+            }),
+          );
         } catch (error) {
           console.error("orders return sync error", error);
-          return json<OrdersActionResponse>(
-            { success: false, message: "Failed to update return via Sync.", updatedOrders: [] },
-            { status: 502 },
-          );
+          const message = "Failed to update return via Sync.";
+          return json(buildResponse(false, message, { message }), { status: 502 });
         }
       }
       const result = updateReturnAction(scenario, seed, payload);
-      return json<OrdersActionResponse>({
-        success: Boolean(result),
-        message: result ? `Return updated (${payload.action}) for ${payload.orderId}.` : "Return not found.",
-        updatedOrders: result ? [] : [],
-      });
+      const success = Boolean(result);
+      const message = success ? fallbackMessage : "Return not found.";
+      return json(buildResponse(success, fallbackMessage, { message, updated: [] }));
     }
-    default:
-      return json<OrdersActionResponse>(
-        { success: false, message: `Unknown intent: ${intent}`, updatedOrders: [] },
-        { status: 400 },
-      );
+    default: {
+      const message = `Unknown intent: ${intent}`;
+      return json(buildResponse(false, message, { message }), { status: 400 });
+    }
   }
 };
 
@@ -550,8 +612,8 @@ export default function OrdersRoute() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [assignTarget, setAssignTarget] = useState<OrderOwner>("assistant");
-  const [toast, setToast] = useState<string | null>(null);
-  const [activeOrder, setActiveOrder] = useState<Order | null>(null);
+  const [toast, setToast] = useState<ActionToast | null>(null);
+  const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [supportModalOpen, setSupportModalOpen] = useState(false);
   const [supportNote, setSupportNote] = useState("");
   const { mdUp } = useBreakpoints();
@@ -559,6 +621,11 @@ export default function OrdersRoute() {
   const [dataGaps, setDataGaps] = useState<string[]>(dataset.dataGaps);
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { orders: optimisticOrders, lookup: ordersById } = useOptimisticOrders({
+    baseOrders: dataset.orders.items,
+    submission: fetcher.submission,
+    response: fetcher.data,
+  });
 
   const rangeValue = resolveDashboardRangeKey(
     searchParams.get("range"),
@@ -582,7 +649,7 @@ export default function OrdersRoute() {
 
   const ownerOptions = useMemo(() => {
     const owners = new Set<string>();
-    dataset.orders.items.forEach((order) => {
+    optimisticOrders.forEach((order) => {
       if (order.assignedTo) {
         owners.add(order.assignedTo);
       }
@@ -595,11 +662,11 @@ export default function OrdersRoute() {
     ].filter((option, index, array) => {
       return array.findIndex((entry) => entry.value === option.value) === index;
     });
-  }, [dataset.orders.items]);
+  }, [optimisticOrders]);
 
   const tagOptions = useMemo(() => {
     const tags = new Set<string>();
-    dataset.orders.items.forEach((order) => {
+    optimisticOrders.forEach((order) => {
       order.tags.forEach((tag) => {
         if (tag) {
           tags.add(tag);
@@ -611,7 +678,7 @@ export default function OrdersRoute() {
       { label: "All tags", value: "all" },
       ...sorted.map((tag) => ({ label: tag, value: tag })),
     ];
-  }, [dataset.orders.items]);
+  }, [optimisticOrders]);
 
   const activeFilters = useMemo(
     () =>
@@ -714,18 +781,18 @@ export default function OrdersRoute() {
     allResourcesSelected,
     handleSelectionChange,
     clearSelection,
-  } = useIndexResourceState(dataset.orders.items, {
+  } = useIndexResourceState(optimisticOrders, {
     resourceIDResolver: (resource: Order) => resource.id,
   });
 
   const selectedOrderCount = useMemo(() => selectedResources.length, [selectedResources]);
-  const ordersById = useMemo(() => {
-    const map = new Map<string, Order>();
-    dataset.orders.items.forEach((order) => {
-      map.set(order.id, order);
-    });
-    return map;
-  }, [dataset.orders.items]);
+  const activeOrder = activeOrderId ? ordersById.get(activeOrderId) ?? null : null;
+
+  useEffect(() => {
+    if (activeOrderId && !activeOrder) {
+      setActiveOrderId(null);
+    }
+  }, [activeOrder, activeOrderId]);
 
   const fetcherIntentRaw = fetcher.submission?.formData.get("intent");
   const actionState = useMemo(
@@ -739,8 +806,12 @@ export default function OrdersRoute() {
 
   const selectedOrderLabels = useMemo(() => {
     if (!selectedResources.length) return [] as string[];
-    return selectedResources.map((id) => ordersById.get(id)?.name ?? id);
-  }, [ordersById, selectedResources]);
+    const nameMap = new Map<string, string>();
+    optimisticOrders.forEach((order) => {
+      nameMap.set(order.id, order.name);
+    });
+    return selectedResources.map((id) => nameMap.get(id) ?? id);
+  }, [optimisticOrders, selectedResources]);
 
   const handleTabChange = useCallback(
     (index: number) => {
@@ -777,7 +848,13 @@ export default function OrdersRoute() {
                 ? current
                 : [payload.message as string, ...current],
             );
-            setToast(payload.message);
+            setToast({
+              status:
+                typeof payload.status === "string" && payload.status.length > 0
+                  ? (payload.status as ActionToast["status"])
+                  : "info",
+              message: String(payload.message),
+            });
           }
           if (payload?.type === "data_gap" && payload?.message) {
             setDataGaps((current) =>
@@ -815,8 +892,17 @@ export default function OrdersRoute() {
 
   useEffect(() => {
     if (!fetcher.data) return;
-    if (fetcher.data.message) {
-      setToast(fetcher.data.message);
+    const { toast: responseToast, message, success } = fetcher.data;
+    const nextToast = responseToast?.message
+      ? {
+          status: responseToast.status ?? (success ? "success" : "error"),
+          message: responseToast.message,
+        }
+      : message
+        ? { status: success ? "success" : "error", message }
+        : null;
+    if (nextToast) {
+      setToast(nextToast);
     }
     clearSelection();
     revalidator.revalidate();
@@ -830,13 +916,12 @@ export default function OrdersRoute() {
   const canGoPrevious = pageInfo.hasPreviousPage;
   const pageSizeValue = String(pageInfo.pageSize);
   const totalOrdersCount = dataset.orders.count;
-  const firstItemIndex = dataset.orders.items.length
-    ? (Math.max(pageInfo.page, 1) - 1) * pageInfo.pageSize + 1
+  const hasOrders = optimisticOrders.length > 0;
+  const firstItemIndex = hasOrders ? (Math.max(pageInfo.page, 1) - 1) * pageInfo.pageSize + 1 : 0;
+  const lastItemIndex = hasOrders
+    ? Math.min(totalOrdersCount, firstItemIndex + optimisticOrders.length - 1)
     : 0;
-  const lastItemIndex = dataset.orders.items.length
-    ? Math.min(totalOrdersCount, firstItemIndex + dataset.orders.items.length - 1)
-    : 0;
-  const pageSummary = dataset.orders.items.length
+  const pageSummary = hasOrders
     ? `${firstItemIndex}-${lastItemIndex} of ${totalOrdersCount}`
     : `0 of ${totalOrdersCount}`;
   const pageLabel = `Page ${Math.min(pageInfo.page, pageInfo.totalPages)} of ${pageInfo.totalPages}`;
@@ -934,7 +1019,7 @@ export default function OrdersRoute() {
     (shipment: OrdersDataset["shipments"]["trackingPending"][number]) => {
       const targetId = shipment.orderId;
       if (!targetId) {
-        setToast("Unable to add tracking — missing order reference.");
+        setToast({ status: "error", message: "Unable to add tracking — missing order reference." });
         return;
       }
       const sanitized = shipment.orderNumber.replace(/[^0-9A-Z]/gi, "");
@@ -956,7 +1041,7 @@ export default function OrdersRoute() {
     (shipment: OrdersDataset["shipments"]["delayed"][number]) => {
       const targetId = shipment.orderId;
       if (!targetId) {
-        setToast("Unable to request support — missing order reference.");
+        setToast({ status: "error", message: "Unable to request support — missing order reference." });
         return;
       }
       const note = `Carrier ${shipment.carrier ?? "Unknown"} delayed ${shipment.delayHours}h (last update ${formatDateTime(shipment.lastUpdate)}).`;
@@ -977,7 +1062,7 @@ export default function OrdersRoute() {
       action: "approve_refund" | "deny" | "request_inspection",
     ) => {
       if (!entry.orderId) {
-        setToast("Unable to update return — missing order reference.");
+        setToast({ status: "error", message: "Unable to update return — missing order reference." });
         return;
       }
       const note =
@@ -1123,19 +1208,19 @@ export default function OrdersRoute() {
 
                 <IndexTable
                   resourceName={{ singular: "order", plural: "orders" }}
-                  itemCount={dataset.orders.items.length}
+                  itemCount={optimisticOrders.length}
                   selectedItemsCount={
                     allResourcesSelected ? "All" : selectedResources.length
                   }
                   onSelectionChange={handleSelectionChange}
                   headings={mdUp ? IndexHeadingsDesktop : IndexHeadingsMobile}
                 >
-                  {dataset.orders.items.map((order, index) => (
+                  {optimisticOrders.map((order, index) => (
                     <IndexTable.Row
                       id={order.id}
                       key={order.id}
                       position={index}
-                      onClick={() => setActiveOrder(order)}
+                      onClick={() => setActiveOrderId(order.id)}
                     >
                       <IndexTable.Cell>
                         <BlockStack gap="050">
@@ -1232,7 +1317,12 @@ export default function OrdersRoute() {
       </Layout>
 
       {toast && (
-        <Toast content={toast} duration={3000} onDismiss={() => setToast(null)} />
+        <Toast
+          content={toast.message}
+          duration={3000}
+          error={toast.status === "error"}
+          onDismiss={() => setToast(null)}
+        />
       )}
 
       <Modal
@@ -1266,7 +1356,7 @@ export default function OrdersRoute() {
         </Modal.Section>
       </Modal>
 
-      <OrderDetailModal order={activeOrder} onClose={() => setActiveOrder(null)} />
+      <OrderDetailModal order={activeOrder} onClose={() => setActiveOrderId(null)} />
     </Page>
   );
 }
@@ -1309,6 +1399,32 @@ const formatDateTime = (value?: string) =>
         minute: "2-digit",
       }).format(new Date(value))
     : "—";
+
+const inventoryHoldTone = (
+  entry: OrdersDataset["inventory"][number],
+): "critical" | "warning" | "attention" => {
+  if (entry.onHand <= 0) {
+    return "critical";
+  }
+  if (entry.ordersWaiting > entry.onHand) {
+    return "warning";
+  }
+  return "attention";
+};
+
+const inventoryHoldSuggestion = (entry: OrdersDataset["inventory"][number]): string => {
+  if (entry.onHand <= 0) {
+    return "No stock on hand — escalate the purchase order or reroute impacted orders.";
+  }
+  const deficit = entry.ordersWaiting - entry.onHand;
+  if (deficit > 0) {
+    return `${deficit} unit${deficit === 1 ? "" : "s"} short — split shipments or recommend alternates until restock arrives.`;
+  }
+  if (entry.ordersWaiting === 0) {
+    return "Inventory is clear — confirm the block is lifted in fulfillment.";
+  }
+  return "Sufficient stock to cover waiting orders — coordinate pick/pack to release the hold.";
+};
 
 const toTitleCase = (value: string) =>
   value
@@ -1555,23 +1671,51 @@ function OperationalNotes({
   return (
     <Card title="Operational notes">
       <Card.Section>
-        <Text variant="headingSm" as="h3">
-          Inventory blocks
-        </Text>
-        {inventory.length ? (
-          <DataTable
-            columnContentTypes={["text", "numeric", "numeric", "text"]}
-            headings={["SKU", "Waiting", "On hand", "ETA"]}
-            rows={inventory.map((item) => [
-              `${item.sku} — ${item.title}`,
-              item.ordersWaiting,
-              item.onHand,
-              formatDate(item.eta),
-            ])}
-          />
-        ) : (
-          <Text variant="bodySm">No inventory holds.</Text>
-        )}
+        <BlockStack gap="200">
+          <Text variant="headingSm" as="h3">
+            Inventory blocks
+          </Text>
+          {inventory.length ? (
+            <BlockStack gap="200">
+              {inventory.map((item, index) => (
+                <BlockStack key={item.sku} gap="150">
+                  {index > 0 ? <Divider borderColor="border" /> : null}
+                  <InlineStack align="space-between" blockAlign="start" gap="200" wrap>
+                    <BlockStack gap="100">
+                      <BlockStack gap="050">
+                        <Text variant="bodyMd" fontWeight="semibold" as="span">
+                          {item.sku} — {item.title}
+                        </Text>
+                        <InlineStack gap="150" wrap>
+                          <Badge tone={inventoryHoldTone(item)}>
+                            {item.ordersWaiting} waiting
+                          </Badge>
+                          <Badge tone={item.onHand > 0 ? "info" : "critical"}>
+                            {item.onHand} on hand
+                          </Badge>
+                          <Text tone="subdued" variant="bodySm" as="span">
+                            ETA {formatDate(item.eta)}
+                          </Text>
+                        </InlineStack>
+                      </BlockStack>
+                      <Text variant="bodySm" as="p">
+                        {inventoryHoldSuggestion(item)}
+                      </Text>
+                    </BlockStack>
+                    <Button
+                      variant="plain"
+                      url={`/app/inventory?sku=${encodeURIComponent(item.sku)}`}
+                    >
+                      Review in inventory
+                    </Button>
+                  </InlineStack>
+                </BlockStack>
+              ))}
+            </BlockStack>
+          ) : (
+            <Text variant="bodySm">No inventory holds.</Text>
+          )}
+        </BlockStack>
       </Card.Section>
       {alerts.length > 0 && (
         <Card.Section>
@@ -1602,6 +1746,9 @@ function OrderDetailModal({ order, onClose }: { order: Order | null; onClose: ()
   ]);
   const hasLineItems = lineItemRows.length > 0;
   const tags = order.tags.filter(Boolean);
+  const supportThreadLink = order.supportThread
+    ? `/app/inbox?conversation=${encodeURIComponent(order.supportThread)}`
+    : null;
 
   return (
     <Modal
@@ -1749,8 +1896,14 @@ function OrderDetailModal({ order, onClose }: { order: Order | null; onClose: ()
               <Text tone="subdued" variant="bodySm" as="span">
                 Support thread
               </Text>
-              {order.supportThread ? (
-                <Tag>{order.supportThread}</Tag>
+              {order.supportThread && supportThreadLink ? (
+                <Button
+                  variant="plain"
+                  url={supportThreadLink}
+                  accessibilityLabel={`Open support thread ${order.supportThread}`}
+                >
+                  {order.supportThread}
+                </Button>
               ) : (
                 <Text tone="subdued" variant="bodySm" as="span">
                   Not linked
@@ -1780,4 +1933,259 @@ function OrderDetailModal({ order, onClose }: { order: Order | null; onClose: ()
       </Modal.Section>
     </Modal>
   );
+}
+
+type UseOptimisticOrdersParams = {
+  baseOrders: Order[];
+  submission: ReturnType<typeof useFetcher<OrdersActionResponse>>["submission"];
+  response: OrdersActionResponse | undefined;
+};
+
+function useOptimisticOrders({ baseOrders, submission, response }: UseOptimisticOrdersParams) {
+  const [optimisticOrders, setOptimisticOrders] = useState<Order[]>(baseOrders);
+  const lastSubmissionRef = useRef<typeof submission>(null);
+  const lastResponseRef = useRef<OrdersActionResponse | null>(null);
+
+  useEffect(() => {
+    setOptimisticOrders(baseOrders);
+  }, [baseOrders]);
+
+  useEffect(() => {
+    if (!submission || submission === lastSubmissionRef.current) {
+      return;
+    }
+    lastSubmissionRef.current = submission;
+    const intent = submission.formData.get("intent");
+    if (typeof intent !== "string" || !intent) {
+      return;
+    }
+    const formData = submission.formData;
+    setOptimisticOrders((current) =>
+      applyOptimisticSubmission({
+        current,
+        intent,
+        formData,
+      }),
+    );
+  }, [submission]);
+
+  useEffect(() => {
+    if (!response || response === lastResponseRef.current) {
+      return;
+    }
+    lastResponseRef.current = response;
+    if (response.success === false) {
+      setOptimisticOrders(baseOrders);
+      return;
+    }
+    if (!Array.isArray(response.updatedOrders) || response.updatedOrders.length === 0) {
+      return;
+    }
+    setOptimisticOrders((current) => applyUpdatedOrderPatches(current, response.updatedOrders));
+  }, [baseOrders, response]);
+
+  return useMemo(() => {
+    const lookup = new Map<string, Order>();
+    optimisticOrders.forEach((order) => {
+      lookup.set(order.id, order);
+    });
+    return { orders: optimisticOrders, lookup };
+  }, [optimisticOrders]);
+}
+
+function applyOptimisticSubmission({
+  current,
+  intent,
+  formData,
+}: {
+  current: Order[];
+  intent: string;
+  formData: FormData;
+}): Order[] {
+  switch (intent) {
+    case "assign": {
+      const ids = parseOrderIds(formData.get("orderIds"));
+      if (!ids.length) return current;
+      const assigneeRaw = formData.get("assignee");
+      const assignee = typeof assigneeRaw === "string" && assigneeRaw.trim().length
+        ? assigneeRaw.trim()
+        : "unassigned";
+      return applyOrderTransform(current, ids, (order) => {
+        if (order.assignedTo === assignee) return order;
+        return { ...order, assignedTo: assignee };
+      });
+    }
+    case "markFulfilled": {
+      const ids = parseOrderIds(formData.get("orderIds"));
+      if (!ids.length) return current;
+      const tracking = parseJson<{ number?: string; carrier?: string }>(formData.get("tracking"));
+      const timestamp = new Date().toISOString();
+      return applyOrderTransform(current, ids, (order) => {
+        if (order.fulfillmentStatus === "fulfilled" && order.status === "fulfilled") {
+          return order;
+        }
+        const optimisticId = `${order.id}-optimistic-fulfill-${timestamp}`;
+        const timelineExists = order.timeline.some((event) => event.id === optimisticId);
+        const messageParts = ["Marked fulfilled — awaiting Sync"];
+        if (tracking?.number) {
+          messageParts.push(`Tracking ${tracking.number}`);
+        }
+        const nextTimeline = timelineExists
+          ? order.timeline
+          : [
+              {
+                id: optimisticId,
+                type: "fulfillment" as const,
+                message: messageParts.join(" · "),
+                occurredAt: timestamp,
+                state: "fulfilled",
+              },
+              ...order.timeline,
+            ];
+        return {
+          ...order,
+          status: "fulfilled",
+          fulfillmentStatus: "fulfilled",
+          issue: "none",
+          timeline: nextTimeline,
+        };
+      });
+    }
+    case "requestSupport": {
+      const payload = parseJson<{ orderIds?: unknown; conversationId?: string; note?: string }>(
+        formData.get("payload"),
+      );
+      const ids = Array.isArray(payload?.orderIds)
+        ? (payload?.orderIds ?? []).map((value) => String(value))
+        : [];
+      if (!ids.length) return current;
+      const note = typeof payload?.note === "string" ? payload.note.trim() : "";
+      const timestamp = new Date().toISOString();
+      return applyOrderTransform(current, ids, (order, index) => {
+        const fallbackThread = order.supportThread ?? `conversation:${order.id}`;
+        const optimisticThread = payload?.conversationId ?? fallbackThread;
+        const optimisticId = `${order.id}-optimistic-support-${timestamp}-${index}`;
+        const timelineExists = order.timeline.some((event) => event.id === optimisticId);
+        const timelineMessage = note
+          ? `Support requested — ${note}`
+          : "Support follow-up requested from dashboard.";
+        return {
+          ...order,
+          supportThread: optimisticThread,
+          timeline: timelineExists
+            ? order.timeline
+            : [
+                {
+                  id: optimisticId,
+                  type: "note",
+                  message: timelineMessage,
+                  occurredAt: timestamp,
+                },
+                ...order.timeline,
+              ],
+        };
+      });
+    }
+    default:
+      return current;
+  }
+}
+
+function applyOrderTransform(
+  orders: Order[],
+  ids: string[],
+  transform: (order: Order, index: number) => Order,
+): Order[] {
+  if (!ids.length) return orders;
+  const idSet = new Set(ids);
+  let changed = false;
+  const next = orders.map((order, index) => {
+    if (!idSet.has(order.id)) return order;
+    const result = transform(order, index);
+    if (result !== order) {
+      changed = true;
+    }
+    return result;
+  });
+  return changed ? next : orders;
+}
+
+function applyUpdatedOrderPatches(orders: Order[], updates: SyncOrdersActionUpdate[]): Order[] {
+  if (!updates.length) return orders;
+  const updateMap = new Map<string, SyncOrdersActionUpdate>();
+  updates.forEach((update) => {
+    if (update && typeof update === "object" && "id" in update && typeof update.id === "string") {
+      updateMap.set(update.id, update);
+    }
+  });
+  if (!updateMap.size) return orders;
+
+  return orders.map((order) => {
+    const patch = updateMap.get(order.id);
+    if (!patch) return order;
+    let next: Order = order;
+    let changed = false;
+
+    if ("assignedTo" in patch && typeof patch.assignedTo === "string") {
+      const assigned = patch.assignedTo.trim() || "unassigned";
+      if (assigned !== order.assignedTo) {
+        next = changed ? { ...next, assignedTo: assigned } : { ...order, assignedTo: assigned };
+        changed = true;
+      }
+    }
+
+    if ("fulfillmentStatus" in patch && typeof patch.fulfillmentStatus === "string") {
+      const normalizedStatus = normalizeFulfillmentStatus(patch.fulfillmentStatus);
+      if (normalizedStatus && normalizedStatus !== order.fulfillmentStatus) {
+        next = changed ? { ...next } : { ...order };
+        next.fulfillmentStatus = normalizedStatus;
+        if (normalizedStatus === "fulfilled") {
+          next.status = "fulfilled";
+          next.issue = "none";
+        }
+        changed = true;
+      }
+    }
+
+    if ("supportThread" in patch && typeof patch.supportThread === "string") {
+      if (patch.supportThread && patch.supportThread !== order.supportThread) {
+        next = changed ? { ...next, supportThread: patch.supportThread } : { ...order, supportThread: patch.supportThread };
+        changed = true;
+      }
+    }
+
+    return changed ? next : order;
+  });
+}
+
+function parseOrderIds(value: FormDataEntryValue | null): string[] {
+  if (typeof value !== "string") return [];
+  const trimmed = value.trim();
+  if (!trimmed) return [];
+  const parsed = parseJson<unknown>(trimmed);
+  if (Array.isArray(parsed)) {
+    return parsed.map((entry) => String(entry)).filter((entry) => entry.length > 0);
+  }
+  return trimmed
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+}
+
+function parseJson<T>(value: FormDataEntryValue | null): T | null {
+  if (typeof value !== "string") return null;
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeFulfillmentStatus(value: string): Order["fulfillmentStatus"] | null {
+  const normalized = value.toLowerCase();
+  if (normalized === "fulfilled") return "fulfilled";
+  if (normalized === "partial") return "partial";
+  if (normalized === "unfulfilled") return "unfulfilled";
+  if (normalized === "in_transit" || normalized === "awaiting_tracking") return "partial";
+  return null;
 }

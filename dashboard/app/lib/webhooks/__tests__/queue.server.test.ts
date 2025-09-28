@@ -41,6 +41,30 @@ describe("webhook queue driver", () => {
     expect(emptySnapshot).toHaveLength(0);
   });
 
+  it("purges queued jobs for a specific shop using the in-memory driver", async () => {
+    const queueModule = await loadQueueModule();
+
+    await queueModule.enqueueWebhookJob({
+      topicKey: "ORDERS_CREATE",
+      shopDomain: "alpha-shop.myshopify.com",
+    });
+    await queueModule.enqueueWebhookJob({
+      topicKey: "ORDERS_FULFILLED",
+      shopDomain: "beta-shop.myshopify.com",
+    });
+    await queueModule.enqueueWebhookJob({
+      topicKey: "FULFILLMENTS_UPDATE",
+      shopDomain: "Alpha-Shop.myshopify.com",
+    });
+
+    const removed = await queueModule.purgeShopJobs("ALPHA-SHOP.MYSHOPIFY.COM");
+    expect(removed).toBe(2);
+
+    const remaining = await queueModule.snapshotQueue();
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0].shopDomain).toBe("beta-shop.myshopify.com");
+  });
+
   it("routes operations through BullMQ when enabled", async () => {
     process.env.WEBHOOK_QUEUE_DRIVER = "bullmq";
     process.env.UPSTASH_REDIS_URL = "rediss://demo.upstash.io";
@@ -54,7 +78,9 @@ describe("webhook queue driver", () => {
       failedReason: null,
       processedOn: null,
       finishedOn: null,
+      remove: vi.fn().mockResolvedValue(undefined),
     }));
+    const mockJobRemove = vi.fn().mockResolvedValue(undefined);
     const mockGetJobs = vi.fn().mockResolvedValue([
       {
         id: "job-1",
@@ -69,6 +95,7 @@ describe("webhook queue driver", () => {
         failedReason: null,
         processedOn: null,
         finishedOn: null,
+        remove: mockJobRemove,
       },
     ]);
     const mockDrain = vi.fn().mockResolvedValue(undefined);
@@ -136,6 +163,11 @@ describe("webhook queue driver", () => {
     const snapshot = await queueModule.snapshotQueue();
     expect(mockGetJobs).toHaveBeenCalledTimes(1);
     expect(snapshot).toHaveLength(1);
+
+    const purged = await queueModule.purgeShopJobs("demo-shop.myshopify.com");
+    expect(mockGetJobs).toHaveBeenCalledTimes(2);
+    expect(mockJobRemove).toHaveBeenCalledTimes(1);
+    expect(purged).toBe(1);
 
     await queueModule.clearQueue();
     expect(mockDrain).toHaveBeenCalledTimes(1);

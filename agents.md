@@ -16,6 +16,7 @@
 - `discover_urls.py` → builds `urls.txt` and `urls_with_lastmod.tsv` from Shopify sitemaps with filtering.
 - `ingest_site_chroma.py` → bootstrap ingest into persistent Chroma + storage (auto-detects embed mode: OpenAI vs FastEmbed fallback).
 - `ingest_incremental_chroma.py` → compares sitemap last-mod times, deletes stale docs, reingests updates (tracks `ingest_state.json`).
+- `scripts/check_ingest_staleness.py` → reports sitemap vs ingest_state drift (stale URLs and orphaned docs).
 - `rag_config.py` → shared Settings via `configure_settings()` (chunk size 1500/overlap 150, auto-switches between OpenAI and FastEmbed/mock LLM fallback when `OPENAI_API_KEY` is missing or placeholder).
 
 ### Query & Routing
@@ -80,7 +81,8 @@
 - Execute `python run_goldens.py` after ingest; patch any regression before closing the loop.
 - Audit `corrections/corrections.yaml` for drift vs newest pages, add entries for emerging FAQs, and create matching golden cases before closing the loop.
 - Update `SESSION_SUMMARY_*` with ingest and goldens status so downstream services know data freshness.
-- _Last refresh:_ 2025-09-27 14:13 MDT — Ran two discover → incremental ingest loops (87 + 80 updates via FastEmbed) and offline goldens; still awaiting analytics contract handoff and ops cron decision.
+- _Last refresh:_ 2025-09-27 18:04 MDT — Verified `/app/settings` loader/action + Prisma repository updates (connection history + MCP overrides) and ran `npm exec vitest run app/routes/__tests__/app.settings.test.ts app/routes/__tests__/app.settings.prisma.test.ts`; awaiting infra sign-off before enabling live MCP credentials.
+- _RAG refresh:_ 2025-09-27 18:05 MDT — Discover → incremental ingest (80 FastEmbed updates off the 17:58:57 sitemap delta) + offline goldens; awaiting analytics contract handoff + ops cron decision.
 
 ## Known Gaps & TODOs
 - Implement Alembic migrations for the new Postgres tables before production deploys.

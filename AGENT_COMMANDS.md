@@ -22,8 +22,9 @@ Keep this document updated as scopes evolve. Before launching a session, confirm
 
 ### General Reminders
 - Work in feature branches matching the command suggestions; push frequently to avoid context loss.
-- Keep `prompts/dashboard/*.md` “Status / Notes” sections fresh with progress, blockers, and next steps.
-- Coordinate cross-service changes via docs before touching another agent’s surface; never overwrite someone else’s WIP.
+- When you need prompt/status updates, record them in your feedback note under `coordination/inbox/<agent>/<date>-notes.md`; do not edit the prompt files directly.
+- Coordinate cross-service changes via append-only feedback notes before touching another agent’s surface; never overwrite someone else’s WIP.
+- Scope change requests belong in your own feedback note (see `coordination/agent-feedback-guidelines.md`); do not edit master prompts, `agents.md`, or handover docs directly—Program Manager will review and apply approved updates.
 - Default to executing the next planned task without asking for direction; only pause for credentials, legal/feature ambiguity, or destructive operations explicitly requiring user consent.
 - When a session gets long, run the Codex `/compact` command to summarize and reclaim context before resuming work.
-- Web/remote collaborator: end every shift by refreshing `agents.md` (status, immediate focus, last refresh timestamp) so the on-call agent can pick up without re-sweeping prompts.
+- At sign-off, summarize work and outstanding blockers in your feedback note so the on-call agent can pick up without re-sweeping prompts.

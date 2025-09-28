@@ -1,4 +1,5 @@
 import type { SettingsPayload } from "./settings";
+import type { SyncOrdersActionUpdate } from "./orders-sync";
 
 export type MockScenario = "base" | "empty" | "warning" | "error";
 
@@ -344,16 +345,31 @@ export type OrdersDataset = {
   error?: string;
 };
 
+export type ActionToastStatus = "success" | "error" | "warning" | "info";
+
+export type ActionToast = {
+  status: ActionToastStatus;
+  message: string;
+};
+
 export type OrdersActionResponse = {
   success: boolean;
-  message: string;
-  updatedOrders: Order[];
+  message?: string;
+  toast?: ActionToast;
+  updatedOrders: SyncOrdersActionUpdate[];
 };
 
 export type InboxTicketStatus = "open" | "snoozed" | "resolved" | "escalated";
 export type InboxTicketPriority = "low" | "medium" | "high" | "urgent";
 
-export type InboxProvider = "email" | "shopify" | "instagram" | "tiktok";
+export type InboxProvider =
+  | "email"
+  | "shopify"
+  | "instagram"
+  | "tiktok"
+  | "chat"
+  | "sms"
+  | "social";
 
 export type InboxAttachment = {
   id: string;
@@ -468,7 +484,16 @@ export type InboxData = {
 export type InboxActionEventType =
   | "draft:approved"
   | "draft:updated"
-  | "draft:feedback";
+  | "draft:feedback"
+  | "bridge:status";
+
+export type InboxBridgeStatusEventPayload = {
+  status: InboxConnectionStatus;
+  attempt?: number;
+  consecutiveFailures?: number;
+  retryDelayMs?: number;
+  reason?: string;
+};
 
 export type InboxActionResponse = {
   success: boolean;
@@ -481,6 +506,38 @@ export type InboxActionResponse = {
     timestamp: string;
     payload: Record<string, unknown>;
   };
+};
+
+export type InboxConnectionStatus =
+  | "connecting"
+  | "connected"
+  | "reconnecting"
+  | "offline";
+
+export type InboxConnectionTelemetryEventType =
+  | "connection:attempt"
+  | "connection:open"
+  | "connection:handshake"
+  | "connection:error"
+  | "connection:retry"
+  | "connection:offline"
+  | "connection:manual-retry";
+
+export type InboxConnectionTelemetryPayload = {
+  type: InboxConnectionTelemetryEventType;
+  status: InboxConnectionStatus;
+  attempt: number;
+  consecutiveFailures: number;
+  retryDelayMs?: number;
+  latencyMs?: number;
+  scenario: MockScenario;
+  useMockData: boolean;
+  timestamp: string;
+  reason?: string;
+};
+
+export type InboxConnectionTelemetryEvent = InboxConnectionTelemetryPayload & {
+  id: string;
 };
 
 export type InventoryStatus = "healthy" | "low" | "backorder" | "preorder";

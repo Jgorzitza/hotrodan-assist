@@ -52,6 +52,10 @@ import {
   type GscCoverageIssue,
 } from "~/lib/seo/gsc";
 import { createBingClient } from "~/lib/seo/bing";
+import {
+  getPersistedActionOverrides,
+  persistSeoActionUpdate,
+} from "~/lib/seo/persistence.server";
 import { getSeoScenario, scenarioFromRequest } from "~/mocks";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
 import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
@@ -305,66 +309,70 @@ const collectSeoData = async (
   const gscClient = createGscClient(scenarioOptions);
   const bingClient = createBingClient(scenarioOptions);
 
-  const trafficSummary = await fetchAdapterData(
-    adapters.ga4,
-    () =>
-      ga4Client.fetchTrafficSummary({
-        propertyId: shopDomain,
-        startDate: range.start,
-        endDate: range.end,
-      }),
-    null,
-  );
-
-  const traffic = await fetchAdapterData(
-    adapters.ga4,
-    () =>
-      ga4Client.fetchTrafficTrend({
-        propertyId: shopDomain,
-        startDate: range.start,
-        endDate: range.end,
-      }),
-    [] as SeoTrafficPoint[],
-  );
-
-  const keywords = await fetchAdapterData(
-    adapters.gsc,
-    () =>
-      gscClient.fetchKeywordTable({
-        siteUrl: shopDomain,
-        startDate: range.start,
-        endDate: range.end,
-      }),
-    [] as SeoKeywordRow[],
-  );
-
-  const actions = await fetchAdapterData(
-    adapters.gsc,
-    () => gscClient.fetchSeoActions({ siteUrl: shopDomain }),
-    [] as SeoAction[],
-  );
-
-  const coverageIssues = await fetchAdapterData(
-    adapters.gsc,
-    () =>
-      gscClient.fetchCoverageIssues({
-        siteUrl: shopDomain,
-        startDate: range.start,
-        endDate: range.end,
-      }),
-    [] as GscCoverageIssue[],
-  );
-
-  const pages = await fetchAdapterData(
-    adapters.bing,
-    () =>
-      bingClient.fetchPageMetrics({
-        siteUrl: shopDomain,
-        startDate: range.start,
-        endDate: range.end,
-      }),
-    [] as SeoPageRow[],
-  );
+  const [
+    trafficSummary,
+    traffic,
+    keywords,
+    actions,
+    coverageIssues,
+    pages,
+  ] = await Promise.all([
+    fetchAdapterData(
+      adapters.ga4,
+      () =>
+        ga4Client.fetchTrafficSummary({
+          propertyId: shopDomain,
+          startDate: range.start,
+          endDate: range.end,
+        }),
+      null,
+    ),
+    fetchAdapterData(
+      adapters.ga4,
+      () =>
+        ga4Client.fetchTrafficTrend({
+          propertyId: shopDomain,
+          startDate: range.start,
+          endDate: range.end,
+        }),
+      [] as SeoTrafficPoint[],
+    ),
+    fetchAdapterData(
+      adapters.gsc,
+      () =>
+        gscClient.fetchKeywordTable({
+          siteUrl: shopDomain,
+          startDate: range.start,
+          endDate: range.end,
+        }),
+      [] as SeoKeywordRow[],
+    ),
+    fetchAdapterData(
+      adapters.gsc,
+      () => gscClient.fetchSeoActions({ siteUrl: shopDomain }),
+      [] as SeoAction[],
+    ),
+    fetchAdapterData(
+      adapters.gsc,
+      () =>
+        gscClient.fetchCoverageIssues({
+          siteUrl: shopDomain,
+          startDate: range.start,
+          endDate: range.end,
+        }),
+      [] as GscCoverageIssue[],
+    ),
+    fetchAdapterData(
+      adapters.bing,
+      () =>
+        bingClient.fetchPageMetrics({
+          siteUrl: shopDomain,
+          startDate: range.start,
+          endDate: range.end,
+        }),
+      [] as SeoPageRow[],
+    ),
+  ]);
 
   return {
     trafficSummary,
@@ -529,9 +537,39 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     dataset.range,
   );
 
+  const actionOverrides = await getPersistedActionOverrides(
+    shopDomain,
+    seoData.actions.map((action) => action.id),
+  );
+
+  const mergedActions = sortActions(
+    seoData.actions.map((action) => {
+      const override = actionOverrides[action.id];
+      if (!override) {
+        return action;
+      }
+
+      const assignedTo =
+        Object.prototype.hasOwnProperty.call(override, "assignedTo")
+          ? override.assignedTo ?? "Unassigned"
+          : action.assignedTo;
+
+      return {
+        ...action,
+        status: override.status ?? action.status,
+        assignedTo,
+        lastUpdatedAt: override.lastUpdatedAt ?? action.lastUpdatedAt,
+        dueAt:
+          override.dueAt !== undefined && override.dueAt !== null
+            ? override.dueAt
+            : action.dueAt,
+      };
+    }),
+  );
+
   const keywordResult = applyKeywordFilters(seoData.keywords, filters);
   const pageResult = applyPageFilters(seoData.pages, filters);
-  const actions = sortActions(seoData.actions);
+  const actions = mergedActions;
   const actionTotals = countActionsByPriority(actions);
 
   const shouldHydrateMcp = featureEnabled || USE_MOCK_DATA;
@@ -592,8 +630,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 const actionUpdateSchema = z.object({
   actionId: z.string().min(1),
-  status: z.enum(["not_started", "in_progress", "done"]).optional(),
+  status: z.enum(["not_started", "in_progress", "done"]),
   assignedTo: z.string().max(80).optional(),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  priority: z.enum(["now", "soon", "later"]),
+  source: z.enum(["ga4", "gsc", "bing"]).optional(),
+  metricLabel: z.string().max(120).optional(),
+  metricValue: z.string().max(120).optional(),
+  dueAt: z.string().optional(),
 });
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -601,18 +646,77 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const intent = formData.get("intent");
 
   if (intent === "update-action") {
+    const getString = (key: string): string | undefined => {
+      const value = formData.get(key);
+      return typeof value === "string" ? value : undefined;
+    };
+
+    const getNonEmptyString = (key: string): string | undefined => {
+      const value = getString(key);
+      if (!value) {
+        return undefined;
+      }
+      const trimmed = value.trim();
+      return trimmed.length ? trimmed : undefined;
+    };
+
     const parsed = actionUpdateSchema.safeParse({
-      actionId: formData.get("actionId"),
-      status: formData.get("status"),
-      assignedTo: formData.get("assignedTo"),
+      actionId: getString("actionId"),
+      status: getString("status"),
+      assignedTo: getNonEmptyString("assignedTo"),
+      title: getString("title"),
+      description: getString("description"),
+      priority: getString("priority"),
+      source: getNonEmptyString("source"),
+      metricLabel: getNonEmptyString("metricLabel"),
+      metricValue: getNonEmptyString("metricValue"),
+      dueAt: getNonEmptyString("dueAt"),
     });
 
     if (!parsed.success) {
       return json({ ok: false, error: "Invalid action payload" }, { status: 400 });
     }
 
-    // TODO: Persist action updates once Prisma SEO action model lands.
-    return json({ ok: true, intent: "update-action" });
+    let shopDomain = BASE_SHOP_DOMAIN;
+    if (!USE_MOCK_DATA) {
+      const { session } = await authenticate.admin(request);
+      shopDomain = session.shop;
+    }
+
+    const result = await persistSeoActionUpdate({
+      shopDomain,
+      action: {
+        id: parsed.data.actionId,
+        title: parsed.data.title,
+        description: parsed.data.description,
+        priority: parsed.data.priority,
+        status: parsed.data.status,
+        assignedTo: parsed.data.assignedTo ?? null,
+        source: parsed.data.source,
+        metricLabel: parsed.data.metricLabel ?? null,
+        metricValue: parsed.data.metricValue ?? null,
+        dueAt: parsed.data.dueAt,
+      },
+    });
+
+    const updatedAt = new Date().toISOString();
+
+    if (!result.ok) {
+      return json({
+        ok: true,
+        intent: "update-action",
+        persisted: false,
+        updatedAt,
+      });
+    }
+
+    return json({
+      ok: true,
+      intent: "update-action",
+      persisted: true,
+      insightId: result.insightId,
+      updatedAt,
+    });
   }
 
   if (intent === "export-keywords" || intent === "export-pages") {
@@ -712,6 +816,25 @@ export default function SeoRoute() {
   const [keywordQuery, setKeywordQuery] = useState(filters.keywordSearch);
   const [pageQuery, setPageQuery] = useState(filters.pageSearch);
   const [actionsState, setActionsState] = useState(actions);
+
+  const appendActionContext = useCallback((formData: FormData, action?: SeoAction) => {
+    if (!action) {
+      return;
+    }
+    formData.append("title", action.title);
+    formData.append("description", action.description);
+    formData.append("priority", action.priority);
+    formData.append("source", action.source);
+    if (action.metricLabel) {
+      formData.append("metricLabel", action.metricLabel);
+    }
+    if (action.metricValue) {
+      formData.append("metricValue", action.metricValue);
+    }
+    if (action.dueAt) {
+      formData.append("dueAt", action.dueAt);
+    }
+  }, []);
 
   useEffect(() => {
     setKeywordQuery(filters.keywordSearch);
@@ -816,37 +939,66 @@ export default function SeoRoute() {
   const handleStatusChange = useCallback(
     (actionId: string, nextStatus: SeoAction["status"]) => {
       const current = actionsState.find((action) => action.id === actionId);
+      if (!current) {
+        return;
+      }
+
+      const timestamp = new Date().toISOString();
+      const contextAction: SeoAction = {
+        ...current,
+        status: nextStatus,
+        lastUpdatedAt: timestamp,
+      };
+
       setActionsState((state) =>
         state.map((action) =>
-          action.id === actionId ? { ...action, status: nextStatus } : action,
+          action.id === actionId
+            ? { ...action, status: nextStatus, lastUpdatedAt: timestamp }
+            : action,
         ),
       );
       const formData = new FormData();
       formData.append("intent", "update-action");
       formData.append("actionId", actionId);
       formData.append("status", nextStatus);
-      formData.append("assignedTo", current?.assignedTo ?? "");
+      formData.append("assignedTo", current.assignedTo ?? "Unassigned");
+      appendActionContext(formData, contextAction);
       actionFetcher.submit(formData, { method: "post" });
     },
-    [actionFetcher, actionsState],
+    [actionFetcher, actionsState, appendActionContext],
   );
 
   const handleAssignmentChange = useCallback(
     (actionId: string, nextAssignee: string) => {
       const current = actionsState.find((action) => action.id === actionId);
+      if (!current) {
+        return;
+      }
+
+      const timestamp = new Date().toISOString();
+      const assignedTo = nextAssignee || "Unassigned";
+      const contextAction: SeoAction = {
+        ...current,
+        assignedTo,
+        lastUpdatedAt: timestamp,
+      };
+
       setActionsState((state) =>
         state.map((action) =>
-          action.id === actionId ? { ...action, assignedTo: nextAssignee } : action,
+          action.id === actionId
+            ? { ...action, assignedTo, lastUpdatedAt: timestamp }
+            : action,
         ),
       );
       const formData = new FormData();
       formData.append("intent", "update-action");
       formData.append("actionId", actionId);
-      formData.append("assignedTo", nextAssignee);
-      formData.append("status", current?.status ?? "not_started");
+      formData.append("assignedTo", assignedTo);
+      formData.append("status", current.status);
+      appendActionContext(formData, contextAction);
       actionFetcher.submit(formData, { method: "post" });
     },
-    [actionFetcher, actionsState],
+    [actionFetcher, actionsState, appendActionContext],
   );
 
   const priorityFilterList = useMemo(() => {

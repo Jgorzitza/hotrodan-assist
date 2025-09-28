@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import type {
   InboxActionResponse,
+  InboxConnectionStatus,
   InboxDraft,
   InboxDraftFeedback,
   InboxTicket,
@@ -24,6 +25,15 @@ export type InboxStreamHandshake = {
     version: string;
   };
   capabilities: Array<"drafts" | "feedback" | "attachments">;
+  bridge?: {
+    status: InboxConnectionStatus;
+  };
+};
+
+type BuildHandshakeOptions = {
+  provider?: Partial<InboxStreamHandshake["provider"]>;
+  capabilities?: InboxStreamHandshake["capabilities"];
+  bridgeStatus?: InboxConnectionStatus;
 };
 
 export type InboxStreamActionEvent = {
@@ -65,18 +75,34 @@ export const publishInboxActionEvent = (response: InboxActionResponse) => {
   emitter.emit("message", payload);
 };
 
-export const buildInboxHandshake = (): InboxStreamHandshake => ({
-  id: randomUUID(),
-  type: "handshake",
-  timestamp: new Date().toISOString(),
-  provider: {
+export const buildInboxHandshake = (options: BuildHandshakeOptions = {}): InboxStreamHandshake => {
+  const providerDefaults: InboxStreamHandshake["provider"] = {
     id: "mock-inbox-provider",
     label: "Mock Inbox Provider",
     transport: "sse",
     version: "0.1.0",
-  },
-  capabilities: ["drafts", "feedback"],
-});
+  };
+
+  const provider = {
+    ...providerDefaults,
+    ...(options.provider ?? {}),
+  } satisfies InboxStreamHandshake["provider"];
+
+  const capabilities = options.capabilities ?? (["drafts", "feedback"] as const);
+
+  return {
+    id: randomUUID(),
+    type: "handshake",
+    timestamp: new Date().toISOString(),
+    provider,
+    capabilities: [...capabilities],
+    bridge: options.bridgeStatus
+      ? {
+          status: options.bridgeStatus,
+        }
+      : undefined,
+  };
+};
 
 export const resetInboxStreamListeners = () => {
   emitter.removeAllListeners("message");

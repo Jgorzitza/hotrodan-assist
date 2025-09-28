@@ -4,3 +4,12 @@
 - q: "Return vs returnless—what should I use on a swap?"
   must_include: ["return-style", "regulator", "returnless"]
   must_cite: ["hotrodan.com"]
+- q: "What setup do I need for the Tru-Cool MAX 40K LPD4739 cooler?"
+  must_include: ["stacked-plate", "5/8-18", "passive bypass"]
+  must_cite: ["hotrodan.com"]
+- q: "How do I install the Vapor Trapper vent charcoal canister to stop fuel smell?"
+  must_include: ["charcoal canister", "-6 ORB", "rollover valve"]
+  must_cite: ["hotrodan.com"]
+- q: "What fittings and filters do I need with the Walbro GSL392 255 LPH inline pump?"
+  must_include: ["255 LPH", "10 mm x 1.0", "40-100"]
+  must_cite: ["hotrodan.com"]

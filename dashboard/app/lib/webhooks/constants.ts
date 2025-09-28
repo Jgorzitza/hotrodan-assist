@@ -86,3 +86,8 @@ export const resolveWebhookKey = (topic: string): WebhookTopicKey | undefined =>
   const spec = subscriptionSpecs.find((entry) => entry.topic === normalized);
   return spec?.key;
 };
+
+export const resolveTopicFromKey = (key: WebhookTopicKey): WebhookTopic | undefined => {
+  const spec = subscriptionSpecs.find((entry) => entry.key === key);
+  return spec?.topic;
+};

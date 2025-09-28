@@ -21,7 +21,9 @@ Administrative control center for store-level configuration and integrations:
 - Sensitive fields must stay server-side: send masked tokens (`••••1234`) + `lastVerifiedAt`, never raw secrets; action receives plaintext, passes through `encryptSecret` helper before persistence.
 - Use Remix `defer` or blocking loader depending on secret fetch latency; keep form submissions multipart-aware for future file inputs (e.g., service account JSON).
 - Validation: leverage `zod` schemas per section; enforce numeric ranges (min/max thresholds) and throttle connection button to avoid spamming mock APIs.
-- Plan for production: TODO comment referencing Shopify/app secret storage, key rotation cadence, and audit log entries (tie into `mcp.md` when toggles change).
+- Plan for production: expand TODOs to cover the Shopify hosted secrets > KMS migration, capturing operator responsibilities and rollout sequencing.
+- KMS migration path (document only for now): Phase 1 double-write to Shopify Secrets Manager while keeping Prisma mocks; Phase 2 introduce `StoreSecret.encryptionVersion` + KMS `keyId` metadata so decrypt/encrypt can branch; Phase 3 rotate live secrets via background job and backfill audit trail before deleting mock cipher columns.
+- Override audit logging requirements: Persist a `SettingsAuditLog` entry anytime thresholds, toggles, or MCP overrides change (actor, before/after snapshot, request source) and emit corresponding MCP audit annotations so downstream agents can correlate override changes with connection events.
 
 ## Dependencies
 - `database.md`: `Store` model encryption notes and future `StoreSettings` table.
@@ -41,8 +43,8 @@ Administrative control center for store-level configuration and integrations:
 ## Status / Notes
 - Owner: Settings Admin UI agent (Codex)
 - Blockers: KMS-backed secret storage + audit logging still outstanding before enabling real credentials beyond the mock encryptor.
-- Prisma-backed `StoreSettingsRepository` now reads/writes `StoreSettings` plus the new `StoreSecret` table, while continuing to fall back to mocks whenever `USE_MOCK_DATA=true`.
-- Connection history persists via `ConnectionEvent` rows and synchronises into the JSON summary so badges/toasts reflect the latest Prisma-backed attempts.
-- Vitest coverage now exercises both the mock and Prisma adapters using a Prisma stub harness to guard live-path regressions without a Postgres dependency.
+- Prisma dependency: live updates rely on `Store`, `StoreSettings`, `StoreSecret`, and `ConnectionEvent` migrations; stay on mocks by keeping `USE_MOCK_DATA=true` until Postgres is provisioned.
+- Loader/action + Polaris UI now persist through the Prisma-backed `StoreSettingsRepository`, with connection history synchronised from `ConnectionEvent` rows so badges/toasts reflect the latest attempts.
+- Vitest coverage guards both mock and Prisma implementations; `npm exec vitest run app/routes/__tests__/app.settings.test.ts app/routes/__tests__/app.settings.prisma.test.ts` ran 2025-09-27 on `feature/approval-app` to confirm the flows.
 - MCP toggle continues to gate downstream routes; saved overrides feed `resolveMcpConfigFromEnv` and provide the values surfaced in connection banners.
-- Immediate focus: wire loader/action integration tests under `USE_MOCK_DATA=false` once shared Prisma test fixtures are available and document the KMS migration path alongside override audit requirements.
+- Immediate focus: coordinate with Data-layer to land MCP/SEO adapter credentials for live testing, script Playwright happy-path coverage once fixtures stabilise, and capture the deferred KMS/audit logging rollout plan so Ops is unblocked when infra is ready.

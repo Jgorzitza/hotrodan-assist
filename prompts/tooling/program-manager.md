@@ -54,5 +54,24 @@ Keep all agents aligned with the roadmap. Monitor progress, update documentation
 - 2025-09-26 23:20 MDT – Orders prompt now flags lint fixes + live Sync verification as immediate focus so agent stays on task.
 - 2025-09-26 23:27 MDT – Dashboard prompt now calls out link smoke + range helper reuse as immediate focus.
 - 2025-09-26 23:32 MDT – Database prompt immediate focus now mirrors ops handoffs (retention jobs + provider pooling).
+- 2025-09-27 11:45 MDT – Swept Orders/Sales/Inbox/Data-layer prompts (status + immediate focus remain current), confirmed `SESSION_SUMMARY_2025-09-26_1052.md` still reflects dashboard + RAG state, and noted Sync write API + Polaris Viz upgrades as the only active blockers. Next sweep once Sync signals write API ETA or by 2025-09-28 12:00 MDT.
+- 2025-09-27 12:00 MDT – Sync/Webhooks agent relaunched to finalize returns/inventory write payloads; Sales agent resumed to prep Polaris Viz upgrade + background export plan. Tracking Sync ETA to flip Orders dashboard off mocks on arrival.
+- 2025-09-27 12:10 MDT – Data-layer + Settings agents restarted to cover Prisma seed coordination, retention job planning, loader/action integration tests, and KMS migration documentation.
+- 2025-09-27 12:20 MDT – Logged MVP alignment memo (`coordination/2025-09-27_mvp-alignment.md`) trimming Polaris Viz upgrade, BullMQ worker build-out, and retention cron work until after launch; updated prompts/dependency matrix accordingly.
+- 2025-09-27 12:28 MDT – Reasserted webhooks immediate focus (write payload freeze, BullMQ deferred) after Sync overwrite and reminded teams that master direction lives in the prompts; agents should log counter-proposals under `coordination/<agent>-feedback.md` for review.
+- 2025-09-27 12:32 MDT – Restored Data-layer immediate focus (analytics contract + fixtures, retention work deferred) and reiterated the feedback-note workflow for scope changes.
+- 2025-09-27 12:35 MDT – Updated `AGENT_COMMANDS.md` general reminders so every agent routes scope edits through `coordination/agent-feedback-guidelines.md` instead of touching master prompts.
+- 2025-09-27 12:37 MDT – Reverted Settings prompt focus to the MVP scope (integration coverage via published fixtures, KMS/audit work as documentation only).
+- 2025-09-27 12:45 MDT – Recorded Sync handoff (write payload schema frozen) and retargeted Orders prompt so the dashboard swaps to live endpoints immediately.
+- 2025-09-27 12:55 MDT – Keeping Orders, Data, Inbox, and Dashboard agents active; others parked pending analytics contract, credentials, or sitemap deltas to avoid churn.
+- 2025-09-27 13:20 MDT – Reinstated Orders prompt + agents log after unapproved edits; reminder that scope changes must flow through feedback notes before we update master prompts.
+- 2025-09-27 13:28 MDT – Created `coordination/orders-feedback.md` and reiterated that further unauthorized edits will be reverted immediately; Orders to log proposals there going forward.
+- 2025-09-27 13:35 MDT – Restored Inbox prompt/agents log after unauthorized edits and stood up `coordination/route-inbox-feedback.md` so scope proposals flow through review before touching master prompts.
+- 2025-09-27 13:42 MDT – Reverted Dashboard prompt/agents log after unapproved edits; established `coordination/route-dashboard-feedback.md` for future requests and reiterated the deep-link smoke focus.
+- 2025-09-27 13:48 MDT – Restored Sales prompt/agents log to MVP direction (await analytics contract, defer Polaris Viz/streaming) after unauthorized edit.
+- 2025-09-27 13:55 MDT – Reverted Database prompt/agents log to await-hosting focus; created `coordination/database-feedback.md` to capture future scope proposals before touching master docs.
+- 2025-09-27 14:05 MDT – Rolled out feedback notes for every remaining agent (`rag`, `assistants`, `data-layer`, `webhooks`, `inventory`, `seo`, `settings`, `mcp`, `tooling`) and updated guidelines so all scope changes flow through review.
+- 2025-09-27 14:15 MDT – Reverted Orders prompt/agents log again after unauthorized edits; reiterated via `coordination/orders-feedback.md` that all updates must be proposed there before touching master docs.
+- 2025-09-27 14:20 MDT – Restored Dashboard prompt/agents log to the managed state; reminded the agent via `coordination/route-dashboard-feedback.md` to route future updates there before we adjust the master prompt.
 - 2025-10-04 09:15 MDT – Reconciled sales/orders prompts (marked tasks complete, refreshed immediate focus), confirmed `dashboard` lint passes, and flagged Sync write API + Polaris Viz upgrade dependencies; next sweep after Sync ETA or 24h.
 - 2025-10-04 21:40 MDT – Posted handoff reminder for the web assistant: update `agents.md` (Status / Notes, Immediate Focus, last refresh) before sign-off so the morning agent restarts with fresh context.

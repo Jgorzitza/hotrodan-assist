@@ -18,12 +18,14 @@ describe("MCP environment helpers", () => {
     enableMcpIntegration: true,
     enableBetaWorkflows: false,
     enableExperimentalWidgets: false,
+    enableAssistantsProvider: false,
   } as const;
 
   const togglesOff = {
     enableMcpIntegration: false,
     enableBetaWorkflows: false,
     enableExperimentalWidgets: false,
+    enableAssistantsProvider: false,
   } as const;
 
   it("treats feature as disabled when env flag is false", () => {

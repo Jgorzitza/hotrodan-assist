@@ -6,6 +6,7 @@ import {
   isBullQueueEnabled,
   type BullWebhookJobData,
 } from "~/lib/webhooks/queue.server";
+import { processWebhookJob } from "~/lib/webhooks/processors.server";
 
 if (!isBullQueueEnabled()) {
   console.error(
@@ -27,8 +28,19 @@ const worker = createWebhookQueueWorker(async (job: Job<BullWebhookJobData>) => 
     },
   );
 
-  // TODO: Dispatch to the actual background processors (Zoho, analytics regeneration, etc.).
-  // For now we simply log as a stub implementation.
+  const result = await processWebhookJob(job);
+
+  console.info(
+    "[webhooks:worker] Dispatch completed",
+    {
+      queue: WEBHOOK_QUEUE_NAME,
+      jobId: job.id,
+      webhookId,
+      topicKey,
+      shopDomain,
+      ...result,
+    },
+  );
 });
 
 worker.on("failed", (job, error) => {
