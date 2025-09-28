@@ -1,10 +1,13 @@
 # Agent Restart Commands & Responsibilities
 
+> For full context and rationale, see **AGENT_PLAYBOOK.md** in this folder.
+
+
 Keep this document updated as scopes evolve. Before launching a session, confirm your target prompt/doc is current. Pause before hitting the Codex context limit (~750k tokens): run tests, commit work, update the relevant prompt + session summary, then restart.
 
 | Agent | Launch Command | Primary Focus | Pause Checklist |
 | --- | --- | --- | --- |
-| RAG & Corrections | `codex --prompt agents.md --section "RAG + Ingest" --branch feature/rag-refresh` | Keep ingest scripts, corrections, and goldens authoritative; maintain Chroma freshness | Run `python run_goldens.py`; update `agents.md`; commit ingest changes |
+| RAG & Corrections | `codex --prompt handover/AGENTS.md --section "RAG + Ingest" --branch feature/rag-refresh` | Keep ingest scripts, corrections, and goldens authoritative; maintain Chroma freshness | Run `python run_goldens.py`; update `agents.md`; commit ingest changes |
 | Assistants API & Drafts | `codex --prompt prompts/dashboard/data-layer.md --focus assistants --branch feature/assistants-db` | Align the DB-backed drafts service with adapters and Approval App contracts | Run new service tests; document API changes in prompts |
 | Approval App UI | `codex --prompt prompts/dashboard/route-inbox.md --focus approval-app --branch feature/approval-app` | Keep operator UI synced with Assistants endpoints; add smoke tests | Update templates/docs; log manual QA in `testing.md` |
 | Sync & Webhooks Service | `codex --prompt prompts/dashboard/webhooks.md --branch feature/sync-webhooks` | Shopify/Zoho ingest stubs, HMAC validation, registration helper, queue hooks | Run webhook unit tests; capture dependencies in prompts |

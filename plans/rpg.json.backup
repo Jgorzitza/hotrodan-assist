@@ -1,0 +1,111 @@
+{
+  "version": "0.1",
+  "project": "TBD-Project-Name",
+  "scheduling_edge_types": ["contains", "order", "data_flow"],
+  "nodes": [
+    {"id": "cap.ci", "type": "capability", "name": "CI & Quality Gates", "status": "todo", "owner": "manager-agent"},
+    {"id": "cap.tests", "type": "capability", "name": "Testing & QA", "status": "todo", "owner": "manager-agent"},
+    {"id": "cap.api", "type": "capability", "name": "HTTP API", "status": "todo", "owner": "manager-agent"},
+    {"id": "cap.core", "type": "capability", "name": "Domain Core", "status": "todo", "owner": "manager-agent"},
+    {"id": "cap.storage", "type": "capability", "name": "Persistence", "status": "todo", "owner": "manager-agent"},
+    {"id": "cap.observability", "type": "capability", "name": "Observability", "status": "todo", "owner": "manager-agent"},
+
+    {"id": "mod.infra.ci", "type": "module", "name": "CI pipeline", "path": ".github/workflows", "status": "todo", "owner": "manager-agent"},
+    {"id": "mod.tests.acceptance", "type": "module", "name": "Acceptance tests", "path": "tests/acceptance", "status": "todo", "owner": "manager-agent"},
+    {"id": "mod.service.api", "type": "module", "name": "API service", "path": "src/api", "status": "todo", "owner": "manager-agent"},
+    {"id": "mod.service.core", "type": "module", "name": "Core domain", "path": "src/core", "status": "todo", "owner": "manager-agent"},
+    {"id": "mod.service.storage", "type": "module", "name": "Storage adapters", "path": "src/storage", "status": "todo", "owner": "manager-agent"},
+    {"id": "mod.infra.observability", "type": "module", "name": "Observability", "path": "src/infra", "status": "todo", "owner": "manager-agent"},
+
+    {"id": "file.infra.ci.pipeline", "type": "file", "name": "CI workflow", "path": ".github/workflows/ci.yml", "status": "todo", "owner": "builder-agent"},
+    {"id": "file.infra.observability.logging", "type": "file", "name": "Logging setup", "path": "src/infra/logging", "status": "todo", "owner": "builder-agent",
+      "interface": {"functions": ["setup_logging(): void"], "notes": "Structured, leveled logs; safe for concurrent use; zero-config default"}
+    },
+
+    {"id": "file.service.storage.interface", "type": "file", "name": "Storage interface", "path": "src/storage/interface", "status": "todo", "owner": "builder-agent",
+      "interface": {"classes": ["Storage { set(key, value): void; get(key): any?; ping(): bool }"], "notes": "Pure interface; no IO"}
+    },
+    {"id": "file.service.storage.memory", "type": "file", "name": "In-memory store", "path": "src/storage/memory_store", "status": "todo", "owner": "builder-agent"},
+
+    {"id": "file.service.core.service", "type": "file", "name": "Core service", "path": "src/core/service", "status": "todo", "owner": "builder-agent",
+      "interface": {"classes": ["Service { ping(): HealthResponse }"], "dtos": ["HealthResponse { status:'ok', service:string, version:string, time:datetime }"]}
+    },
+
+    {"id": "file.service.api.app", "type": "file", "name": "API app bootstrap", "path": "src/api/app", "status": "todo", "owner": "builder-agent",
+      "interface": {"functions": ["create_app(deps): App"], "notes": "Wire logging, routes, DI container"}
+    },
+    {"id": "file.service.api.routes.health", "type": "file", "name": "Health route", "path": "src/api/routes/health", "status": "todo", "owner": "builder-agent",
+      "interface": {"http": ["GET /health -> 200 HealthResponse"], "schema": {
+        "type": "object",
+        "required": ["status", "service", "version", "time"],
+        "properties": {
+          "status": {"enum": ["ok"]},
+          "service": {"type": "string"},
+          "version": {"type": "string"},
+          "time": {"type": "string", "format": "date-time"}
+        }
+      }}
+    },
+
+    {"id": "file.tests.acceptance.schemas.health", "type": "file", "name": "Health JSON schema", "path": "tests/acceptance/schemas/health.json", "status": "todo", "owner": "builder-agent"},
+    {"id": "file.tests.acceptance.health", "type": "file", "name": "Health acceptance test", "path": "tests/acceptance/test_health", "status": "todo", "owner": "builder-agent"},
+
+    {"id": "func.infra.setup_logging", "type": "function", "name": "setup_logging", "status": "todo", "owner": "builder-agent"},
+    {"id": "cls.storage.Storage", "type": "class", "name": "Storage", "status": "todo", "owner": "builder-agent"},
+    {"id": "cls.storage.MemoryStore", "type": "class", "name": "MemoryStore", "status": "todo", "owner": "builder-agent"},
+    {"id": "func.storage.MemoryStore.ping", "type": "function", "name": "MemoryStore.ping", "status": "todo", "owner": "builder-agent"},
+    {"id": "cls.core.Service", "type": "class", "name": "Service", "status": "todo", "owner": "builder-agent"},
+    {"id": "func.core.Service.ping", "type": "function", "name": "Service.ping", "status": "todo", "owner": "builder-agent"},
+    {"id": "func.api.create_app", "type": "function", "name": "create_app", "status": "todo", "owner": "builder-agent"},
+    {"id": "func.api.health_handler", "type": "function", "name": "health_handler", "status": "todo", "owner": "builder-agent"}
+  ],
+  "edges": [
+    {"type": "contains", "src": "cap.ci", "dst": "mod.infra.ci"},
+    {"type": "contains", "src": "cap.tests", "dst": "mod.tests.acceptance"},
+    {"type": "contains", "src": "cap.api", "dst": "mod.service.api"},
+    {"type": "contains", "src": "cap.core", "dst": "mod.service.core"},
+    {"type": "contains", "src": "cap.storage", "dst": "mod.service.storage"},
+    {"type": "contains", "src": "cap.observability", "dst": "mod.infra.observability"},
+
+    {"type": "contains", "src": "mod.infra.ci", "dst": "file.infra.ci.pipeline"},
+    {"type": "contains", "src": "mod.infra.observability", "dst": "file.infra.observability.logging"},
+    {"type": "contains", "src": "mod.service.storage", "dst": "file.service.storage.interface"},
+    {"type": "contains", "src": "mod.service.storage", "dst": "file.service.storage.memory"},
+    {"type": "contains", "src": "mod.service.core", "dst": "file.service.core.service"},
+    {"type": "contains", "src": "mod.service.api", "dst": "file.service.api.app"},
+    {"type": "contains", "src": "mod.service.api", "dst": "file.service.api.routes.health"},
+    {"type": "contains", "src": "mod.tests.acceptance", "dst": "file.tests.acceptance.schemas.health"},
+    {"type": "contains", "src": "mod.tests.acceptance", "dst": "file.tests.acceptance.health"},
+
+    {"type": "contains", "src": "file.infra.observability.logging", "dst": "func.infra.setup_logging"},
+    {"type": "contains", "src": "file.service.storage.interface", "dst": "cls.storage.Storage"},
+    {"type": "contains", "src": "file.service.storage.memory", "dst": "cls.storage.MemoryStore"},
+    {"type": "contains", "src": "file.service.storage.memory", "dst": "func.storage.MemoryStore.ping"},
+    {"type": "contains", "src": "file.service.core.service", "dst": "cls.core.Service"},
+    {"type": "contains", "src": "file.service.core.service", "dst": "func.core.Service.ping"},
+    {"type": "contains", "src": "file.service.api.app", "dst": "func.api.create_app"},
+    {"type": "contains", "src": "file.service.api.routes.health", "dst": "func.api.health_handler"},
+
+    {"type": "data_flow", "src": "mod.service.api", "dst": "mod.service.core"},
+    {"type": "data_flow", "src": "mod.service.core", "dst": "mod.service.storage"},
+    {"type": "data_flow", "src": "mod.infra.observability", "dst": "mod.service.api"},
+    {"type": "data_flow", "src": "mod.infra.observability", "dst": "mod.service.core"},
+    {"type": "data_flow", "src": "mod.infra.observability", "dst": "mod.service.storage"},
+
+    {"type": "calls", "src": "func.api.create_app", "dst": "func.infra.setup_logging"},
+    {"type": "calls", "src": "func.api.health_handler", "dst": "func.core.Service.ping"},
+    {"type": "calls", "src": "func.core.Service.ping", "dst": "func.storage.MemoryStore.ping"},
+
+    {"type": "order", "src": "file.service.api.app", "dst": "file.service.api.routes.health"},
+    {"type": "order", "src": "file.tests.acceptance.schemas.health", "dst": "file.tests.acceptance.health"}
+  ],
+  "topo_layers": [
+    ["cap.ci","cap.tests","cap.api","cap.core","cap.storage","cap.observability"],
+    ["mod.infra.ci","mod.tests.acceptance","mod.infra.observability","mod.service.storage","mod.service.core","mod.service.api"],
+    ["file.infra.ci.pipeline","file.infra.observability.logging","file.service.storage.interface","file.tests.acceptance.schemas.health"],
+    ["file.tests.acceptance.health"],
+    ["file.service.api.app","file.service.core.service","file.service.storage.memory"],
+    ["file.service.api.routes.health"],
+    ["func.infra.setup_logging","cls.storage.Storage","cls.storage.MemoryStore","func.storage.MemoryStore.ping","cls.core.Service","func.core.Service.ping","func.api.create_app","func.api.health_handler"]
+  ]
+}

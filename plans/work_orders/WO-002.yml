@@ -1,0 +1,53 @@
+id: WO-002
+title: Define public contracts + failing acceptance test (test-first)
+owner: builder-agent
+nodes_targeted:
+  - file.service.storage.interface
+  - file.service.core.service
+  - file.service.api.routes.health
+  - file.tests.acceptance.schemas.health
+  - file.tests.acceptance.health
+artifacts_to_create_or_update:
+  - "src/storage/interface"
+  - "src/core/service (interfaces only; no logic)"
+  - "src/api/routes/health (route signature only; no logic)"
+  - "tests/acceptance/schemas/health.json"
+  - "tests/acceptance/test_health"
+interface_contracts:
+  storage_interface: |
+    class Storage {
+      set(key, value): void
+      get(key): any?
+      ping(): bool
+    }
+  service_interface: |
+    class Service {
+      ping(): HealthResponse
+    }
+  health_response_schema:
+    type: object
+    required: [status, service, version, time]
+    properties:
+      status: { enum: [ok] }
+      service: { type: string }
+      version: { type: string }
+      time: { type: string, format: date-time }
+tests_to_write (should fail initially):
+  - name: "GET /health returns 200 and matches schema"
+    steps:
+      - Launch app via create_app with in-memory deps (stubbed)
+      - GET /health
+      - Assert status==200 and body validates against health.json
+  - name: "Service.ping returns compliant HealthResponse"
+    steps:
+      - Instantiate Service with a stub Storage (ping()->true)
+      - Call Service.ping()
+      - Validate against schema
+acceptance_criteria:
+  - Tests compile/run but fail due to unimplemented logic.
+  - Interfaces and JSON schema are committed and referenced by tests.
+  - rpg.json updated with any new IDs or interface notes (diff only).
+dependencies: [WO-001]
+risk_notes:
+  - Over-specifying interface now can cause churn; keep minimal.
+blast_radius: low
