@@ -13,7 +13,7 @@ services:
     ports: [ "6379:6379" ]
 
   rag-api:
-    build: ./app/rag-api
+    build: ./app/rag_api
     env_file: .env
     volumes: [ "./data:/data", "./:/workspace" ]
     ports: [ "8001:8001" ]

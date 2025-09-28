@@ -1,10 +1,16 @@
 import os, sys, re, pathlib, yaml, chromadb
+from textwrap import shorten
 from chromadb.config import Settings as ChromaSettings
 from llama_index.core import StorageContext, load_index_from_storage, Settings
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.llms.openai import OpenAI
-from llama_index.embeddings.openai import OpenAIEmbedding
-from rag_config import INDEX_ID, CHROMA_PATH, PERSIST_DIR, COLLECTION
+from rag_config import (
+    CHROMA_PATH,
+    COLLECTION,
+    INDEX_ID,
+    PERSIST_DIR,
+    configure_settings,
+)
 from router_config import ESCALATE_KEYWORDS, LEN_THRESHOLD
 
 ESCALATE_CANDIDATES = ["gpt-5", "gpt-5-mini", "gpt-4.1"]
@@ -84,18 +90,20 @@ def main(question: str):
         print("\n=== SOURCES ===")
         return
 
-    if not os.getenv("OPENAI_API_KEY"):
-        raise SystemExit("Missing OPENAI_API_KEY in environment.")
-
-    llm = choose_model(question)
-    Settings.llm = llm
-    Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
+    mode = configure_settings()
+    llm = None
+    if mode == "openai":
+        llm = choose_model(question)
+        Settings.llm = llm
 
     client = chromadb.PersistentClient(path=CHROMA_PATH, settings=ChromaSettings())
     collection = client.get_or_create_collection(COLLECTION, metadata={"hnsw:space":"cosine"})
     vector_store = ChromaVectorStore(chroma_collection=collection)
     storage = StorageContext.from_defaults(vector_store=vector_store, persist_dir=PERSIST_DIR)
     index = load_index_from_storage(storage, index_id=INDEX_ID)
+
+    retriever = index.as_retriever(similarity_top_k=10)
+    nodes = retriever.retrieve(question)
 
     system_hint = (
         "You are a Hot Rod AN tech specialist. Provide clear, platform-agnostic EFI fuel system recommendations "
@@ -106,6 +114,31 @@ def main(question: str):
 
     sig = parse_signals(question)
     addendum = dynamic_addendum(sig)
+
+    if mode != "openai":
+        print("\n[Model] retrieval-only\n")
+        print("=== ANSWER ===")
+        if not nodes:
+            print("No relevant documents retrieved. Refresh ingest or provide more detail.")
+        else:
+            for node_with_score in nodes[:3]:
+                node = getattr(node_with_score, "node", node_with_score)
+                text = getattr(node, "text", None)
+                if text is None and hasattr(node, "get_content"):
+                    text = node.get_content()
+                snippet = shorten((text or "").replace("\n", " "), width=400, placeholder="…")
+                print(f"• {snippet}")
+            print(f"\nSignals: {addendum}")
+        print("\n=== SOURCES ===")
+        seen = set()
+        for n in nodes:
+            node = getattr(n, "node", n)
+            src = node.metadata.get("source_url", "unknown")
+            if src in seen:
+                continue
+            seen.add(src)
+            print("-", src)
+        return
 
     qe = index.as_query_engine(response_mode="compact", similarity_top_k=10, text_qa_template=None)
     resp = qe.query(system_hint + "\n\nCustomer signals: " + addendum + "\n\nQuestion: " + question)

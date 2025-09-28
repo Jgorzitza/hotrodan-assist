@@ -1,0 +1,21 @@
+name: Guard Required Prompts
+
+on: [push]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure required prompts exist
+        run: |
+          missing=0
+          for file in prompts/tooling/program-manager.md AGENT_COMMANDS.md scripts/launch_agent.sh prompts/dashboard/overview.md prompts/dashboard/mcp.md prompts/dashboard/data-layer.md HANDOVER.md coordination/dependency-matrix.md; do
+            if [ ! -f "$file" ]; then
+              echo "::error::Missing required file $file"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi

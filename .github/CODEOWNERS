@@ -1,0 +1,8 @@
+# Managed instruction surfaces require manager approval
+/docs/agents.md                               @manager
+/handover/**                                  @manager
+/coordination/agent-feedback-guidelines.md    @manager
+/coordination/registry/**                     @manager
+/coordination/templates/**                    @manager
+/coordination/digests/**                      @manager
+/agent/*/INSTRUCTIONS.md                      @manager

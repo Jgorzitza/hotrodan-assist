@@ -1,1 +1,0 @@
-<<PASTE THE LATEST HANDOVER BRIEF WE JUST BUILT — the whole thing — HERE>>

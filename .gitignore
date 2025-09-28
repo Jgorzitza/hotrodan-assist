@@ -53,24 +53,3 @@ reingest.log
 # virtualenvs
 .venv*/
 venv/
-
-# venvs
-.venv*/
-venv/
-
-# python cache
-__pycache__/
-*.py[cod]
-
-# node
-node_modules/
-
-# local data / embeddings / sqlite
-chroma/
-*.sqlite*
-storage/*.json
-
-# local creds
-creds/
-.env
-dashboard/.env

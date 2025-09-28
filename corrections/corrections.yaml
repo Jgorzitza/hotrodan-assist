@@ -1,16 +1,16 @@
 # High-priority, human-authored overrides. Regex are case-insensitive.
 - id: filter-micron-efi
   patterns:
-    # catch “efi” near “10 micron/um/µm”, and generic micron+efi phrasing
+    # catch "efi" near "10 micron/um/µm", and generic micron+efi phrasing
     - "(efi).*(10 ?(µ|μ|u)m|10 ?micron|ten ?micron)"
     - "micron.*efi"
     - "efi.*micron"
     - "efi.*filter"
   answer: |
     For EFI systems, use a ≤10 μm (ten micron) pressure-side filter after the pump and before the rails/injectors.
-    If your pump lacks an in-tank sock (external/inline pump), add a coarse 40–100 μm pre-filter on the inlet.
+    If your pump lacks an in-tank sock (external/inline pump), add a coarse 40-100 μm pre-filter on the inlet.
     Use PTFE-lined AN hose for compatibility with gasoline, diesel, E85, methanol, and other fuels, and for long-term permeation resistance.
-    Line sizing: AN-6 to ~500 hp; AN-8 for ~500–800 hp or added headroom; AN-10 for higher flow or long runs.
+    Line sizing: AN-6 to ~500 hp; AN-8 for ~500-800 hp or added headroom; AN-10 for higher flow or long runs.
   sources:
     - https://hotrodan.com/blogs/an-hose-101/efi-fuel-filter-microns-placement-10-micron-vs-100-micron-hot-rod-an
     - https://hotrodan.com/blogs/an-hose-101/efi-swaps-and-ptfe-hose-holley-sniper-aces-efi-and-fitech
@@ -24,10 +24,45 @@
     - "filter/regulator"
   answer: |
     Return-style is the most forgiving for swaps: feed line to rails, bypass regulator near the rail, and a return line back to the tank.
-    Returnless uses an in-rail or “Corvette-style” filter/regulator (~58 psi) near the tank: short return at the regulator, single feed forward.
+    Returnless uses an in-rail or "Corvette-style" filter/regulator (~58 psi) near the tank: short return at the regulator, single feed forward.
     If uncertain, choose return-style with a quality in-tank pump module; it’s easier to tune across injectors, fuels, and future upgrades.
     Always include ≤10 μm pressure-side filtration and PTFE-lined hose (gasoline, diesel, E85, methanol, etc.).
   sources:
     - https://hotrodan.com/blogs/an-hose-101/ultimate-fuel-system-guide-for-73-87-c10-k10-squarebody-trucks-ls-swaps-and-efi-conversions
     - https://hotrodan.com/blogs/an-hose-101/fuel-pump-selection-for-ls-based-engines-and-efi-conversions
   last_verified: 2025-09-24
+
+- id: tru-cool-max-40k
+  patterns:
+    - "tru[- ]?cool.*40k"
+    - "lpd-?4739"
+  answer: |
+    Tru-Cool MAX 40K (LPD4739) is a stacked-plate auxiliary transmission cooler that roughly doubles the heat rejection of the Tru-Cool LPD line. Brazed aluminum construction and tightly spaced fins keep ATF in airflow, and the built-in cold-weather passive bypass routes thick, cold fluid around the core until it warms up.
+    Ports are 5/8-18 inverted flare; adapt them to AN with metric-to-AN fittings for clean PTFE hose plumbing. Hardware is included; mount in direct airflow below the radiator fill line and pair with quality filtration to protect the transmission.
+  sources:
+    - https://hotrodan.com/products/tru-cool-max-40k-transmission-oil-cooler-lpd4739
+  last_verified: 2025-09-27
+
+- id: vapor-trapper-charcoal-canister
+  patterns:
+    - 'vapor\s*trapper'
+    - 'charcoal\s+canister'
+    - 'fuel\s+tank\s+vent\s+filter'
+  answer: |
+    Vapor Trapper (TM) is a billet, serviceable charcoal canister that installs in-line on a fuel tank vent to stop garage and cabin fuel odor while letting the tank breathe. Universal models (4/6/8" canisters) ship with -6 ORB ports; the High Performance variants add -8 AN end caps for higher-flow builds and AN plumbing.
+    Mount the canister above the tank with two 2-1/2" clamps, run PTFE AN hose from the sending-unit vent, and replace the charcoal media when saturated. Pair it with the matching rollover valve (-6 AN for universal, -8 AN for high performance) to block fuel spill if the vehicle inverts.
+  sources:
+    - https://hotrodan.com/products/vapor-trapper%E2%84%A2-universal-charcoal-canister-fuel-tank-vent-filter-6-8-in
+  last_verified: 2025-09-27
+
+- id: walbro-gsl392-inline-255
+  patterns:
+    - 'gsl[- ]?392'
+    - 'walbro.*255.*inline'
+    - '255\s*lph\s+inline\s+pump'
+  answer: |
+    The Walbro/Ti Automotive GSL392 is a 255 LPH external EFI pump that supports common LS swaps and retrofit EFI systems targeting ~60 psi base pressure. It uses 10 mm x 1.0 inlet/outlet ports; adapt them to AN-6 or AN-8 for PTFE hose, mount low near the tank with isolated clamps, and protect it with a 40-100 μm pre-filter plus a ≤10 μm post-filter.
+    After plumbing, prime the system, verify pressure at the rails, and monitor duty cycle if you step up to boosted or E85 power levels.
+  sources:
+    - https://hotrodan.com/products/walbro-ti-automotive-255-lph-inline-fuel-pump-gsl392
+  last_verified: 2025-09-27

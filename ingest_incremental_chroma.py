@@ -7,7 +7,13 @@ import requests
 
 from llama_index.core import StorageContext, VectorStoreIndex, Document, load_index_from_storage
 from llama_index.vector_stores.chroma import ChromaVectorStore
-from rag_config import INDEX_ID, CHROMA_PATH, PERSIST_DIR, COLLECTION  # sets Settings globally
+from rag_config import (
+    CHROMA_PATH,
+    COLLECTION,
+    INDEX_ID,
+    PERSIST_DIR,
+    configure_settings,
+)
 
 STATE_FILE = "ingest_state.json"
 
@@ -46,8 +52,9 @@ def fetch_text(url: str) -> str:
     return soup.get_text(" ", strip=True)
 
 def main():
-    if not os.getenv("OPENAI_API_KEY"):
-        raise SystemExit("Missing OPENAI_API_KEY in environment.")
+    mode = configure_settings()
+    if mode != "openai":
+        print("OPENAI_API_KEY missing; using FastEmbed fallback (retrieval-only mode).")
     if not os.path.exists("urls_with_lastmod.tsv"):
         raise SystemExit("Run discover_urls.py first to build urls_with_lastmod.tsv")
 
@@ -87,7 +94,7 @@ def main():
         text = fetch_text(u)
         doc = Document(text=text, metadata={"source_url": u}, doc_id=u)
         # insert via index (honors current Settings + chunking)
-        index.insert_documents([doc])
+        index.insert(doc)
         time.sleep(0.1)
 
     # Persist non-vector parts (index_store/docstore)
