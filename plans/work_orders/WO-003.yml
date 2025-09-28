@@ -1,0 +1,28 @@
+id: WO-003
+title: Implement vertical slice: MemoryStore, Service.ping, /health route
+owner: builder-agent
+nodes_targeted:
+  - file.service.storage.memory
+  - file.service.core.service
+  - file.service.api.app
+  - file.service.api.routes.health
+  - file.infra.observability.logging
+  - func.storage.MemoryStore.ping
+  - func.core.Service.ping
+  - func.api.create_app
+  - func.api.health_handler
+implementation_notes:
+  - Implement MemoryStore (in-memory map + ping()->true).
+  - Implement Service.ping() to assemble HealthResponse {status:'ok', service:'<name>', version: read from env/VCS tag, time: now}.
+  - Implement create_app(deps) to wire logging, route registration, and DI (inject Service with MemoryStore).
+  - Implement GET /health handler to call Service.ping() and return JSON.
+  - Use setup_logging() for structured logs; include request ID and latency.
+acceptance_criteria:
+  - All tests from WO-002 pass locally and in CI.
+  - GET /health returns 200 and matches schema; log line emitted per request.
+  - No global state leaks; MemoryStore confined to DI container.
+  - Update rpg.json node statuses to 'done' for implemented nodes; attach commit SHAs in STATUS.md.
+dependencies: [WO-002]
+risk_notes:
+  - Route/app wiring differs by framework; keep adapter thin to ease swaps.
+blast_radius: medium
