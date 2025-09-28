@@ -1,0 +1,94 @@
+# Task backlog (owned by Manager). Status: TODO|DOING|DONE. Each task must reference a node id from rpg.json.
+
+sprint_start: 2025-09-28
+sprint_goal: "Ship first navigable Shopify Admin dashboard backed by live RAG + Approvals loop for CS, with mock data toggles removed."
+
+tasks:
+  - id: repo.cleanup
+    node: tooling
+    title: "Clean branches and archive legacy direction files"
+    status: TODO
+    deliverables:
+      - "main ← merge of chore/repo-canonical-layout (fast-forward if possible)"
+      - "archive/ moved: HANDOVER*.md, any obsolete agent direction files"
+      - "README updated; no conflict markers"
+    notes: "Follow commands in `commands/cleanup-and-merge.md`"
+
+  - id: rag.index-v1
+    node: rag
+    title: "RAG index V1 over site + docs using Chroma"
+    status: TODO
+    deliverables:
+      - "Crawl via discover_urls.py; ingest via ingest_site_chroma.py"
+      - "Corrections loaded from corrections/corrections.yaml"
+      - "Golden tests pass: run `python run_goldens.py`"
+    deps: ["tooling.qa-basics"]
+
+  - id: mcp.connectors-v1
+    node: mcp
+    title: "Wire MCP connectors (Shopify, Zoho, GSC, Bing, GA4) behind feature flags"
+    status: TODO
+    deliverables:
+      - "ENV keys validated; 401/403 handling with actionable error messages"
+      - "Typed response mappers and minimal caching"
+      - "Dashboard settings can mark a connector as LIVE or MOCK"
+    deps: ["dashboard.settings-v1"]
+
+  - id: dashboard.settings-v1
+    node: dashboard
+    title: "Settings screen for credentials vault + feature flags"
+    status: TODO
+    deliverables:
+      - "Polaris form with ENV key presence checks (no values shown)"
+      - "Feature toggles: USE_MOCK_DATA, ENABLE_MCP, ENABLE_SEO, ENABLE_INVENTORY"
+      - "Health panel that pings each backend service"
+    deps: ["tooling.remix-tests"]
+
+  - id: approvals.loop-v1
+    node: approvals
+    title: "Approve/Edit CS replies with learning loop (LlamaIndex)"
+    status: TODO
+    deliverables:
+      - "Inbox shows draft replies (rag → approvals)"
+      - "Approve: sends via Zoho; Edit: stores both machine + human text for fine-tuning"
+      - "Metrics: approval rate, avg edit distance"
+    deps: ["mcp.connectors-v1","rag.index-v1"]
+
+  - id: seo.opportunities-v1
+    node: seo
+    title: "SEO opportunity finder (GSC/Bing/GA4 + crawl competitors)"
+    status: TODO
+    deliverables:
+      - "Query clustering + gap detection"
+      - "Opportunity score and Content Brief export (.md)"
+      - "Dashboard list with filters"
+    deps: ["mcp.connectors-v1"]
+
+  - id: inventory.reorder-v1
+    node: inventory
+    title: "Vendor-aware reorder points + SKU/vendor mapping UI"
+    status: TODO
+    deliverables:
+      - "Lead-time demand + safety stock: ROP = μ_d * L + z * σ_d * √L"
+      - "Screens: by All, Vendor, Fast Movers"
+      - "Assign/remove vendors; vendor SKU mapping"
+    deps: ["mcp.connectors-v1"]
+
+  - id: sales.insights-v1
+    node: sales
+    title: "Sales funnel and experiment ideas"
+    status: TODO
+    deliverables:
+      - "Funnel: sessions→add-to-cart→checkout→purchase"
+      - "Suggest cross-sell/upsell and landing-page tests"
+      - "Export CSV"
+    deps: ["mcp.connectors-v1"]
+
+  - id: tooling.qa-basics
+    node: tooling
+    title: "Pre-commit, lint, type-check, unit/E2E test harness"
+    status: TODO
+    deliverables:
+      - "pre-commit with black/ruff/isort"
+      - "mypy on Python, tsconfig strict on dashboard"
+      - "Playwright smoke test bound to `npm run test:e2e`"
