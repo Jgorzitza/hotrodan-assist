@@ -49,3 +49,7 @@ reingest.log
 
 # === local env ===
 .env
+
+# virtualenvs
+.venv*/
+venv/
