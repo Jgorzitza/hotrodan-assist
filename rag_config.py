@@ -1,7 +1,7 @@
 import os
 import tempfile
 from pathlib import Path
-from typing import Literal, Tuple
+from typing import Literal, Tuple, Optional
 
 from llama_index.core import Settings
 from llama_index.core.node_parser import SentenceSplitter
@@ -84,4 +84,13 @@ def configure_settings() -> Literal["openai", "retrieval-only"]:
     return "retrieval-only"
 
 
-MODE = configure_settings()
+MODE: Optional[Literal["openai", "retrieval-only"]] = None
+
+
+def get_mode(force_refresh: bool = False) -> Literal["openai", "retrieval-only"]:
+    """Return the currently configured mode, configuring on demand."""
+
+    global MODE
+    if force_refresh or MODE is None:
+        MODE = configure_settings()
+    return MODE
