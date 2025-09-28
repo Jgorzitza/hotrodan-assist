@@ -1,0 +1,11 @@
+{
+  "agents": {
+    "program_manager": {"prompt": "prompts/tooling/program-manager.md", "branch": "chore/coordination"},
+    "rag_ingest":      {"prompt": "handover/AGENTS.md", "section": "RAG + Ingest", "branch": "feature/rag-refresh"},
+    "assistants_api":  {"prompt": "prompts/dashboard/data-layer.md", "focus": "assistants", "branch": "feature/assistants-db"},
+    "sync_webhooks":   {"prompt": "prompts/dashboard/webhooks.md", "branch": "feature/sync-webhooks"},
+    "dashboard_orders":{"prompt": "prompts/dashboard/route-orders.md", "branch": "feature/route-orders"},
+    "dashboard_sales": {"prompt": "prompts/dashboard/route-sales.md", "branch": "feature/route-sales"},
+    "dashboard_inbox": {"prompt": "prompts/dashboard/route-inbox.md", "branch": "feature/route-inbox"}
+  }
+}

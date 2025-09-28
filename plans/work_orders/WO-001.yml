@@ -1,0 +1,27 @@
+id: WO-001
+title: Repo bootstrap: CI, test runner, RPG scaffold
+owner: builder-agent
+nodes_targeted:
+  - mod.infra.ci
+  - file.infra.ci.pipeline
+  - mod.tests.acceptance
+  - mod.infra.observability
+artifacts_to_create:
+  - ".github/workflows/ci.yml"
+  - "tests/acceptance/__init__ (as needed)"
+  - "plans/rpg.json (committed, validated JSON)"
+  - "STATUS.md (lightweight: progress/risks/next nodes)"
+tasks:
+  - Create CI workflow that runs on PR and main; steps: checkout, install deps, run lints, run tests; fail on nonzero exit.
+  - Add a minimal test runner config (pytest, npm test, go test, etc.); include a passing smoke test to validate CI wiring.
+  - Establish repository layout: src/api, src/core, src/storage, src/infra, tests/acceptance, plans/.
+  - Commit current RPG file and ensure JSON schema/formatting checks (pre-commit or equivalent).
+acceptance_criteria:
+  - CI must execute automatically on PRs and main; visible green run with the smoke test.
+  - Lint/test jobs are required for merge (branch protection documented in STATUS.md).
+  - Repository layout exists and matches nodes in rpg.json.
+  - rpg.json parses and contains nodes/edges/topo_layers defined above.
+dependencies: []
+risk_notes:
+  - None material; infra-only change; no product logic.
+blast_radius: low

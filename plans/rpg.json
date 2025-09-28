@@ -1,0 +1,249 @@
+{
+  "version": "0.2",
+  "updated": "2025-09-28",
+  "nodes": [
+    {
+      "id": "dashboard",
+      "type": "module",
+      "summary": "Shopify Admin dashboard (Remix + Polaris).",
+      "repo_paths": [
+        "dashboard/"
+      ],
+      "children": [
+        {
+          "id": "dashboard.overview",
+          "type": "feature",
+          "repo_paths": [
+            "dashboard/app/routes/_index.tsx"
+          ]
+        },
+        {
+          "id": "dashboard.approvals_inbox",
+          "type": "feature",
+          "repo_paths": [
+            "dashboard/app/routes/approvals.*"
+          ]
+        },
+        {
+          "id": "dashboard.inventory",
+          "type": "feature"
+        },
+        {
+          "id": "dashboard.sales",
+          "type": "feature"
+        },
+        {
+          "id": "dashboard.seo",
+          "type": "feature"
+        },
+        {
+          "id": "dashboard.settings",
+          "type": "feature"
+        }
+      ]
+    },
+    {
+      "id": "rag",
+      "type": "module",
+      "summary": "RAG core using LlamaIndex + Chroma; corrections + golden tests.",
+      "repo_paths": [
+        "discover_urls.py",
+        "ingest_site_chroma.py",
+        "query_chroma_router.py",
+        "corrections/",
+        "goldens/",
+        "run_goldens.py"
+      ]
+    },
+    {
+      "id": "mcp",
+      "type": "module",
+      "summary": "Model Context Protocol connectors & broker.",
+      "repo_paths": [
+        "app/assistants",
+        "app/sync",
+        "app/rag-api"
+      ]
+    },
+    {
+      "id": "approvals",
+      "type": "module",
+      "summary": "Approve/Edit responses; learning loop.",
+      "repo_paths": [
+        "app/approval-app"
+      ]
+    },
+    {
+      "id": "inventory",
+      "type": "module",
+      "summary": "Actionable re\u2011order insights by vendor/sku.",
+      "repo_paths": [
+        "app/sync",
+        "app/inventory-api"
+      ]
+    },
+    {
+      "id": "sales",
+      "type": "module",
+      "summary": "Sales insights, funnel, opportunities.",
+      "repo_paths": [
+        "app/sync",
+        "app/assistants"
+      ]
+    },
+    {
+      "id": "seo",
+      "type": "module",
+      "summary": "SEO & content opportunities from GSC/Bing/GA4 + competitor crawl.",
+      "repo_paths": [
+        "app/seo-api",
+        "prompts/seo"
+      ]
+    },
+    {
+      "id": "tooling",
+      "type": "module",
+      "summary": "Quality guardrails, CI, pre-commit, testing.",
+      "repo_paths": [
+        ".githooks",
+        "goldens/",
+        "e2e/",
+        "docs/"
+      ]
+    },
+    {
+      "id": "data.connectors",
+      "type": "module",
+      "summary": "External data sources and schemas.",
+      "children": [
+        {
+          "id": "connector.shopify",
+          "type": "connector",
+          "outputs": [
+            "orders",
+            "products",
+            "inventory_levels",
+            "customers"
+          ]
+        },
+        {
+          "id": "connector.zoho_mail",
+          "type": "connector",
+          "outputs": [
+            "inbound_emails",
+            "outbound_status"
+          ]
+        },
+        {
+          "id": "connector.gsc",
+          "type": "connector",
+          "outputs": [
+            "queries",
+            "clicks",
+            "impressions",
+            "ctr",
+            "position"
+          ]
+        },
+        {
+          "id": "connector.bing_wmt",
+          "type": "connector",
+          "outputs": [
+            "keywords",
+            "pages",
+            "errors"
+          ]
+        },
+        {
+          "id": "connector.ga4",
+          "type": "connector",
+          "outputs": [
+            "sessions",
+            "events",
+            "conversions"
+          ]
+        },
+        {
+          "id": "connector.web_crawler",
+          "type": "connector",
+          "outputs": [
+            "site_pages",
+            "competitor_pages"
+          ]
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "connector.shopify",
+      "to": "inventory",
+      "data_id": "orders, inventory, products"
+    },
+    {
+      "from": "connector.shopify",
+      "to": "sales",
+      "data_id": "orders, customers"
+    },
+    {
+      "from": "connector.zoho_mail",
+      "to": "approvals",
+      "data_id": "inbound_emails"
+    },
+    {
+      "from": "connector.web_crawler",
+      "to": "rag",
+      "data_id": "site_pages, competitor_pages"
+    },
+    {
+      "from": "rag",
+      "to": "approvals",
+      "data_id": "draft_replies"
+    },
+    {
+      "from": "approvals",
+      "to": "dashboard.approvals_inbox",
+      "data_id": "items_to_review"
+    },
+    {
+      "from": "connector.gsc",
+      "to": "seo",
+      "data_id": "search_console_metrics"
+    },
+    {
+      "from": "connector.bing_wmt",
+      "to": "seo",
+      "data_id": "bing_metrics"
+    },
+    {
+      "from": "connector.ga4",
+      "to": "seo",
+      "data_id": "engagement_metrics"
+    },
+    {
+      "from": "seo",
+      "to": "dashboard.seo",
+      "data_id": "opportunity_list"
+    },
+    {
+      "from": "inventory",
+      "to": "dashboard.inventory",
+      "data_id": "reorder_points, vendors, sku_mappings"
+    },
+    {
+      "from": "sales",
+      "to": "dashboard.sales",
+      "data_id": "insights, experiments"
+    },
+    {
+      "from": "tooling",
+      "to": "all",
+      "data_id": "tests, hooks, quality_signals"
+    }
+  ],
+  "topology": "DAG",
+  "notes": [
+    "Manager owns this graph; agents propose diffs in feedback files.",
+    "Keep edges typed; include `data_id` and expected schema hints in future revisions."
+  ]
+}
