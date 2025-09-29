@@ -1,0 +1,63 @@
+{
+  "timestamp": "2025-09-29T17:43:10.721Z",
+  "summary": {
+    "total": 6,
+    "critical": 2,
+    "high": 3,
+    "medium": 1,
+    "low": 0
+  },
+  "findings": [
+    {
+      "file": "scripts/security/sast-scan-improved.js",
+      "severity": "critical",
+      "message": "Use of eval() function - potential code injection",
+      "count": 1,
+      "timestamp": "2025-09-29T17:43:09.561Z"
+    },
+    {
+      "file": "scripts/security/sast-scan-improved.js",
+      "severity": "high",
+      "message": "Use of document.write() - potential XSS",
+      "count": 1,
+      "timestamp": "2025-09-29T17:43:09.561Z"
+    },
+    {
+      "file": "scripts/security/sast-scan-improved.js",
+      "severity": "medium",
+      "message": "React dangerouslySetInnerHTML usage - ensure content is sanitized",
+      "count": 2,
+      "timestamp": "2025-09-29T17:43:09.561Z"
+    },
+    {
+      "file": "scripts/security/sast-scan.js",
+      "severity": "critical",
+      "message": "Use of eval() function - potential code injection",
+      "count": 1,
+      "timestamp": "2025-09-29T17:43:09.561Z"
+    },
+    {
+      "file": "scripts/security/sast-scan.js",
+      "severity": "high",
+      "message": "Use of document.write() - potential XSS",
+      "count": 1,
+      "timestamp": "2025-09-29T17:43:09.561Z"
+    },
+    {
+      "file": "venv/lib/python3.12/site-packages/sklearn/utils/_repr_html/estimator.js",
+      "severity": "high",
+      "message": "Direct innerHTML assignment - potential XSS",
+      "count": 4,
+      "timestamp": "2025-09-29T17:43:09.562Z"
+    }
+  ],
+  "recommendations": [
+    "Implement Content Security Policy (CSP) headers",
+    "Use parameterized queries for database operations",
+    "Validate and sanitize all user inputs",
+    "Replace innerHTML with safer alternatives like textContent",
+    "Implement proper authentication and authorization",
+    "Use HTTPS for all communications",
+    "Regular dependency updates and vulnerability scanning"
+  ]
+}
