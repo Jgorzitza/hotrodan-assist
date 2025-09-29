@@ -622,7 +622,7 @@ docker-compose up -d inventory-api
 - [x] Multi-location stock sync strategy with conflict resolution
 - [x] Safety stock rules per SKU/location
 - [x] Demand forecasting (daily/weekly) with seasonality
-- [ ] Purchase order recommendations generator
+- [x] Purchase order recommendations generator
 - [ ] Backorder policy rules + ETA surfacing
 - [ ] Webhooks for low-stock → Slack/Email
 - [ ] Cycle counts workflow integration
