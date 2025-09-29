@@ -628,7 +628,7 @@ docker-compose up -d inventory-api
 - [x] Cycle counts workflow integration
 - [x] BOM/kitting support in availability calcs
 - [x] Audit ledger for adjustments
-- [ ] Replenishment lead time variability model
+- [x] Replenishment lead time variability model
 
 ## Next Sprint (Inventory) - 2025-09-29T10:22:15-06:00
 - Status: Planned
