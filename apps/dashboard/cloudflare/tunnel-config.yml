@@ -1,0 +1,9 @@
+tunnel: dashboard-tunnel
+credentials-file: /app/cloudflare/credentials.json
+
+ingress:
+  - hostname: dashboard.your-domain.com
+    service: http://localhost:8080
+    originRequest:
+      httpHostHeader: dashboard.your-domain.com
+  - service: http_status:404

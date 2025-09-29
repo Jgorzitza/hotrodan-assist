@@ -63,3 +63,30 @@ volumes:
 
 volumes:
   pgdata:
+
+  dashboard:
+    build: ./apps/dashboard
+    env_file: apps/dashboard/.env
+    ports: 
+      - "8080:8080"
+    depends_on: [db, redis]
+    volumes:
+      - "./apps/dashboard/cloudflare:/app/cloudflare"
+    command: >
+      sh -c "
+        if [ ! -f /app/cloudflare/credentials.json ]; then
+          echo 'Cloudflare tunnel not configured. Run setup-tunnel.sh first.'
+          npm run start
+        else
+          cloudflared tunnel --config /app/cloudflare/tunnel-config.yml run &
+          npm run start
+        fi
+      "
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --config /app/cloudflare/tunnel-config.yml run
+    volumes:
+      - "./apps/dashboard/cloudflare:/app/cloudflare"
+    depends_on: [dashboard]
+    restart: unless-stopped
