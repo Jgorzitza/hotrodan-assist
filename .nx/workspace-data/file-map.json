@@ -1,0 +1,2976 @@
+{
+  "version": "6.0",
+  "nxVersion": "21.5.3",
+  "pathMappings": {},
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "projectFileMap": {},
+    "nonProjectFiles": [
+      {
+        "file": ".auto-accept-env",
+        "hash": "15877024842852817792"
+      },
+      {
+        "file": ".cursor/settings.json",
+        "hash": "3030374731718895588"
+      },
+      {
+        "file": ".cursorrules",
+        "hash": "10732546263131445128"
+      },
+      {
+        "file": ".githooks/pre-commit",
+        "hash": "4634447875907569028"
+      },
+      {
+        "file": ".githooks/pre-commit.backup",
+        "hash": "4634447875907569028"
+      },
+      {
+        "file": ".github/CODEOWNERS",
+        "hash": "14321085038278688749"
+      },
+      {
+        "file": ".github/workflows/check-required-files.yml",
+        "hash": "9033735610203607153"
+      },
+      {
+        "file": ".github/workflows/ci.yml",
+        "hash": "6330427745528026356"
+      },
+      {
+        "file": ".github/workflows/verify-managed-files.yml",
+        "hash": "6970593607615700590"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "11908815830754438381"
+      },
+      {
+        "file": "BLOCKER_RESOLUTION_STATUS.md",
+        "hash": "10492407653193545395"
+      },
+      {
+        "file": "CRITICAL_APPROVALS_HANDOFF.md",
+        "hash": "8825410614274975481"
+      },
+      {
+        "file": "Dockerfile.inventory",
+        "hash": "9758181332755462883"
+      },
+      {
+        "file": "FINAL-AUTO-ACCEPT-SOLUTION.md",
+        "hash": "11433501394338464962"
+      },
+      {
+        "file": "GA4_REFRESH_TOKEN_GUIDE.md",
+        "hash": "6170388761195848622"
+      },
+      {
+        "file": "INVENTORY_PRODUCTION_DEPLOYMENT.md",
+        "hash": "11107662017325984256"
+      },
+      {
+        "file": "MCP_ENTERPRISE_PLATFORM_COMPLETE.md",
+        "hash": "5853831600928665012"
+      },
+      {
+        "file": "PROJECT_COMPLETE_DOCUMENTATION.md",
+        "hash": "4360798529389701327"
+      },
+      {
+        "file": "PROJECT_IMPLEMENTATION_REPORT.md",
+        "hash": "18052789883176788425"
+      },
+      {
+        "file": "README.md",
+        "hash": "5338081203830308834"
+      },
+      {
+        "file": "SESSION_SUMMARY_2025-09-26_1052.md",
+        "hash": "12960160585781656622"
+      },
+      {
+        "file": "add_bing_credentials.sh",
+        "hash": "3538509291595503168"
+      },
+      {
+        "file": "add_ga4_credentials.sh",
+        "hash": "13443159159585059215"
+      },
+      {
+        "file": "add_gsc_credentials.sh",
+        "hash": "6148289357076449305"
+      },
+      {
+        "file": "add_openai_key.sh",
+        "hash": "17366395335897709283"
+      },
+      {
+        "file": "advanced_demand_forecasting.py",
+        "hash": "13167653436316539974"
+      },
+      {
+        "file": "agent_launch_commands.md",
+        "hash": "96603198117913959"
+      },
+      {
+        "file": "ai_ml/predictive_analytics.js",
+        "hash": "2891796084576119727"
+      },
+      {
+        "file": "analytics/analytics_dashboard.js",
+        "hash": "3930179009050451793"
+      },
+      {
+        "file": "api_error_handling.py",
+        "hash": "8492166866627408151"
+      },
+      {
+        "file": "app/approval-app/Dockerfile",
+        "hash": "6920145401354374623"
+      },
+      {
+        "file": "app/approval-app/main.py",
+        "hash": "8010567842101386890"
+      },
+      {
+        "file": "app/approval-app/requirements.txt",
+        "hash": "16201686984537862666"
+      },
+      {
+        "file": "app/approval-app/templates/draft.html",
+        "hash": "5086379458406740302"
+      },
+      {
+        "file": "app/approval-app/templates/index.html",
+        "hash": "7092711207188096856"
+      },
+      {
+        "file": "app/approval-app/test_server.py",
+        "hash": "16203820381060005037"
+      },
+      {
+        "file": "app/assistants/APPROVALS_HANDOFF_PACKAGE.md",
+        "hash": "5703441337096634962"
+      },
+      {
+        "file": "app/assistants/Dockerfile",
+        "hash": "13046648457748570584"
+      },
+      {
+        "file": "app/assistants/README_RAG_INTEGRATION.md",
+        "hash": "3728582359477475776"
+      },
+      {
+        "file": "app/assistants/adapters.py",
+        "hash": "1474221029918353233"
+      },
+      {
+        "file": "app/assistants/main.py",
+        "hash": "290037098919035712"
+      },
+      {
+        "file": "app/assistants/main.py.bak",
+        "hash": "5522922112655523014"
+      },
+      {
+        "file": "app/assistants/rag_integration.py",
+        "hash": "222877973729246782"
+      },
+      {
+        "file": "app/assistants/requirements.txt",
+        "hash": "12062542621578305332"
+      },
+      {
+        "file": "app/assistants/tests/test_api.py",
+        "hash": "7885461696369836817"
+      },
+      {
+        "file": "app/connectors/__init__.py.bak",
+        "hash": "14940269879001691421"
+      },
+      {
+        "file": "app/connectors/api.py",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "app/connectors/base.py",
+        "hash": "5923512313650466120"
+      },
+      {
+        "file": "app/connectors/bing.py",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "app/connectors/deploy.sh",
+        "hash": "3325724010965918081"
+      },
+      {
+        "file": "app/connectors/ga4.py",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "app/connectors/gsc.py",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "app/connectors/main.py",
+        "hash": "3818119921286117003"
+      },
+      {
+        "file": "app/connectors/shopify.py",
+        "hash": "12760470896856244900"
+      },
+      {
+        "file": "app/connectors/test.py",
+        "hash": "5923512313650466120"
+      },
+      {
+        "file": "app/connectors/zoho.py",
+        "hash": "2744720505481649518"
+      },
+      {
+        "file": "app/lib/dashboard/inventory.ts",
+        "hash": "13852497996096964740"
+      },
+      {
+        "file": "app/lib/security/webhook.ts",
+        "hash": "354501914927559082"
+      },
+      {
+        "file": "app/rag_api/Dockerfile",
+        "hash": "17999791853129190516"
+      },
+      {
+        "file": "app/rag_api/README.md",
+        "hash": "5390967674095321073"
+      },
+      {
+        "file": "app/rag_api/main.py",
+        "hash": "11763514065050690800"
+      },
+      {
+        "file": "app/rag_api/main.py.bak",
+        "hash": "17066206662161894211"
+      },
+      {
+        "file": "app/rag_api/main_backup.py",
+        "hash": "9666414940276458359"
+      },
+      {
+        "file": "app/rag_api/main_fixed.py",
+        "hash": "11763514065050690800"
+      },
+      {
+        "file": "app/rag_api/main_improved.py",
+        "hash": "11818134149008283337"
+      },
+      {
+        "file": "app/rag_api/main_optimized.py",
+        "hash": "5013105730285672528"
+      },
+      {
+        "file": "app/rag_api/monitor.py",
+        "hash": "6093901931236456760"
+      },
+      {
+        "file": "app/rag_api/requirements.txt",
+        "hash": "2781819966772724576"
+      },
+      {
+        "file": "app/rag_api/requirements_production.txt",
+        "hash": "11204228058532146401"
+      },
+      {
+        "file": "app/seo-api/README.md",
+        "hash": "15822808780148579284"
+      },
+      {
+        "file": "app/seo-api/analytics/__init__.py",
+        "hash": "17745859882080229176"
+      },
+      {
+        "file": "app/seo-api/analytics/dashboard_analytics.py",
+        "hash": "4028135910258232803"
+      },
+      {
+        "file": "app/seo-api/analytics/intelligent_alerts.py",
+        "hash": "8541400484610813524"
+      },
+      {
+        "file": "app/seo-api/analytics/main.py",
+        "hash": "5814191154096999445"
+      },
+      {
+        "file": "app/seo-api/analytics/predictive_analytics.py",
+        "hash": "1918729601625961994"
+      },
+      {
+        "file": "app/seo-api/automation/ai_content_generator.py",
+        "hash": "9541949858687306684"
+      },
+      {
+        "file": "app/seo-api/automation/competitor_analyzer.py",
+        "hash": "7656977842883749313"
+      },
+      {
+        "file": "app/seo-api/automation/content_automation_data.json",
+        "hash": "13264689146744608049"
+      },
+      {
+        "file": "app/seo-api/automation/content_calendar.py",
+        "hash": "5907102692213941295"
+      },
+      {
+        "file": "app/seo-api/automation/feedback/seo-content-automation.md",
+        "hash": "15466373983233754354"
+      },
+      {
+        "file": "app/seo-api/automation/main.py",
+        "hash": "11564881734041684689"
+      },
+      {
+        "file": "app/seo-api/automation/seo_performance_tracker.py",
+        "hash": "10001837933583266260"
+      },
+      {
+        "file": "app/seo-api/bulk_analyzer.py",
+        "hash": "10277945339299526731"
+      },
+      {
+        "file": "app/seo-api/content_crawler.py",
+        "hash": "762460555455124456"
+      },
+      {
+        "file": "app/seo-api/content_optimization_report.json",
+        "hash": "10016977938717871515"
+      },
+      {
+        "file": "app/seo-api/content_optimization_report.md",
+        "hash": "316921893458549517"
+      },
+      {
+        "file": "app/seo-api/content_optimizer.py",
+        "hash": "17968693511506196683"
+      },
+      {
+        "file": "app/seo-api/feedback/seo-content-optimization.md",
+        "hash": "718956092733883636"
+      },
+      {
+        "file": "app/seo-api/monitoring.py",
+        "hash": "12067610690999081490"
+      },
+      {
+        "file": "app/seo-api/performance_tracker.py",
+        "hash": "14778575981540570674"
+      },
+      {
+        "file": "app/seo-api/simple_test.py",
+        "hash": "16567467907370285749"
+      },
+      {
+        "file": "app/sync/Dockerfile",
+        "hash": "6679902315987234970"
+      },
+      {
+        "file": "app/sync/main.py",
+        "hash": "6332675569229943296"
+      },
+      {
+        "file": "app/sync/requirements.txt",
+        "hash": "15998633795519184118"
+      },
+      {
+        "file": "app/sync/tests/test_orders_endpoint.py",
+        "hash": "9959554501252403171"
+      },
+      {
+        "file": "app/sync/tests/test_webhooks.py",
+        "hash": "1647076371303863888"
+      },
+      {
+        "file": "app/tests/integration/action-handler.test.ts",
+        "hash": "8955737257502654737"
+      },
+      {
+        "file": "app/tests/integration/orders-loader.test.ts",
+        "hash": "7471073154619484079"
+      },
+      {
+        "file": "app/tests/integration/setup.ts",
+        "hash": "14135029081934947046"
+      },
+      {
+        "file": "app/tests/unit/inventory-analytics.test.ts",
+        "hash": "10317600774674006132"
+      },
+      {
+        "file": "app/tests/unit/inventory-math.test.ts",
+        "hash": "7001698963423050342"
+      },
+      {
+        "file": "app/tests/unit/inventory-performance.test.ts",
+        "hash": "7527427114656233795"
+      },
+      {
+        "file": "app/tests/unit/webhook-signature.test.ts",
+        "hash": "15296543888885289722"
+      },
+      {
+        "file": "apps/dashboard/.dockerignore",
+        "hash": "13842281410844301679"
+      },
+      {
+        "file": "apps/dashboard/.editorconfig",
+        "hash": "3664261185100154245"
+      },
+      {
+        "file": "apps/dashboard/.eslintignore",
+        "hash": "17394256509112388577"
+      },
+      {
+        "file": "apps/dashboard/.eslintrc.cjs",
+        "hash": "9649382098881429203"
+      },
+      {
+        "file": "apps/dashboard/.github/CODEOWNERS",
+        "hash": "15907179237552966116"
+      },
+      {
+        "file": "apps/dashboard/.github/CODE_OF_CONDUCT.md",
+        "hash": "3304941922657339857"
+      },
+      {
+        "file": "apps/dashboard/.github/CONTRIBUTING.md",
+        "hash": "14468435596166071292"
+      },
+      {
+        "file": "apps/dashboard/.github/ISSUE_TEMPLATE.md",
+        "hash": "9885487521903127364"
+      },
+      {
+        "file": "apps/dashboard/.github/PULL_REQUEST_TEMPLATE.md",
+        "hash": "17669091141020748670"
+      },
+      {
+        "file": "apps/dashboard/.github/dependabot.yml",
+        "hash": "8284541762313785964"
+      },
+      {
+        "file": "apps/dashboard/.github/workflows/ci.yml",
+        "hash": "17953682420122686987"
+      },
+      {
+        "file": "apps/dashboard/.github/workflows/cla.yml",
+        "hash": "4806829135885836647"
+      },
+      {
+        "file": "apps/dashboard/.github/workflows/close-waiting-for-response-issues.yml",
+        "hash": "10565967943719818236"
+      },
+      {
+        "file": "apps/dashboard/.github/workflows/convert-to-js.yml",
+        "hash": "3011411408127907686"
+      },
+      {
+        "file": "apps/dashboard/.github/workflows/remove-labels-on-activity.yml",
+        "hash": "4595235822455828548"
+      },
+      {
+        "file": "apps/dashboard/.gitignore",
+        "hash": "14592664280411663902"
+      },
+      {
+        "file": "apps/dashboard/.graphqlrc.ts",
+        "hash": "819168257340993459"
+      },
+      {
+        "file": "apps/dashboard/.npmrc",
+        "hash": "11952839189512771200"
+      },
+      {
+        "file": "apps/dashboard/.prettierignore",
+        "hash": "1271187798650543894"
+      },
+      {
+        "file": "apps/dashboard/CHANGELOG.md",
+        "hash": "2789065396737387255"
+      },
+      {
+        "file": "apps/dashboard/Dockerfile",
+        "hash": "3176694143249012332"
+      },
+      {
+        "file": "apps/dashboard/README.md",
+        "hash": "9045318556424015172"
+      },
+      {
+        "file": "apps/dashboard/app/components/ContentOptimizer.tsx.backup",
+        "hash": "7355373939979103467"
+      },
+      {
+        "file": "apps/dashboard/app/components/inventory/EnhancedAnalyticsDashboard.tsx",
+        "hash": "16809241901161338241"
+      },
+      {
+        "file": "apps/dashboard/app/components/inventory/RealTimeMonitoring.tsx",
+        "hash": "12141963818929030263"
+      },
+      {
+        "file": "apps/dashboard/app/db.server.ts",
+        "hash": "13086370695295651925"
+      },
+      {
+        "file": "apps/dashboard/app/entry.server.tsx",
+        "hash": "4265649378986242593"
+      },
+      {
+        "file": "apps/dashboard/app/globals.d.ts",
+        "hash": "5867975405247287024"
+      },
+      {
+        "file": "apps/dashboard/app/lib/__tests__/date-range.test.ts",
+        "hash": "8355495589710416509"
+      },
+      {
+        "file": "apps/dashboard/app/lib/currency.ts",
+        "hash": "17101424739711411115"
+      },
+      {
+        "file": "apps/dashboard/app/lib/date-range.ts",
+        "hash": "10323006851280806847"
+      },
+      {
+        "file": "apps/dashboard/app/lib/env.server.ts",
+        "hash": "1470982761970921972"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inbox/assistants.server.ts",
+        "hash": "12795666361790919647"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inbox/assistants.stream.server.ts",
+        "hash": "17602092992395580805"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inbox/events.server.ts",
+        "hash": "9275020759070725204"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inbox/providers.ts",
+        "hash": "11726193302614806836"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inbox/rag-draft-generator.server.ts",
+        "hash": "12824627078368648815"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inbox/telemetry.client.ts",
+        "hash": "7143818672264806116"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inbox/telemetry.server.ts",
+        "hash": "11440114297792531542"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inventory/analytics.ts",
+        "hash": "1623648022086898568"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inventory/benchmark.ts",
+        "hash": "11764500891028681610"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inventory/enhanced-analytics.ts",
+        "hash": "2360008303379263874"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inventory/math.ts",
+        "hash": "11005709950231600847"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inventory/monitoring.ts",
+        "hash": "612764937008702655"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inventory/performance.ts",
+        "hash": "13757721945519481120"
+      },
+      {
+        "file": "apps/dashboard/app/lib/inventory/shopify-integration.ts",
+        "hash": "2329923421544144752"
+      },
+      {
+        "file": "apps/dashboard/app/lib/mcp/__tests__/client.server.test.ts",
+        "hash": "9571519822720762052"
+      },
+      {
+        "file": "apps/dashboard/app/lib/mcp/__tests__/config.server.test.ts",
+        "hash": "13458668452994834592"
+      },
+      {
+        "file": "apps/dashboard/app/lib/mcp/__tests__/index.test.ts",
+        "hash": "15967363658214657343"
+      },
+      {
+        "file": "apps/dashboard/app/lib/mcp/client.server.ts",
+        "hash": "1319687760305081505"
+      },
+      {
+        "file": "apps/dashboard/app/lib/mcp/config.server.ts",
+        "hash": "7993260140238701580"
+      },
+      {
+        "file": "apps/dashboard/app/lib/mcp/index.ts",
+        "hash": "17452340869119966934"
+      },
+      {
+        "file": "apps/dashboard/app/lib/mcp/mocks.ts",
+        "hash": "4645931614589287865"
+      },
+      {
+        "file": "apps/dashboard/app/lib/mcp/types.ts",
+        "hash": "5838080987190707419"
+      },
+      {
+        "file": "apps/dashboard/app/lib/orders/__tests__/sync.server.test.ts",
+        "hash": "1402454851351050095"
+      },
+      {
+        "file": "apps/dashboard/app/lib/orders/sync.server.ts",
+        "hash": "2777808556748219566"
+      },
+      {
+        "file": "apps/dashboard/app/lib/sales/__tests__/analytics.server.test.ts",
+        "hash": "7006326599040790403"
+      },
+      {
+        "file": "apps/dashboard/app/lib/sales/__tests__/cache.server.test.ts",
+        "hash": "6697430990180163880"
+      },
+      {
+        "file": "apps/dashboard/app/lib/sales/analytics.server.ts",
+        "hash": "14760149626159857430"
+      },
+      {
+        "file": "apps/dashboard/app/lib/sales/cache.server.ts",
+        "hash": "8992593617948115798"
+      },
+      {
+        "file": "apps/dashboard/app/lib/sales/enhanced-analytics.server.ts",
+        "hash": "17051669214304707070"
+      },
+      {
+        "file": "apps/dashboard/app/lib/sales/experiments.server.ts",
+        "hash": "11433739941051283470"
+      },
+      {
+        "file": "apps/dashboard/app/lib/sales/fixtures.server.ts",
+        "hash": "2198670369683909588"
+      },
+      {
+        "file": "apps/dashboard/app/lib/sales/funnel.server.ts",
+        "hash": "12836241557198191425"
+      },
+      {
+        "file": "apps/dashboard/app/lib/sales/mcp-integration.server.ts",
+        "hash": "8056914423068698606"
+      },
+      {
+        "file": "apps/dashboard/app/lib/security/secrets.server.ts",
+        "hash": "11380681932063376660"
+      },
+      {
+        "file": "apps/dashboard/app/lib/seo/__tests__/persistence.server.test.ts",
+        "hash": "1094423333600643425"
+      },
+      {
+        "file": "apps/dashboard/app/lib/seo/bing.ts",
+        "hash": "7177112635168752131"
+      },
+      {
+        "file": "apps/dashboard/app/lib/seo/ga4.ts",
+        "hash": "14076004172314646263"
+      },
+      {
+        "file": "apps/dashboard/app/lib/seo/gsc.ts",
+        "hash": "1635432362776532846"
+      },
+      {
+        "file": "apps/dashboard/app/lib/seo/persistence.server.ts",
+        "hash": "3719867203100000940"
+      },
+      {
+        "file": "apps/dashboard/app/lib/settings/__tests__/connection-tests.test.ts",
+        "hash": "17251983625228270828"
+      },
+      {
+        "file": "apps/dashboard/app/lib/settings/__tests__/repository.test.ts",
+        "hash": "2262733480437254222"
+      },
+      {
+        "file": "apps/dashboard/app/lib/settings/__tests__/retention.server.test.ts",
+        "hash": "662062373257986188"
+      },
+      {
+        "file": "apps/dashboard/app/lib/settings/connection-tests.server.ts",
+        "hash": "10673380790250937483"
+      },
+      {
+        "file": "apps/dashboard/app/lib/settings/fixtures.server.ts",
+        "hash": "5919170634638737249"
+      },
+      {
+        "file": "apps/dashboard/app/lib/settings/health-checks.server.ts",
+        "hash": "5001903529004752832"
+      },
+      {
+        "file": "apps/dashboard/app/lib/settings/repository.server.ts",
+        "hash": "2403449398167833286"
+      },
+      {
+        "file": "apps/dashboard/app/lib/settings/retention.server.ts",
+        "hash": "9125025677857349987"
+      },
+      {
+        "file": "apps/dashboard/app/lib/shopify/admin.ts",
+        "hash": "7754139294576518814"
+      },
+      {
+        "file": "apps/dashboard/app/lib/shopify/queries.ts",
+        "hash": "15673818166567305755"
+      },
+      {
+        "file": "apps/dashboard/app/lib/webhooks/__tests__/handlers.server.test.ts",
+        "hash": "7674751160417422884"
+      },
+      {
+        "file": "apps/dashboard/app/lib/webhooks/__tests__/processors.server.test.ts",
+        "hash": "12063629482276175571"
+      },
+      {
+        "file": "apps/dashboard/app/lib/webhooks/__tests__/queue.server.test.ts",
+        "hash": "3526520623557835713"
+      },
+      {
+        "file": "apps/dashboard/app/lib/webhooks/constants.ts",
+        "hash": "13270463945760718511"
+      },
+      {
+        "file": "apps/dashboard/app/lib/webhooks/handlers.server.ts",
+        "hash": "12270629007333479396"
+      },
+      {
+        "file": "apps/dashboard/app/lib/webhooks/idempotency.server.ts",
+        "hash": "8365405466708790248"
+      },
+      {
+        "file": "apps/dashboard/app/lib/webhooks/persistence.server.ts",
+        "hash": "18229846468597398234"
+      },
+      {
+        "file": "apps/dashboard/app/lib/webhooks/persistence.server.ts.backup",
+        "hash": "7036247059645926669"
+      },
+      {
+        "file": "apps/dashboard/app/lib/webhooks/processors.server.ts",
+        "hash": "2360142607891069472"
+      },
+      {
+        "file": "apps/dashboard/app/lib/webhooks/queue.server.ts",
+        "hash": "3776674504210589425"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/__tests__/dashboard.test.ts",
+        "hash": "13481259351466526978"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/__tests__/scenarios.test.ts",
+        "hash": "16869406468861229818"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/__tests__/secrets.test.ts",
+        "hash": "18050994609263499657"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/builder.ts",
+        "hash": "17828921898026662238"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/config.server.ts",
+        "hash": "14591247401976261877"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/dashboard.ts",
+        "hash": "7584576076155417680"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/factories/dates.ts",
+        "hash": "17597074426379318917"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/factories/numbers.ts",
+        "hash": "15272623453307368543"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/fixtures/analytics.sales.ts",
+        "hash": "9339900600123641960"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/inbox-drafts.server.ts",
+        "hash": "2435373267926770986"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/inbox.ts",
+        "hash": "7021896986924868587"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/index.ts",
+        "hash": "6547028968321851957"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/inventory.ts",
+        "hash": "14033845353662194491"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/kpis.ts",
+        "hash": "2371178601261045240"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/orders.ts",
+        "hash": "4003639173324865845"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/sales.ts",
+        "hash": "15710360618660140121"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/seo.ts",
+        "hash": "4329639881361651726"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/settings.ts",
+        "hash": "17249921301746377420"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/shared.ts",
+        "hash": "11413086708830372971"
+      },
+      {
+        "file": "apps/dashboard/app/mocks/vendor-mapping.ts",
+        "hash": "11178343279677086582"
+      },
+      {
+        "file": "apps/dashboard/app/root.tsx",
+        "hash": "14031219832594272148"
+      },
+      {
+        "file": "apps/dashboard/app/routes.ts",
+        "hash": "16183872843419630921"
+      },
+      {
+        "file": "apps/dashboard/app/routes/__tests__/app._index.test.ts",
+        "hash": "1149664442863428944"
+      },
+      {
+        "file": "apps/dashboard/app/routes/__tests__/app.inbox.connection.test.tsx",
+        "hash": "6067782166932466972"
+      },
+      {
+        "file": "apps/dashboard/app/routes/__tests__/app.inbox.stream.test.ts",
+        "hash": "8586727237573857673"
+      },
+      {
+        "file": "apps/dashboard/app/routes/__tests__/app.inbox.telemetry.test.ts",
+        "hash": "18420649522762197854"
+      },
+      {
+        "file": "apps/dashboard/app/routes/__tests__/app.inbox.test.ts",
+        "hash": "12008819019384397020"
+      },
+      {
+        "file": "apps/dashboard/app/routes/__tests__/app.inventory.test.ts",
+        "hash": "18258306520566290979"
+      },
+      {
+        "file": "apps/dashboard/app/routes/__tests__/app.orders.test.ts",
+        "hash": "3182126843968589814"
+      },
+      {
+        "file": "apps/dashboard/app/routes/__tests__/app.sales.test.ts",
+        "hash": "17880716984754306355"
+      },
+      {
+        "file": "apps/dashboard/app/routes/__tests__/app.seo.loader.test.ts",
+        "hash": "1880067340820721123"
+      },
+      {
+        "file": "apps/dashboard/app/routes/__tests__/app.seo.prisma.test.ts",
+        "hash": "768970191568427000"
+      },
+      {
+        "file": "apps/dashboard/app/routes/__tests__/app.settings.prisma.test.ts",
+        "hash": "17204806448283246609"
+      },
+      {
+        "file": "apps/dashboard/app/routes/__tests__/app.settings.test.ts",
+        "hash": "1038746895527866153"
+      },
+      {
+        "file": "apps/dashboard/app/routes/_index/route.tsx",
+        "hash": "4906449535348724255"
+      },
+      {
+        "file": "apps/dashboard/app/routes/_index/styles.module.css",
+        "hash": "8145875911145884554"
+      },
+      {
+        "file": "apps/dashboard/app/routes/api/seo/alerts.ts",
+        "hash": "6157186739582681057"
+      },
+      {
+        "file": "apps/dashboard/app/routes/api/seo/optimize-content.ts",
+        "hash": "18302365943985256171"
+      },
+      {
+        "file": "apps/dashboard/app/routes/api/seo/performance.ts",
+        "hash": "18374480589975693759"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app._index.tsx",
+        "hash": "3806695079507193027"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.additional.tsx",
+        "hash": "8590227076519666549"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.agent-approvals.tsx",
+        "hash": "3595888070058484621"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.fast-movers.tsx",
+        "hash": "4405402646062508231"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.inbox.stream.ts",
+        "hash": "16810978879585256428"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.inbox.telemetry.ts",
+        "hash": "5400350332406493909"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.inbox.tsx",
+        "hash": "8422521042497610461"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.inventory.tsx",
+        "hash": "9715139903845998661"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.orders.tsx",
+        "hash": "6391763257540203087"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.sales.tsx",
+        "hash": "9888281974881901868"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.seo.tsx",
+        "hash": "1484340527987034533"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.settings.tsx",
+        "hash": "10722549831545671432"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.tsx",
+        "hash": "6946273239845863017"
+      },
+      {
+        "file": "apps/dashboard/app/routes/app.vendor-mapping.tsx",
+        "hash": "1192868113056234465"
+      },
+      {
+        "file": "apps/dashboard/app/routes/auth.$.tsx",
+        "hash": "15793397696654075943"
+      },
+      {
+        "file": "apps/dashboard/app/routes/auth.login/error.server.tsx",
+        "hash": "11762584306109994853"
+      },
+      {
+        "file": "apps/dashboard/app/routes/auth.login/route.tsx",
+        "hash": "7860412774506287356"
+      },
+      {
+        "file": "apps/dashboard/app/routes/cron.retention.ts",
+        "hash": "8132260660107654125"
+      },
+      {
+        "file": "apps/dashboard/app/routes/queue.webhooks.tsx",
+        "hash": "1685027417010973152"
+      },
+      {
+        "file": "apps/dashboard/app/routes/webhooks.app.scopes_update.tsx",
+        "hash": "9377235556547041068"
+      },
+      {
+        "file": "apps/dashboard/app/routes/webhooks.app.uninstalled.tsx",
+        "hash": "1245322247427780067"
+      },
+      {
+        "file": "apps/dashboard/app/routes/webhooks.fulfillments.update.tsx",
+        "hash": "1942757050246481353"
+      },
+      {
+        "file": "apps/dashboard/app/routes/webhooks.orders.create.tsx",
+        "hash": "14396543137350482956"
+      },
+      {
+        "file": "apps/dashboard/app/routes/webhooks.orders.fulfilled.tsx",
+        "hash": "18258358289301860058"
+      },
+      {
+        "file": "apps/dashboard/app/routes/webhooks.products.update.tsx",
+        "hash": "9886163173637975844"
+      },
+      {
+        "file": "apps/dashboard/app/shopify.server.ts",
+        "hash": "13727047180259564632"
+      },
+      {
+        "file": "apps/dashboard/app/tests/integration/enhanced-analytics.test.tsx",
+        "hash": "10454832388854064379"
+      },
+      {
+        "file": "apps/dashboard/app/tests/msw/seo-handlers.test.ts",
+        "hash": "5163598339943109671"
+      },
+      {
+        "file": "apps/dashboard/app/tests/msw/seo-handlers.ts",
+        "hash": "8516568697544807507"
+      },
+      {
+        "file": "apps/dashboard/app/tests/msw/seo-server.ts",
+        "hash": "16688889355311316436"
+      },
+      {
+        "file": "apps/dashboard/app/tests/settings-prisma-stub.ts",
+        "hash": "14538950159842306677"
+      },
+      {
+        "file": "apps/dashboard/app/types/analytics.ts",
+        "hash": "6512448574812093839"
+      },
+      {
+        "file": "apps/dashboard/app/types/dashboard.ts",
+        "hash": "3136881234264311257"
+      },
+      {
+        "file": "apps/dashboard/app/types/index.ts",
+        "hash": "11292333846591961611"
+      },
+      {
+        "file": "apps/dashboard/app/types/orders-sync.ts",
+        "hash": "3785828024613496979"
+      },
+      {
+        "file": "apps/dashboard/app/types/settings.ts",
+        "hash": "12600110725298393440"
+      },
+      {
+        "file": "apps/dashboard/app/workers/webhooks.worker.ts",
+        "hash": "606046815550374642"
+      },
+      {
+        "file": "apps/dashboard/dashboard/.dockerignore",
+        "hash": "18371316731034832618"
+      },
+      {
+        "file": "apps/dashboard/dashboard/.editorconfig",
+        "hash": "3664261185100154245"
+      },
+      {
+        "file": "apps/dashboard/dashboard/.eslintignore",
+        "hash": "17394256509112388577"
+      },
+      {
+        "file": "apps/dashboard/dashboard/.eslintrc.cjs",
+        "hash": "1453229353572412168"
+      },
+      {
+        "file": "apps/dashboard/dashboard/.gitignore",
+        "hash": "12678705833155948631"
+      },
+      {
+        "file": "apps/dashboard/dashboard/.graphqlrc.ts",
+        "hash": "819168257340993459"
+      },
+      {
+        "file": "apps/dashboard/dashboard/.npmrc",
+        "hash": "11952839189512771200"
+      },
+      {
+        "file": "apps/dashboard/dashboard/.prettierignore",
+        "hash": "1271187798650543894"
+      },
+      {
+        "file": "apps/dashboard/dashboard/CHANGELOG.md",
+        "hash": "2789065396737387255"
+      },
+      {
+        "file": "apps/dashboard/dashboard/Dockerfile",
+        "hash": "9485236738692151979"
+      },
+      {
+        "file": "apps/dashboard/dashboard/README.md",
+        "hash": "1190722319673561886"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/db.server.ts",
+        "hash": "13086370695295651925"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/entry.server.tsx",
+        "hash": "4265649378986242593"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/globals.d.ts",
+        "hash": "5867975405247287024"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/root.tsx",
+        "hash": "14031219832594272148"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/routes.ts",
+        "hash": "16183872843419630921"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/routes/_index/route.tsx",
+        "hash": "4906449535348724255"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/routes/_index/styles.module.css",
+        "hash": "8145875911145884554"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/routes/app._index.tsx",
+        "hash": "11941307071623490620"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/routes/app.additional.tsx",
+        "hash": "8590227076519666549"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/routes/app.tsx",
+        "hash": "12073347337497525370"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/routes/auth.$.tsx",
+        "hash": "15793397696654075943"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/routes/auth.login/error.server.tsx",
+        "hash": "11762584306109994853"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/routes/auth.login/route.tsx",
+        "hash": "7860412774506287356"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/routes/webhooks.app.scopes_update.tsx",
+        "hash": "9377235556547041068"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/routes/webhooks.app.uninstalled.tsx",
+        "hash": "12839737759927121577"
+      },
+      {
+        "file": "apps/dashboard/dashboard/app/shopify.server.ts",
+        "hash": "13727047180259564632"
+      },
+      {
+        "file": "apps/dashboard/dashboard/env.d.ts",
+        "hash": "5237210948372436351"
+      },
+      {
+        "file": "apps/dashboard/dashboard/extensions/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "apps/dashboard/dashboard/package.json",
+        "hash": "8138926449918063801"
+      },
+      {
+        "file": "apps/dashboard/dashboard/prisma/migrations/20240530213853_create_session_table/migration.sql",
+        "hash": "13998204791116591816"
+      },
+      {
+        "file": "apps/dashboard/dashboard/prisma/schema.prisma",
+        "hash": "7858469992200745937"
+      },
+      {
+        "file": "apps/dashboard/dashboard/public/favicon.ico",
+        "hash": "3730367829618743876"
+      },
+      {
+        "file": "apps/dashboard/dashboard/tsconfig.json",
+        "hash": "1240846783458585393"
+      },
+      {
+        "file": "apps/dashboard/dashboard/vite.config.ts",
+        "hash": "9935871541559183800"
+      },
+      {
+        "file": "apps/dashboard/data-integration-guide.md",
+        "hash": "11992242852605171041"
+      },
+      {
+        "file": "apps/dashboard/env.d.ts",
+        "hash": "1383915655402428851"
+      },
+      {
+        "file": "apps/dashboard/extensions/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "apps/dashboard/package.json",
+        "hash": "3326851555096341725"
+      },
+      {
+        "file": "apps/dashboard/prisma.config.ts",
+        "hash": "10163210763735066074"
+      },
+      {
+        "file": "apps/dashboard/prisma/migrations/20240530213853_create_session_table/migration.sql",
+        "hash": "7469635171601123264"
+      },
+      {
+        "file": "apps/dashboard/prisma/migrations/20250218120000_expand_dashboard_models/migration.sql",
+        "hash": "13295065796969454478"
+      },
+      {
+        "file": "apps/dashboard/prisma/migrations/20250311090000_add_store_secrets/migration.sql",
+        "hash": "8102704235411177458"
+      },
+      {
+        "file": "apps/dashboard/prisma/migrations/20250326150000_add_webhook_registry/migration.sql",
+        "hash": "5207374785449755717"
+      },
+      {
+        "file": "apps/dashboard/prisma/migrations/20251006121500_add_retention_indexes/migration.sql",
+        "hash": "15019246529422572908"
+      },
+      {
+        "file": "apps/dashboard/prisma/migrations/migration_lock.toml",
+        "hash": "2157161951221220723"
+      },
+      {
+        "file": "apps/dashboard/prisma/prisma/dev.sqlite",
+        "hash": "8695253239490050618"
+      },
+      {
+        "file": "apps/dashboard/prisma/register-ts-loader.mjs",
+        "hash": "1802296141735352323"
+      },
+      {
+        "file": "apps/dashboard/prisma/schema.prisma",
+        "hash": "17337073597515292087"
+      },
+      {
+        "file": "apps/dashboard/prisma/schema.sqlite.prisma",
+        "hash": "11236156950958259322"
+      },
+      {
+        "file": "apps/dashboard/prisma/seed.ts",
+        "hash": "7013229780634967499"
+      },
+      {
+        "file": "apps/dashboard/prisma/ts-loader.mjs",
+        "hash": "466767895823547332"
+      },
+      {
+        "file": "apps/dashboard/public/favicon.ico",
+        "hash": "3730367829618743876"
+      },
+      {
+        "file": "apps/dashboard/scripts/dev-with-env.sh",
+        "hash": "7095375995573683019"
+      },
+      {
+        "file": "apps/dashboard/shopify.app.toml",
+        "hash": "15424703578882430482"
+      },
+      {
+        "file": "apps/dashboard/shopify.web.toml",
+        "hash": "12946225769702552384"
+      },
+      {
+        "file": "apps/dashboard/test-results/.last-run.json",
+        "hash": "14694065644177241415"
+      },
+      {
+        "file": "apps/dashboard/tsconfig.json",
+        "hash": "10125581251138266029"
+      },
+      {
+        "file": "apps/dashboard/vite.config.ts",
+        "hash": "9935871541559183800"
+      },
+      {
+        "file": "apps/dashboard/vitest.config.ts",
+        "hash": "3021770116586735018"
+      },
+      {
+        "file": "assistants.db",
+        "hash": "4113982752449159960"
+      },
+      {
+        "file": "automated_purchase_orders.py",
+        "hash": "4109474122952922542"
+      },
+      {
+        "file": "backups/approvals-final-backup-20250928_220940.tar.gz",
+        "hash": "6919694343622400066"
+      },
+      {
+        "file": "backups/approvals-final-backup-20250928_220944.tar.gz",
+        "hash": "12208441609455366783"
+      },
+      {
+        "file": "backups/approvals-final-backup-20250928_220949.tar.gz",
+        "hash": "12208441609455366783"
+      },
+      {
+        "file": "commands/cleanup-and-merge.md",
+        "hash": "15283547498750102073"
+      },
+      {
+        "file": "content_brief_1.md",
+        "hash": "4125528133202543315"
+      },
+      {
+        "file": "content_brief_2.md",
+        "hash": "1140269088620468854"
+      },
+      {
+        "file": "content_brief_3.md",
+        "hash": "17087721462856043452"
+      },
+      {
+        "file": "content_brief_4.md",
+        "hash": "14652323021045549636"
+      },
+      {
+        "file": "content_brief_5.md",
+        "hash": "15390944440017730746"
+      },
+      {
+        "file": "coordination/2025-09-26_prisma-config-plan.md",
+        "hash": "15149456295680077694"
+      },
+      {
+        "file": "coordination/2025-09-27_mvp-alignment.md",
+        "hash": "12352790935654438534"
+      },
+      {
+        "file": "coordination/2025-09-27_orders-sync-contract.md",
+        "hash": "10029303961108911086"
+      },
+      {
+        "file": "coordination/AGENT-INSTRUCTIONS.md",
+        "hash": "5356115645125980192"
+      },
+      {
+        "file": "coordination/AGENT-PERSISTENCE-SYSTEM.md",
+        "hash": "14600032323438461775"
+      },
+      {
+        "file": "coordination/AGENT-POLLING-INSTRUCTIONS.md",
+        "hash": "1892082871838184092"
+      },
+      {
+        "file": "coordination/GO-SIGNAL.md",
+        "hash": "6335729730070002132"
+      },
+      {
+        "file": "coordination/README.md",
+        "hash": "8616335833422035164"
+      },
+      {
+        "file": "coordination/RESET-READY-STATUS.md",
+        "hash": "1185995658768403387"
+      },
+      {
+        "file": "coordination/agent-feedback-guidelines.md",
+        "hash": "3154250446914464272"
+      },
+      {
+        "file": "coordination/assistants-feedback.md",
+        "hash": "8308187849909212516"
+      },
+      {
+        "file": "coordination/blockers-log.md",
+        "hash": "14547015736776141131"
+      },
+      {
+        "file": "coordination/blockers-log.md.backup",
+        "hash": "2059041190984740314"
+      },
+      {
+        "file": "coordination/data-layer-feedback.md",
+        "hash": "2553824832044336142"
+      },
+      {
+        "file": "coordination/database-feedback.md",
+        "hash": "4221089629508935131"
+      },
+      {
+        "file": "coordination/dependency-matrix.md",
+        "hash": "15127351179104372040"
+      },
+      {
+        "file": "coordination/digests/20250927_190823+0000__instructions.md",
+        "hash": "10359857956256602516"
+      },
+      {
+        "file": "coordination/digests/20250927_191047+0000__instructions.md",
+        "hash": "16186310799933643044"
+      },
+      {
+        "file": "coordination/digests/20250927_191225+0000__instructions.md",
+        "hash": "4926111522250555098"
+      },
+      {
+        "file": "coordination/digests/20250927_192704+0000__instructions.md",
+        "hash": "1988082762705053223"
+      },
+      {
+        "file": "coordination/digests/20250927_194105+0000__instructions.md",
+        "hash": "5945050327341157339"
+      },
+      {
+        "file": "coordination/digests/20250927_194229+0000__instructions.md",
+        "hash": "336315269005958844"
+      },
+      {
+        "file": "coordination/digests/20250927_194433+0000__instructions.md",
+        "hash": "7015777281282152450"
+      },
+      {
+        "file": "coordination/digests/20250927_203000+0000__instructions.md",
+        "hash": "257880244608926826"
+      },
+      {
+        "file": "coordination/inbox/approval/2025-09-27-notes.md",
+        "hash": "4571105594235021239"
+      },
+      {
+        "file": "coordination/inbox/approvals/2025-09-29-notes.md",
+        "hash": "16523092328562923940"
+      },
+      {
+        "file": "coordination/inbox/assistants/2025-09-27-notes.md",
+        "hash": "14203654991667464368"
+      },
+      {
+        "file": "coordination/inbox/dashboard/2025-09-27-notes.md",
+        "hash": "14076577738173224982"
+      },
+      {
+        "file": "coordination/inbox/dashboard/2025-09-28-notes.md",
+        "hash": "16933182328593930227"
+      },
+      {
+        "file": "coordination/inbox/dashboard/2025-09-29-notes.md",
+        "hash": "3408964345336392441"
+      },
+      {
+        "file": "coordination/inbox/data/2025-01-06-notes.md",
+        "hash": "17559859379367261782"
+      },
+      {
+        "file": "coordination/inbox/data/2025-09-27-notes.md",
+        "hash": "6656428548054756514"
+      },
+      {
+        "file": "coordination/inbox/data/2025-10-06-notes.md",
+        "hash": "2799810412910402018"
+      },
+      {
+        "file": "coordination/inbox/data/2025-10-07-notes.md",
+        "hash": "13444933275457223723"
+      },
+      {
+        "file": "coordination/inbox/data/2025-10-08-notes.md",
+        "hash": "3511485219839125696"
+      },
+      {
+        "file": "coordination/inbox/data/2025-10-09-notes.md",
+        "hash": "4648177656433355377"
+      },
+      {
+        "file": "coordination/inbox/inventory/2025-09-27-notes.md",
+        "hash": "2206117802448884575"
+      },
+      {
+        "file": "coordination/inbox/inventory/2025-09-29-notes.md",
+        "hash": "11959771558456344144"
+      },
+      {
+        "file": "coordination/inbox/manager/2025-09-28-notes.md",
+        "hash": "6795977082393950652"
+      },
+      {
+        "file": "coordination/inbox/manager/2025-09-29-notes.md",
+        "hash": "1500568664496032853"
+      },
+      {
+        "file": "coordination/inbox/mcp/2025-09-27-notes.md",
+        "hash": "16816248539622852224"
+      },
+      {
+        "file": "coordination/inbox/mcp/2025-09-29-notes.md",
+        "hash": "6922741793934315990"
+      },
+      {
+        "file": "coordination/inbox/orders/2025-09-27-notes.md",
+        "hash": "3294350363354122314"
+      },
+      {
+        "file": "coordination/inbox/quality/2025-09-29-notes.md",
+        "hash": "15895833154646759661"
+      },
+      {
+        "file": "coordination/inbox/rag/2025-09-27-notes.md",
+        "hash": "16875081404319308213"
+      },
+      {
+        "file": "coordination/inbox/rag/2025-09-29-notes.md",
+        "hash": "4752368965011574976"
+      },
+      {
+        "file": "coordination/inbox/sales/2025-09-27-notes.md",
+        "hash": "7125120004046170323"
+      },
+      {
+        "file": "coordination/inbox/sales/2025-09-29-notes.md",
+        "hash": "2510533763548413718"
+      },
+      {
+        "file": "coordination/inbox/sales/2025-10-09-notes.md",
+        "hash": "8017671662914547684"
+      },
+      {
+        "file": "coordination/inbox/seo/2025-09-27-notes.md",
+        "hash": "16228419207903761462"
+      },
+      {
+        "file": "coordination/inbox/seo/2025-09-29-notes.md",
+        "hash": "9859883715465677819"
+      },
+      {
+        "file": "coordination/inbox/settings/2025-09-27-notes.md",
+        "hash": "15626202062717062376"
+      },
+      {
+        "file": "coordination/inbox/sync/2025-09-27-notes.md",
+        "hash": "4983682269500198528"
+      },
+      {
+        "file": "coordination/inbox/tooling/2025-09-27-notes.md",
+        "hash": "4749601967079122348"
+      },
+      {
+        "file": "coordination/inbox/tooling/2025-09-29-notes.md",
+        "hash": "1900010229496613134"
+      },
+      {
+        "file": "coordination/inbox/tooling/2025-10-09-notes.md",
+        "hash": "14226915604300486644"
+      },
+      {
+        "file": "coordination/inbox/tooling/2025-10-10-notes.md",
+        "hash": "7608368088368229965"
+      },
+      {
+        "file": "coordination/inbox/tooling/2025-10-11-notes.md",
+        "hash": "4035587325909509388"
+      },
+      {
+        "file": "coordination/inbox/tooling/2025-10-12-notes.md",
+        "hash": "8680665656601143173"
+      },
+      {
+        "file": "coordination/inbox/tooling/2025-10-14-notes.md",
+        "hash": "2242057020284621561"
+      },
+      {
+        "file": "coordination/inbox/tooling/2025-10-16-notes.md",
+        "hash": "1677466570362914976"
+      },
+      {
+        "file": "coordination/manager-launch-commands.txt",
+        "hash": "13558702265593781604"
+      },
+      {
+        "file": "coordination/mcp-feedback.md",
+        "hash": "14117565917758384475"
+      },
+      {
+        "file": "coordination/note-template.md",
+        "hash": "7659407326098714879"
+      },
+      {
+        "file": "coordination/orders-feedback.md",
+        "hash": "8206545532446269479"
+      },
+      {
+        "file": "coordination/program-manager/SESSION_SUMMARY_2025-09-27_1145.md",
+        "hash": "2012278458059240541"
+      },
+      {
+        "file": "coordination/rag-agent-update.md",
+        "hash": "5194436405593744550"
+      },
+      {
+        "file": "coordination/rag-feedback.md",
+        "hash": "16713788839533345747"
+      },
+      {
+        "file": "coordination/registry/agents.yaml",
+        "hash": "4460626882559623827"
+      },
+      {
+        "file": "coordination/registry/instruction-map.json",
+        "hash": "4755989242292763951"
+      },
+      {
+        "file": "coordination/reporting-playbook.md",
+        "hash": "1107152672731890982"
+      },
+      {
+        "file": "coordination/route-dashboard-feedback.md",
+        "hash": "7297569195017628774"
+      },
+      {
+        "file": "coordination/route-inbox-feedback.md",
+        "hash": "1593733087357318353"
+      },
+      {
+        "file": "coordination/route-inventory-feedback.md",
+        "hash": "6262962739891261383"
+      },
+      {
+        "file": "coordination/route-sales-feedback.md",
+        "hash": "488566805408331660"
+      },
+      {
+        "file": "coordination/route-seo-feedback.md",
+        "hash": "7291449387159407383"
+      },
+      {
+        "file": "coordination/route-settings-feedback.md",
+        "hash": "884682677001992150"
+      },
+      {
+        "file": "coordination/seo-task-completion-report.md",
+        "hash": "7094326002768916879"
+      },
+      {
+        "file": "coordination/status-dashboard.md",
+        "hash": "187988479768507671"
+      },
+      {
+        "file": "coordination/templates/agents.md.hbs",
+        "hash": "8439428776044723422"
+      },
+      {
+        "file": "coordination/templates/handover.md.hbs",
+        "hash": "1615191039913987080"
+      },
+      {
+        "file": "coordination/templates/instructions.md.hbs",
+        "hash": "18433981360806482280"
+      },
+      {
+        "file": "coordination/tooling-feedback.md",
+        "hash": "14891012504770883300"
+      },
+      {
+        "file": "coordination/webhooks-feedback.md",
+        "hash": "2374013211473941462"
+      },
+      {
+        "file": "corrections/corrections.yaml",
+        "hash": "16180973796552753493"
+      },
+      {
+        "file": "cursor-settings-windows.json",
+        "hash": "16763860117668071165"
+      },
+      {
+        "file": "dashboard_production_deployment.md",
+        "hash": "17497803660880319559"
+      },
+      {
+        "file": "demo_approval_workflow.py",
+        "hash": "16367188039908494491"
+      },
+      {
+        "file": "deploy_inventory.sh",
+        "hash": "9299634457455380003"
+      },
+      {
+        "file": "deploy_inventory_production.sh",
+        "hash": "4530730767889585176"
+      },
+      {
+        "file": "discover_urls.py",
+        "hash": "9264112471538514977"
+      },
+      {
+        "file": "docker-compose.yml",
+        "hash": "15609965242661882681"
+      },
+      {
+        "file": "docker-compose.yml.backup",
+        "hash": "4052745643524096753"
+      },
+      {
+        "file": "docker-compose.yml.bak",
+        "hash": "4052745643524096753"
+      },
+      {
+        "file": "docs/mcp-secure-persistence.md",
+        "hash": "10403656950215263491"
+      },
+      {
+        "file": "e2e/.auth/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "e2e/smoke.spec.ts",
+        "hash": "17897083355894606209"
+      },
+      {
+        "file": "exchange_bing_token.sh",
+        "hash": "9346792688567749549"
+      },
+      {
+        "file": "exchange_bing_token_v2.sh",
+        "hash": "7625056546102186235"
+      },
+      {
+        "file": "feature_flags.json",
+        "hash": "5070529315787246280"
+      },
+      {
+        "file": "feature_flags.py",
+        "hash": "14651069842499803503"
+      },
+      {
+        "file": "feedback/QUALITY_ALLOW_CODE_CHANGES",
+        "hash": "4398786645275624754"
+      },
+      {
+        "file": "feedback/README.md",
+        "hash": "7515963371745149279"
+      },
+      {
+        "file": "feedback/approvals.md",
+        "hash": "5107099531128743601"
+      },
+      {
+        "file": "feedback/archive/inventory_production_complete.md",
+        "hash": "11296449432702101602"
+      },
+      {
+        "file": "feedback/archive/seo-advanced-analytics.md",
+        "hash": "9357782101759169720"
+      },
+      {
+        "file": "feedback/dashboard.md",
+        "hash": "9005695367792061859"
+      },
+      {
+        "file": "feedback/inventory.md",
+        "hash": "11898711120830618712"
+      },
+      {
+        "file": "feedback/manager.md",
+        "hash": "9171580965965715354"
+      },
+      {
+        "file": "feedback/mcp.md",
+        "hash": "1450621419140343196"
+      },
+      {
+        "file": "feedback/quality.md",
+        "hash": "1493396031246051241"
+      },
+      {
+        "file": "feedback/rag.md",
+        "hash": "5979225058423318731"
+      },
+      {
+        "file": "feedback/sales.md",
+        "hash": "5854964308186272979"
+      },
+      {
+        "file": "feedback/seo.md",
+        "hash": "5346614951136205811"
+      },
+      {
+        "file": "feedback/tooling.md",
+        "hash": "11219522447699256081"
+      },
+      {
+        "file": "goldens/qa.yaml",
+        "hash": "952504529973550038"
+      },
+      {
+        "file": "handover/AGENTS.md",
+        "hash": "4851543120109187905"
+      },
+      {
+        "file": "handover/AGENT_PLAYBOOK.md",
+        "hash": "14399165050986381768"
+      },
+      {
+        "file": "handover/HANDOVER.md",
+        "hash": "13447907682522379634"
+      },
+      {
+        "file": "handover/HANDOVER_ALL_IN_ONE.md",
+        "hash": "14594521411007759968"
+      },
+      {
+        "file": "handover/approval.md",
+        "hash": "11524391723021139929"
+      },
+      {
+        "file": "handover/assistants.md",
+        "hash": "9329594542837090055"
+      },
+      {
+        "file": "handover/dashboard.md",
+        "hash": "2907449232992518377"
+      },
+      {
+        "file": "handover/data.md",
+        "hash": "11534808265360214594"
+      },
+      {
+        "file": "handover/inventory.md",
+        "hash": "4329722719396453435"
+      },
+      {
+        "file": "handover/manager.md",
+        "hash": "12046259887799291933"
+      },
+      {
+        "file": "handover/mcp.md",
+        "hash": "4087567237630005138"
+      },
+      {
+        "file": "handover/offline-fork.bundle",
+        "hash": "7907351197186962886"
+      },
+      {
+        "file": "handover/offline-fork.git/HEAD",
+        "hash": "6460185820263248482"
+      },
+      {
+        "file": "handover/offline-fork.git/config",
+        "hash": "17771334212141341008"
+      },
+      {
+        "file": "handover/offline-fork.git/description",
+        "hash": "6589616779641096119"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/applypatch-msg.sample",
+        "hash": "3740124940738663445"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/commit-msg.sample",
+        "hash": "11930680668000581900"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/fsmonitor-watchman.sample",
+        "hash": "5519580754951798083"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/post-update.sample",
+        "hash": "16498975149454253769"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/pre-applypatch.sample",
+        "hash": "1595391782482835178"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/pre-commit.sample",
+        "hash": "10258126878297473471"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/pre-merge-commit.sample",
+        "hash": "5691533144974613569"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/pre-push.sample",
+        "hash": "3666369642558647280"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/pre-rebase.sample",
+        "hash": "15784748353859782246"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/pre-receive.sample",
+        "hash": "8999430056057037490"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/prepare-commit-msg.sample",
+        "hash": "4009645067798984574"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/push-to-checkout.sample",
+        "hash": "5194610557431485830"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/sendemail-validate.sample",
+        "hash": "7660090827690999586"
+      },
+      {
+        "file": "handover/offline-fork.git/hooks/update.sample",
+        "hash": "14696759095365231402"
+      },
+      {
+        "file": "handover/offline-fork.git/info/exclude",
+        "hash": "2084763735014985388"
+      },
+      {
+        "file": "handover/offline-fork.git/objects/pack/pack-1d56b05860be62276710a2495db5d556924e46ae.idx",
+        "hash": "14805801172866204123"
+      },
+      {
+        "file": "handover/offline-fork.git/objects/pack/pack-1d56b05860be62276710a2495db5d556924e46ae.pack",
+        "hash": "6021929286517116808"
+      },
+      {
+        "file": "handover/offline-fork.git/objects/pack/pack-1d56b05860be62276710a2495db5d556924e46ae.rev",
+        "hash": "17643273661694351055"
+      },
+      {
+        "file": "handover/offline-fork.git/refs/heads/offline/offline-fork",
+        "hash": "14442086351660467440"
+      },
+      {
+        "file": "handover/offline-worktree-20250927.tar.gz",
+        "hash": "4666139525532111576"
+      },
+      {
+        "file": "handover/orders.md",
+        "hash": "6774015993489160275"
+      },
+      {
+        "file": "handover/rag.md",
+        "hash": "3906817793995094279"
+      },
+      {
+        "file": "handover/sales.md",
+        "hash": "9324179469277624552"
+      },
+      {
+        "file": "handover/seo.md",
+        "hash": "12218810299372850159"
+      },
+      {
+        "file": "handover/settings.md",
+        "hash": "10227614745498767270"
+      },
+      {
+        "file": "handover/sync.md",
+        "hash": "4230881001912376420"
+      },
+      {
+        "file": "handover/tooling.md",
+        "hash": "16006793859388395029"
+      },
+      {
+        "file": "hotrodan-agent-pack.zip",
+        "hash": "10765757160802315661"
+      },
+      {
+        "file": "ingest.py",
+        "hash": "13021389355188315737"
+      },
+      {
+        "file": "ingest_incremental_chroma.py",
+        "hash": "13623734500112345405"
+      },
+      {
+        "file": "ingest_site.py",
+        "hash": "3374668671054909483"
+      },
+      {
+        "file": "ingest_site_chroma.py",
+        "hash": "2018635777312762119"
+      },
+      {
+        "file": "ingest_state.json",
+        "hash": "17161779940333196304"
+      },
+      {
+        "file": "integration_controller.js",
+        "hash": "18059400012281288881"
+      },
+      {
+        "file": "integration_test_framework.py",
+        "hash": "9610851883138556764"
+      },
+      {
+        "file": "inventory_analytics_optimized.py",
+        "hash": "6525585263498307145"
+      },
+      {
+        "file": "inventory_api.py",
+        "hash": "6159316568895063508"
+      },
+      {
+        "file": "inventory_performance_report_20250929_001836.json",
+        "hash": "8869960755505987244"
+      },
+      {
+        "file": "inventory_performance_report_20250929_002309.json",
+        "hash": "6711402877386157900"
+      },
+      {
+        "file": "inventory_production_deployment.md",
+        "hash": "15849200268100326104"
+      },
+      {
+        "file": "logs/quality-report-20250929-001850.json",
+        "hash": "16100711501740920887"
+      },
+      {
+        "file": "logs/quality-report-20250929-002359.json",
+        "hash": "12194910989779130234"
+      },
+      {
+        "file": "logs/quality-report-20250929-002908.json",
+        "hash": "3650580545825397911"
+      },
+      {
+        "file": "logs/quality-report-20250929-003417.json",
+        "hash": "1997571749102337048"
+      },
+      {
+        "file": "logs/quality-report-20250929-003543.json",
+        "hash": "8974965792277786216"
+      },
+      {
+        "file": "logs/quality-report-20250929-003927.json",
+        "hash": "17416431189734273566"
+      },
+      {
+        "file": "logs/quality-report-20250929-004037.json",
+        "hash": "1793000361570367875"
+      },
+      {
+        "file": "logs/quality-report-20250929-004545.json",
+        "hash": "6488357924831487666"
+      },
+      {
+        "file": "logs/quality-report-20250929-005100.json",
+        "hash": "8481414771699237047"
+      },
+      {
+        "file": "logs/quality-report-20250929-005614.json",
+        "hash": "15193477729637213607"
+      },
+      {
+        "file": "logs/quality-report-20250929-010128.json",
+        "hash": "5919328943461561047"
+      },
+      {
+        "file": "logs/quality-report-20250929-010642.json",
+        "hash": "9846813115171327975"
+      },
+      {
+        "file": "logs/quality-report-20250929-011156.json",
+        "hash": "5274671658386097421"
+      },
+      {
+        "file": "logs/quality-report-20250929-011710.json",
+        "hash": "13235383650752041305"
+      },
+      {
+        "file": "logs/quality-report-20250929-012218.json",
+        "hash": "6730549043880102724"
+      },
+      {
+        "file": "logs/quality-report-20250929-012732.json",
+        "hash": "3973893920182794781"
+      },
+      {
+        "file": "logs/quality-report-20250929-013246.json",
+        "hash": "4969458826692171493"
+      },
+      {
+        "file": "logs/quality-report-20250929-013800.json",
+        "hash": "12921569289320151687"
+      },
+      {
+        "file": "logs/quality-report-20250929-014314.json",
+        "hash": "2506317448619503469"
+      },
+      {
+        "file": "logs/quality-report-20250929-014828.json",
+        "hash": "16278155610440973020"
+      },
+      {
+        "file": "logs/quality-report-20250929-015342.json",
+        "hash": "3022866022864014287"
+      },
+      {
+        "file": "logs/quality-report-20250929-015856.json",
+        "hash": "16434879724127108811"
+      },
+      {
+        "file": "logs/quality-report-20250929-020410.json",
+        "hash": "14835543416974914151"
+      },
+      {
+        "file": "logs/quality-report-20250929-020918.json",
+        "hash": "9419593834552484641"
+      },
+      {
+        "file": "logs/quality-report-20250929-021432.json",
+        "hash": "11420794481902960948"
+      },
+      {
+        "file": "logs/quality-report-20250929-021946.json",
+        "hash": "8699270436695504353"
+      },
+      {
+        "file": "logs/quality-report-20250929-022500.json",
+        "hash": "8651050114898015499"
+      },
+      {
+        "file": "logs/quality-report-20250929-023014.json",
+        "hash": "17858048028882293754"
+      },
+      {
+        "file": "logs/quality-report-20250929-023528.json",
+        "hash": "12928451323649972362"
+      },
+      {
+        "file": "logs/quality-report-20250929-024042.json",
+        "hash": "6066271514499537894"
+      },
+      {
+        "file": "logs/quality-report-20250929-024556.json",
+        "hash": "10552600775700465468"
+      },
+      {
+        "file": "logs/quality-report-20250929-025110.json",
+        "hash": "14906259608120556461"
+      },
+      {
+        "file": "logs/quality-report-20250929-025618.json",
+        "hash": "17646518446502630097"
+      },
+      {
+        "file": "logs/quality-report-20250929-030132.json",
+        "hash": "854677437415173044"
+      },
+      {
+        "file": "logs/quality-report-20250929-030646.json",
+        "hash": "13122936148076322864"
+      },
+      {
+        "file": "logs/quality-report-20250929-031200.json",
+        "hash": "18194750810471828188"
+      },
+      {
+        "file": "logs/quality-report-20250929-031714.json",
+        "hash": "4702978743717256395"
+      },
+      {
+        "file": "logs/quality-report-20250929-032228.json",
+        "hash": "7466880551673339229"
+      },
+      {
+        "file": "logs/quality-report-20250929-032742.json",
+        "hash": "10430899283655842875"
+      },
+      {
+        "file": "logs/quality-report-20250929-033256.json",
+        "hash": "5117452885424498508"
+      },
+      {
+        "file": "logs/quality-report-20250929-033810.json",
+        "hash": "15501238470283885959"
+      },
+      {
+        "file": "logs/quality-report-20250929-034318.json",
+        "hash": "10354413703879782884"
+      },
+      {
+        "file": "logs/quality-report-20250929-034832.json",
+        "hash": "8700641052986439951"
+      },
+      {
+        "file": "logs/quality-report-20250929-035346.json",
+        "hash": "3820797636001100775"
+      },
+      {
+        "file": "logs/quality-report-20250929-035900.json",
+        "hash": "17943240728877297700"
+      },
+      {
+        "file": "logs/quality-report-20250929-040414.json",
+        "hash": "11498711318913654985"
+      },
+      {
+        "file": "logs/quality-report-20250929-040928.json",
+        "hash": "357210739953536763"
+      },
+      {
+        "file": "logs/quality-report-20250929-041442.json",
+        "hash": "17631441265551287865"
+      },
+      {
+        "file": "logs/quality-report-20250929-041956.json",
+        "hash": "6593360980940833259"
+      },
+      {
+        "file": "logs/quality-report-20250929-042510.json",
+        "hash": "9594068643585566150"
+      },
+      {
+        "file": "logs/quality-report-20250929-043018.json",
+        "hash": "6592394909264599221"
+      },
+      {
+        "file": "logs/quality-report-20250929-043532.json",
+        "hash": "1068755348326540160"
+      },
+      {
+        "file": "logs/quality-report-20250929-044040.json",
+        "hash": "14675627753972776880"
+      },
+      {
+        "file": "logs/quality-report-20250929-044547.json",
+        "hash": "5400484628455049537"
+      },
+      {
+        "file": "logs/quality-report-20250929-045101.json",
+        "hash": "13353732681111062345"
+      },
+      {
+        "file": "logs/quality-report-20250929-045616.json",
+        "hash": "14007588402203705050"
+      },
+      {
+        "file": "logs/quality-report-20250929-050130.json",
+        "hash": "9648083852742593563"
+      },
+      {
+        "file": "logs/quality-report-20250929-050644.json",
+        "hash": "10590307453810612478"
+      },
+      {
+        "file": "logs/quality-report-20250929-051158.json",
+        "hash": "9017698858124767814"
+      },
+      {
+        "file": "logs/quality-report-20250929-051712.json",
+        "hash": "18238147883080060904"
+      },
+      {
+        "file": "logs/quality-report-20250929-052226.json",
+        "hash": "16663817578965636498"
+      },
+      {
+        "file": "logs/quality-report-20250929-052740.json",
+        "hash": "4395419872222706365"
+      },
+      {
+        "file": "logs/quality-report-20250929-053248.json",
+        "hash": "16629058969567125055"
+      },
+      {
+        "file": "logs/quality-report-20250929-053802.json",
+        "hash": "11839594956829723516"
+      },
+      {
+        "file": "logs/quality-report-20250929-054316.json",
+        "hash": "5160714140877225559"
+      },
+      {
+        "file": "logs/quality-report-20250929-054830.json",
+        "hash": "3865650948138312270"
+      },
+      {
+        "file": "logs/quality-report-20250929-055345.json",
+        "hash": "3579416116603884699"
+      },
+      {
+        "file": "logs/quality-report-20250929-055859.json",
+        "hash": "6509109518556841533"
+      },
+      {
+        "file": "logs/quality-report-20250929-060413.json",
+        "hash": "9373857823179211460"
+      },
+      {
+        "file": "logs/quality-report-20250929-060927.json",
+        "hash": "16002874045920071978"
+      },
+      {
+        "file": "logs/quality-report-20250929-061441.json",
+        "hash": "3660390321469114969"
+      },
+      {
+        "file": "logs/quality-report-20250929-061949.json",
+        "hash": "11833162455527253324"
+      },
+      {
+        "file": "logs/quality-report-20250929-062503.json",
+        "hash": "11590186020002195732"
+      },
+      {
+        "file": "logs/quality-report-20250929-063011.json",
+        "hash": "1111214017543895987"
+      },
+      {
+        "file": "logs/quality-report-20250929-063519.json",
+        "hash": "258042392897029996"
+      },
+      {
+        "file": "logs/quality-report-20250929-064033.json",
+        "hash": "14113025296838536127"
+      },
+      {
+        "file": "logs/quality-report-20250929-064541.json",
+        "hash": "8970254639992124271"
+      },
+      {
+        "file": "logs/quality-report-20250929-065049.json",
+        "hash": "7606894152869281058"
+      },
+      {
+        "file": "logs/quality-report-20250929-065603.json",
+        "hash": "9718558177577647593"
+      },
+      {
+        "file": "logs/quality-report-20250929-070112.json",
+        "hash": "1265297865972074120"
+      },
+      {
+        "file": "logs/quality-report-20250929-070619.json",
+        "hash": "11242664255550513723"
+      },
+      {
+        "file": "logs/quality-report-20250929-071133.json",
+        "hash": "15249143491370250673"
+      },
+      {
+        "file": "logs/quality-report-20250929-071641.json",
+        "hash": "10109812957623266493"
+      },
+      {
+        "file": "logs/quality-report-20250929-072149.json",
+        "hash": "10227158998123679929"
+      },
+      {
+        "file": "logs/quality-report-20250929-072703.json",
+        "hash": "3772495078768554236"
+      },
+      {
+        "file": "logs/quality-report-20250929-073211.json",
+        "hash": "7373282872466937775"
+      },
+      {
+        "file": "logs/quality-report-20250929-073719.json",
+        "hash": "10106281360593538536"
+      },
+      {
+        "file": "logs/quality-report-20250929-074233.json",
+        "hash": "12670120815930511050"
+      },
+      {
+        "file": "logs/quality-report-20250929-074741.json",
+        "hash": "16395921915471513141"
+      },
+      {
+        "file": "logs/quality-report-20250929-075249.json",
+        "hash": "6839405802962299704"
+      },
+      {
+        "file": "logs/quality-report-20250929-075804.json",
+        "hash": "11727598620778507406"
+      },
+      {
+        "file": "logs/quality-report-20250929-080312.json",
+        "hash": "17383589544452390227"
+      },
+      {
+        "file": "logs/quality-report-20250929-080827.json",
+        "hash": "10338334893703185226"
+      },
+      {
+        "file": "logs/quality-report-20250929-081342.json",
+        "hash": "6993805863142741422"
+      },
+      {
+        "file": "logs/quality-report-20250929-081850.json",
+        "hash": "10528071956816409681"
+      },
+      {
+        "file": "logs/quality-report-20250929-082404.json",
+        "hash": "9538297540528123872"
+      },
+      {
+        "file": "logs/quality-report-20250929-082912.json",
+        "hash": "1249598462749523622"
+      },
+      {
+        "file": "logs/quality-report-20250929-083426.json",
+        "hash": "16600984209669338015"
+      },
+      {
+        "file": "logs/quality-report-20250929-083940.json",
+        "hash": "2154684919226044758"
+      },
+      {
+        "file": "logs/quality-report-20250929-084448.json",
+        "hash": "14152735657020324314"
+      },
+      {
+        "file": "logs/quality-report-20250929-085002.json",
+        "hash": "11285074960632047315"
+      },
+      {
+        "file": "logs/quality-report-20250929-085516.json",
+        "hash": "9378450369776514144"
+      },
+      {
+        "file": "logs/quality-report-20250929-090031.json",
+        "hash": "222524523901689666"
+      },
+      {
+        "file": "mcp-approvals-config.json",
+        "hash": "394062586675538488"
+      },
+      {
+        "file": "mcp-approvals-env-vars.md",
+        "hash": "16011205816936130360"
+      },
+      {
+        "file": "mcp/mcp_server.js",
+        "hash": "9939256057154392687"
+      },
+      {
+        "file": "mcp_integration_guide.md",
+        "hash": "176242422524817881"
+      },
+      {
+        "file": "mcp_inventory_integration.py",
+        "hash": "4495827958452982397"
+      },
+      {
+        "file": "monitoring/performance_monitor.js",
+        "hash": "1450247793774600526"
+      },
+      {
+        "file": "olved inventory prompt + the note",
+        "hash": "4939880173467706647"
+      },
+      {
+        "file": "package-lock.json",
+        "hash": "4088194852992963667"
+      },
+      {
+        "file": "package.json",
+        "hash": "5688078722760526223"
+      },
+      {
+        "file": "plans/agents.json",
+        "hash": "1478199850177097451"
+      },
+      {
+        "file": "plans/agents/approvals/auto-approval-rules.json",
+        "hash": "8935709940984183169"
+      },
+      {
+        "file": "plans/agents/approvals/direction.md",
+        "hash": "7985316505324945194"
+      },
+      {
+        "file": "plans/agents/dashboard/direction.md",
+        "hash": "3614524394270322476"
+      },
+      {
+        "file": "plans/agents/inventory/direction.md",
+        "hash": "9091651395708526890"
+      },
+      {
+        "file": "plans/agents/manager/approval-process.md",
+        "hash": "3951218464539648159"
+      },
+      {
+        "file": "plans/agents/manager/auto-approve.sh",
+        "hash": "11638601468607523152"
+      },
+      {
+        "file": "plans/agents/manager/direction.md",
+        "hash": "4164277004860519273"
+      },
+      {
+        "file": "plans/agents/manager/next-phase-direction.md",
+        "hash": "6944042212401740213"
+      },
+      {
+        "file": "plans/agents/manager/status-update.md",
+        "hash": "12769012385214782655"
+      },
+      {
+        "file": "plans/agents/mcp/direction.md",
+        "hash": "414935057275104814"
+      },
+      {
+        "file": "plans/agents/rag/direction.md",
+        "hash": "15529177160224209275"
+      },
+      {
+        "file": "plans/agents/sales/direction.md",
+        "hash": "16424587161014376181"
+      },
+      {
+        "file": "plans/agents/seo/direction.md",
+        "hash": "6415718156754410468"
+      },
+      {
+        "file": "plans/agents/tooling/direction.md",
+        "hash": "15966620844414167776"
+      },
+      {
+        "file": "plans/protocol.md",
+        "hash": "10889349236605326002"
+      },
+      {
+        "file": "plans/rpg.json",
+        "hash": "5984956259943243534"
+      },
+      {
+        "file": "plans/rpg.json.backup",
+        "hash": "12954385429578874369"
+      },
+      {
+        "file": "plans/tasks.backlog.yaml",
+        "hash": "14699927727554059972"
+      },
+      {
+        "file": "plans/work_orders/.keep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "plans/work_orders/WO-001.yml",
+        "hash": "12255377031678084011"
+      },
+      {
+        "file": "plans/work_orders/WO-002.yml",
+        "hash": "4415811742949773790"
+      },
+      {
+        "file": "plans/work_orders/WO-003.yml",
+        "hash": "13375489135649806045"
+      },
+      {
+        "file": "playwright.config.ts",
+        "hash": "14544623989271099691"
+      },
+      {
+        "file": "poll_coordination.sh",
+        "hash": "7978629588570806309"
+      },
+      {
+        "file": "production_monitoring_approvals.py",
+        "hash": "3958536103694262735"
+      },
+      {
+        "file": "production_monitoring_dashboard.py",
+        "hash": "8105309386051333410"
+      },
+      {
+        "file": "prompts/dashboard.codex.md",
+        "hash": "6887255011005206983"
+      },
+      {
+        "file": "prompts/dashboard/data-layer.md",
+        "hash": "7684350993017843420"
+      },
+      {
+        "file": "prompts/dashboard/database.md",
+        "hash": "1676594161171206873"
+      },
+      {
+        "file": "prompts/dashboard/deployment.md",
+        "hash": "14982893517168411758"
+      },
+      {
+        "file": "prompts/dashboard/mcp.md",
+        "hash": "1412375573562546030"
+      },
+      {
+        "file": "prompts/dashboard/overview.md",
+        "hash": "12285983324028709039"
+      },
+      {
+        "file": "prompts/dashboard/route-dashboard.md",
+        "hash": "10947177980932055871"
+      },
+      {
+        "file": "prompts/dashboard/route-inbox.md",
+        "hash": "6603674192705740323"
+      },
+      {
+        "file": "prompts/dashboard/route-inventory.md",
+        "hash": "464789369778746751"
+      },
+      {
+        "file": "prompts/dashboard/route-orders.md",
+        "hash": "16923305500392082818"
+      },
+      {
+        "file": "prompts/dashboard/route-sales.md",
+        "hash": "6111567844128713259"
+      },
+      {
+        "file": "prompts/dashboard/route-seo.md",
+        "hash": "4452677220108950941"
+      },
+      {
+        "file": "prompts/dashboard/route-settings.md",
+        "hash": "10645034930124670535"
+      },
+      {
+        "file": "prompts/dashboard/seed-data.md",
+        "hash": "3367260454333857741"
+      },
+      {
+        "file": "prompts/dashboard/setup.md",
+        "hash": "3864760110375158550"
+      },
+      {
+        "file": "prompts/dashboard/smoke-checklist.md",
+        "hash": "18053374493759801820"
+      },
+      {
+        "file": "prompts/dashboard/testing.md",
+        "hash": "16245328716926521814"
+      },
+      {
+        "file": "prompts/dashboard/webhooks.md",
+        "hash": "5755526852755272836"
+      },
+      {
+        "file": "prompts/tooling/prisma-config.md",
+        "hash": "3049037879114462769"
+      },
+      {
+        "file": "prompts/tooling/program-manager.md",
+        "hash": "2799589659064311490"
+      },
+      {
+        "file": "quality/qa_framework.js",
+        "hash": "10644113107341780793"
+      },
+      {
+        "file": "query.py",
+        "hash": "4432032153178786206"
+      },
+      {
+        "file": "query_chroma.py",
+        "hash": "597744934207069943"
+      },
+      {
+        "file": "query_chroma.py.bak",
+        "hash": "707179201903145032"
+      },
+      {
+        "file": "query_chroma_router.py",
+        "hash": "5106613469516907604"
+      },
+      {
+        "file": "query_chroma_router.py.bak",
+        "hash": "15687833376623180952"
+      },
+      {
+        "file": "query_chroma_router_optimized.py",
+        "hash": "14436347995349489659"
+      },
+      {
+        "file": "quick_bing_token.sh",
+        "hash": "17358889179408937927"
+      },
+      {
+        "file": "rag_config.py",
+        "hash": "11310529256462468724"
+      },
+      {
+        "file": "reingest_index.py",
+        "hash": "6016599180613632178"
+      },
+      {
+        "file": "router_config.py",
+        "hash": "17962708311062167584"
+      },
+      {
+        "file": "run_goldens.py",
+        "hash": "5249050672541641667"
+      },
+      {
+        "file": "run_goldens.py.bak",
+        "hash": "18187901387038055136"
+      },
+      {
+        "file": "scalability/scalability_manager.js",
+        "hash": "8123339847296519505"
+      },
+      {
+        "file": "scripts/agent-monitor.sh",
+        "hash": "2821260553974950996"
+      },
+      {
+        "file": "scripts/auto-accept-changes.sh",
+        "hash": "6837318923373354603"
+      },
+      {
+        "file": "scripts/auto-accept-wrapper.sh",
+        "hash": "18159544408691128846"
+      },
+      {
+        "file": "scripts/auto-approve-coordination.sh",
+        "hash": "7058494428640391078"
+      },
+      {
+        "file": "scripts/check_ingest_staleness.py",
+        "hash": "14787085862560254065"
+      },
+      {
+        "file": "scripts/configure-auto-accept.sh",
+        "hash": "12991172349206870254"
+      },
+      {
+        "file": "scripts/deploy-production-simple.sh",
+        "hash": "8090059856244466289"
+      },
+      {
+        "file": "scripts/deploy-production.sh",
+        "hash": "9077128666418799841"
+      },
+      {
+        "file": "scripts/generate_manager_artifacts.py",
+        "hash": "12092745258075919306"
+      },
+      {
+        "file": "scripts/launch_agent.sh",
+        "hash": "10892461644008232256"
+      },
+      {
+        "file": "scripts/overnight-enterprise-audit.py",
+        "hash": "7197447732692649290"
+      },
+      {
+        "file": "scripts/quality-check.py",
+        "hash": "2056818663745032247"
+      },
+      {
+        "file": "scripts/sales_polling.py",
+        "hash": "1986634871176886021"
+      },
+      {
+        "file": "scripts/shopify_webhook_replay.sh",
+        "hash": "15301476049359633672"
+      },
+      {
+        "file": "scripts/start-quality-engineer.sh",
+        "hash": "1169024952554543243"
+      },
+      {
+        "file": "scripts/start-sales-analytics-platform.sh",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "scripts/start-sales-insights.sh",
+        "hash": "17712949552911291810"
+      },
+      {
+        "file": "scripts/test_sync.sh",
+        "hash": "3923722521082553113"
+      },
+      {
+        "file": "scripts/zoho_send_test.py",
+        "hash": "12795720603087526624"
+      },
+      {
+        "file": "security/security_framework.js",
+        "hash": "15446477912716107295"
+      },
+      {
+        "file": "seo_advanced_analytics_report.json",
+        "hash": "13216936503915592476"
+      },
+      {
+        "file": "seo_advanced_analytics_simple.py",
+        "hash": "5116753955851296332"
+      },
+      {
+        "file": "seo_advanced_analytics_standalone.py",
+        "hash": "12703237114661268980"
+      },
+      {
+        "file": "seo_opportunities.csv",
+        "hash": "5258632449117710157"
+      },
+      {
+        "file": "seo_opportunities.json",
+        "hash": "17295150275515032851"
+      },
+      {
+        "file": "seo_opportunities_demo.py",
+        "hash": "13498499245800574280"
+      },
+      {
+        "file": "seo_opportunities_finder.py",
+        "hash": "7400384035297258463"
+      },
+      {
+        "file": "seo_requirements.txt",
+        "hash": "2483655382576575343"
+      },
+      {
+        "file": "setup-global-cursor-config.sh",
+        "hash": "10529072941011075799"
+      },
+      {
+        "file": "shopify.app.toml",
+        "hash": "7121058863117937256"
+      },
+      {
+        "file": "shopify.app.toml.backup",
+        "hash": "3082745672142931853"
+      },
+      {
+        "file": "shopify_api_integration.py",
+        "hash": "4104783218698165590"
+      },
+      {
+        "file": "start_rag.sh",
+        "hash": "9956732833155884884"
+      },
+      {
+        "file": "summary_and_recommendations.md",
+        "hash": "14952594087664019606"
+      },
+      {
+        "file": "sync/API_ENVELOPE_V1_2.md",
+        "hash": "13694174345784731043"
+      },
+      {
+        "file": "sync/orders_api.py",
+        "hash": "15607630104452495646"
+      },
+      {
+        "file": "tage EVERYTHING (keeps working tree intact)",
+        "hash": "1061116428355923145"
+      },
+      {
+        "file": "templates/feedback-template.md",
+        "hash": "7061989440490465244"
+      },
+      {
+        "file": "test-results/.last-run.json",
+        "hash": "11141884120100644736"
+      },
+      {
+        "file": "test_content_automation.py",
+        "hash": "7583515213560634825"
+      },
+      {
+        "file": "test_content_optimizer.py",
+        "hash": "4446471034321564148"
+      },
+      {
+        "file": "test_inventory_performance.py",
+        "hash": "6889653038655412424"
+      },
+      {
+        "file": "test_production_deployment.py",
+        "hash": "13301898036942251592"
+      },
+      {
+        "file": "test_seo_advanced_analytics.py",
+        "hash": "7374136566853763792"
+      },
+      {
+        "file": "test_seo_finder.py",
+        "hash": "17552802950114547750"
+      },
+      {
+        "file": "test_sync.db",
+        "hash": "1839705448295610146"
+      },
+      {
+        "file": "tooling/advanced-qa/run-tests.sh",
+        "hash": "15543829479789008110"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "11704332474401622631"
+      },
+      {
+        "file": "urls.txt",
+        "hash": "16032561917794793925"
+      },
+      {
+        "file": "urls_with_lastmod.tsv",
+        "hash": "291870607601830453"
+      },
+      {
+        "file": "validate_rpg.py",
+        "hash": "6764112446376473638"
+      },
+      {
+        "file": "validate_rpg_final.py",
+        "hash": "12707019856901285842"
+      },
+      {
+        "file": "validate_rpg_fixed.py",
+        "hash": "14370666489839011016"
+      },
+      {
+        "file": "vendor_data_mapping.py",
+        "hash": "3051777945691334067"
+      },
+      {
+        "file": "vendor_performance_analytics.py",
+        "hash": "9906778618018497125"
+      },
+      {
+        "file": "vitest.config.ts",
+        "hash": "5850107513966455125"
+      }
+    ]
+  },
+  "externalNodesHash": "14017902330321860524"
+}

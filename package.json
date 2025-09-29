@@ -15,11 +15,16 @@
     "test:sync:webhooks": "npx vitest run --root dashboard --config vitest.config.ts dashboard/app/lib/webhooks/__tests__/handlers.server.test.ts dashboard/app/lib/webhooks/__tests__/queue.server.test.ts dashboard/app/lib/webhooks/__tests__/processors.server.test.ts"
   },
   "devDependencies": {
+    "@nx/js": "^21.5.3",
+    "@nx/node": "^21.5.3",
+    "@nx/react": "^21.5.3",
+    "@nx/workspace": "^21.5.3",
     "@playwright/test": "^1.43.1",
     "@remix-run/testing": "^2.8.0",
     "@types/node": "^20.12.7",
     "@vitest/coverage-v8": "^1.4.0",
     "msw": "^2.2.3",
+    "nx": "^21.5.3",
     "prisma": "^5.11.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.4",

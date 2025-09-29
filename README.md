@@ -57,3 +57,4 @@ shopify app dev --store=afafsaf.myshopify.com
 - Section 0 status, route briefs, data layer, and integration plans live in `prompts/dashboard/`.
 - All Remix routes currently render Polaris UIs backed by mock data (`USE_MOCK_DATA=true`). Swap to live data by wiring the modules in `dashboard/app/lib/`.
 - Set `ENABLE_MCP=true` after wiring real Storefront MCP credentials (`MCP_API_URL`, `MCP_API_KEY`) and validate via upcoming settings toggle.
+- Service registry: app/service_registry polls health and versions across services.
