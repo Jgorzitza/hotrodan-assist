@@ -54,6 +54,8 @@ import type { DashboardRangeKey, MockScenario } from "~/types/dashboard";
 import { DashboardProvider } from "~/lib/dashboard-context";
 import { EnhancedMetricCard, EnhancedMetricCardSkeleton } from "~/components/EnhancedMetricCard";
 import { generateEnhancedMetrics, calculateMetricInsights } from "~/lib/enhanced-metrics";
+import { CohortAnalysis } from "~/components/CohortAnalysis";
+import { generateCohortData, calculateCohortInsights } from "~/lib/cohort-analysis";
 import { DrillDownNavigation, DrillDownButton } from "~/components/DrillDownNavigation";
 
 const HOME_RANGE_KEYS: Array<Exclude<DashboardRangeKey, "14d">> = DASHBOARD_RANGE_KEY_LIST.filter(
@@ -76,6 +78,22 @@ type LoaderData = {
     worstPerformer: EnhancedMetricData;
     overallTrend: "positive" | "negative" | "neutral";
   };
+  cohortData: CohortData[];
+  cohortInsights: {
+    averageRetention: number;
+    bestCohort: CohortData;
+    worstCohort: CohortData;
+    retentionTrend: "improving" | "declining" | "stable";
+  };
+  useMockData: boolean;
+  scenario: MockScenario;
+  mcp: {
+    enabled: boolean;
+    usingMocks: boolean;
+    source?: string;
+    generatedAt?: string;
+  };
+};
   useMockData: boolean;
   scenario: MockScenario;
   mcp: {
@@ -108,6 +126,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const data = await getDashboardOverview(range, scenario);
  
   const enhancedMetrics = generateEnhancedMetrics(range);
+  const cohortData = generateCohortData(6);
+  const cohortInsights = calculateCohortInsights(cohortData);
   const metricInsights = calculateMetricInsights(enhancedMetrics);
 
   const shouldHydrateMcp = featureEnabled || USE_MOCK_DATA;
@@ -145,6 +165,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       data,
       enhancedMetrics,
       metricInsights,
+      cohortData,
+      cohortInsights,
       useMockData: USE_MOCK_DATA,
       scenario,
       mcp: {
@@ -163,7 +185,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function DashboardRoute() {
-  const { data, enhancedMetrics, metricInsights, useMockData, scenario, mcp } = useLoaderData<typeof loader>();
+  const { data, enhancedMetrics, metricInsights, cohortData, cohortInsights, useMockData, scenario, mcp } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const navigation = useNavigation();
