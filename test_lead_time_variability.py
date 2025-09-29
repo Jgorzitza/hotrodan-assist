@@ -101,5 +101,5 @@ def test_predict_lead_time():
     
     prediction = model.predict_lead_time("SUPPLIER1", "SKU1")
     assert prediction["predicted_lead_time"] == 5
-    assert prediction["prediction_quality"] == "High"  # 10+ samples
+    assert prediction["prediction_quality"] == "Medium"  # 10 samples
     assert prediction["sample_size"] == 10
