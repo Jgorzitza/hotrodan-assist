@@ -26,7 +26,6 @@ import {
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { PolarisVizProvider } from "@shopify/polaris-viz";
-import { ClientOnlySparkLineChart } from "~/components/ClientOnlySparkLineChart";
 import type { DataPoint } from "@shopify/polaris-viz-core";
 
 import { authenticate } from "../shopify.server";

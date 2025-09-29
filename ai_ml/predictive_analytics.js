@@ -271,7 +271,7 @@ class PredictiveAnalyticsEngine {
 }
 
 // Initialize AI/ML Engine
-const aiEngine = new PredictiveAnalyticsEngine();
+// const aiEngine = new PredictiveAnalyticsEngine();
 
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
