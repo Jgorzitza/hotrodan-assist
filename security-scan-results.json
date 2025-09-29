@@ -1,0 +1,371 @@
+{
+  "timestamp": "2025-09-29T17:29:27.399Z",
+  "summary": {
+    "total": 50,
+    "critical": 1,
+    "high": 5,
+    "medium": 0,
+    "low": 44
+  },
+  "findings": [
+    {
+      "file": ".venv/lib/python3.12/site-packages/sklearn/utils/_repr_html/estimator.js",
+      "severity": "high",
+      "message": "Direct innerHTML assignment - potential XSS",
+      "count": 4,
+      "timestamp": "2025-09-29T17:29:26.309Z"
+    },
+    {
+      "file": "apps/dashboard/build/client/assets/index-OtPSfN_w.js",
+      "severity": "high",
+      "message": "Direct innerHTML assignment - potential XSS",
+      "count": 3,
+      "timestamp": "2025-09-29T17:29:26.335Z"
+    },
+    {
+      "file": "apps/dashboard/dashboard/build/client/assets/index-DDfvNczm.js",
+      "severity": "high",
+      "message": "Direct innerHTML assignment - potential XSS",
+      "count": 3,
+      "timestamp": "2025-09-29T17:29:26.344Z"
+    },
+    {
+      "file": "apps/dashboard/dashboard/build/server/index.js",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 8,
+      "timestamp": "2025-09-29T17:29:26.347Z"
+    },
+    {
+      "file": "e2e/setup/test-environment.js",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 3,
+      "timestamp": "2025-09-29T17:29:26.347Z"
+    },
+    {
+      "file": "e2e/smoke.spec.js",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.347Z"
+    },
+    {
+      "file": "playwright.config.js",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 6,
+      "timestamp": "2025-09-29T17:29:26.348Z"
+    },
+    {
+      "file": "scripts/security/dast-scan.js",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.348Z"
+    },
+    {
+      "file": "scripts/security/sast-scan.js",
+      "severity": "critical",
+      "message": "Use of eval() function - potential code injection",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.349Z"
+    },
+    {
+      "file": "scripts/security/sast-scan.js",
+      "severity": "high",
+      "message": "Use of document.write() - potential XSS",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.349Z"
+    },
+    {
+      "file": "venv/lib/python3.12/site-packages/sklearn/utils/_repr_html/estimator.js",
+      "severity": "high",
+      "message": "Direct innerHTML assignment - potential XSS",
+      "count": 4,
+      "timestamp": "2025-09-29T17:29:26.349Z"
+    },
+    {
+      "file": "apps/dashboard/app/db.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.350Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/env.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.350Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/inbox/assistants.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.350Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/inbox/telemetry.client.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.351Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/mcp/__tests__/index.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 2,
+      "timestamp": "2025-09-29T17:29:26.353Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/mcp/index.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 6,
+      "timestamp": "2025-09-29T17:29:26.353Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/orders/sync.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 2,
+      "timestamp": "2025-09-29T17:29:26.353Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/sales/analytics.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.354Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/sales/mcp-integration.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 2,
+      "timestamp": "2025-09-29T17:29:26.355Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/settings/__tests__/connection-tests.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.355Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/settings/__tests__/repository.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 4,
+      "timestamp": "2025-09-29T17:29:26.355Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/settings/connection-tests.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.355Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/settings/health-checks.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 6,
+      "timestamp": "2025-09-29T17:29:26.355Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/shopify/admin.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 3,
+      "timestamp": "2025-09-29T17:29:26.355Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/webhooks/__tests__/processors.server.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 9,
+      "timestamp": "2025-09-29T17:29:26.356Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/webhooks/__tests__/queue.server.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 6,
+      "timestamp": "2025-09-29T17:29:26.356Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/webhooks/processors.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 7,
+      "timestamp": "2025-09-29T17:29:26.356Z"
+    },
+    {
+      "file": "apps/dashboard/app/lib/webhooks/queue.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 5,
+      "timestamp": "2025-09-29T17:29:26.356Z"
+    },
+    {
+      "file": "apps/dashboard/app/mocks/config.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.356Z"
+    },
+    {
+      "file": "apps/dashboard/app/routes/__tests__/app._index.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 6,
+      "timestamp": "2025-09-29T17:29:26.357Z"
+    },
+    {
+      "file": "apps/dashboard/app/routes/__tests__/app.inbox.stream.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 5,
+      "timestamp": "2025-09-29T17:29:26.357Z"
+    },
+    {
+      "file": "apps/dashboard/app/routes/__tests__/app.inbox.telemetry.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 2,
+      "timestamp": "2025-09-29T17:29:26.357Z"
+    },
+    {
+      "file": "apps/dashboard/app/routes/__tests__/app.inbox.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 6,
+      "timestamp": "2025-09-29T17:29:26.357Z"
+    },
+    {
+      "file": "apps/dashboard/app/routes/__tests__/app.inventory.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 5,
+      "timestamp": "2025-09-29T17:29:26.357Z"
+    },
+    {
+      "file": "apps/dashboard/app/routes/__tests__/app.orders.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 10,
+      "timestamp": "2025-09-29T17:29:26.357Z"
+    },
+    {
+      "file": "apps/dashboard/app/routes/__tests__/app.sales.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 2,
+      "timestamp": "2025-09-29T17:29:26.357Z"
+    },
+    {
+      "file": "apps/dashboard/app/routes/__tests__/app.seo.loader.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 10,
+      "timestamp": "2025-09-29T17:29:26.357Z"
+    },
+    {
+      "file": "apps/dashboard/app/routes/__tests__/app.seo.prisma.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 2,
+      "timestamp": "2025-09-29T17:29:26.358Z"
+    },
+    {
+      "file": "apps/dashboard/app/routes/__tests__/app.settings.prisma.test.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 2,
+      "timestamp": "2025-09-29T17:29:26.358Z"
+    },
+    {
+      "file": "apps/dashboard/app/routes/cron.retention.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.359Z"
+    },
+    {
+      "file": "apps/dashboard/app/shopify.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 6,
+      "timestamp": "2025-09-29T17:29:26.359Z"
+    },
+    {
+      "file": "apps/dashboard/dashboard/app/db.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.360Z"
+    },
+    {
+      "file": "apps/dashboard/dashboard/app/shopify.server.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 6,
+      "timestamp": "2025-09-29T17:29:26.361Z"
+    },
+    {
+      "file": "apps/dashboard/dashboard/vite.config.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 10,
+      "timestamp": "2025-09-29T17:29:26.361Z"
+    },
+    {
+      "file": "apps/dashboard/vite.config.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 10,
+      "timestamp": "2025-09-29T17:29:26.362Z"
+    },
+    {
+      "file": "apps/dashboard/vitest.config.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.362Z"
+    },
+    {
+      "file": "e2e/health-check.spec.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 2,
+      "timestamp": "2025-09-29T17:29:26.362Z"
+    },
+    {
+      "file": "e2e/smoke.spec.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 1,
+      "timestamp": "2025-09-29T17:29:26.362Z"
+    },
+    {
+      "file": "playwright.config.ts",
+      "severity": "low",
+      "message": "Environment variable usage - ensure proper handling",
+      "count": 6,
+      "timestamp": "2025-09-29T17:29:26.363Z"
+    }
+  ],
+  "recommendations": [
+    "Implement Content Security Policy (CSP) headers",
+    "Use parameterized queries for database operations",
+    "Validate and sanitize all user inputs",
+    "Implement proper authentication and authorization",
+    "Use HTTPS for all communications",
+    "Regular dependency updates and vulnerability scanning",
+    "Implement rate limiting and DDoS protection"
+  ]
+}

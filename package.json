@@ -18,6 +18,10 @@
     "security:secrets": "tools/security/security-scan.sh secrets",
     "security:licenses": "tools/security/security-scan.sh licenses",
     "security:audit": "npm audit --audit-level=moderate",
+    "bootstrap": "tools/bootstrap/bootstrap.sh",
+    "dev:setup": "make bootstrap",
+    "dev:start": "make start",
+    "dev:stop": "make stop",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "build": "npm run typecheck",
@@ -27,7 +31,13 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:sync:webhooks": "npx vitest run --root dashboard --config vitest.config.ts dashboard/app/lib/webhooks/__tests__/handlers.server.test.ts dashboard/app/lib/webhooks/__tests__/queue.server.test.ts dashboard/app/lib/webhooks/__tests__/processors.server.test.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "security:sast": "node scripts/security/sast-scan.js",
+    "security:dast": "node scripts/security/dast-scan.js",
+    "security:all": "npm run security:audit && npm run security:sast && npm run security:dast",
+    "test:accessibility": "npx playwright test e2e/accessibility.spec.ts",
+    "lint:accessibility": "eslint . --ext .ts,.tsx,.js,.jsx --plugin jsx-a11y",
+    "accessibility:all": "npm run lint:accessibility && npm run test:accessibility"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
@@ -39,6 +49,7 @@
     ]
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@changesets/changelog-github": "^0.5.1",
     "@changesets/cli": "^2.29.7",
     "@commitlint/cli": "^20.0.0",
@@ -59,7 +70,9 @@
     "@typescript-eslint/eslint-plugin": "^8.44.1",
     "@typescript-eslint/parser": "^8.44.1",
     "@vitest/coverage-v8": "^1.4.0",
+    "axe-core": "^4.10.3",
     "eslint": "^9.36.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "husky": "^9.1.7",
     "license-checker": "^25.0.1",
     "lint-staged": "^16.2.3",
