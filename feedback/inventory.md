@@ -620,7 +620,7 @@ docker-compose up -d inventory-api
 
 ### Current Focus - 2025-09-29T09:24:43-06:00
 - [x] Multi-location stock sync strategy with conflict resolution
-- [ ] Safety stock rules per SKU/location
+- [x] Safety stock rules per SKU/location
 - [ ] Demand forecasting (daily/weekly) with seasonality
 - [ ] Purchase order recommendations generator
 - [ ] Backorder policy rules + ETA surfacing
