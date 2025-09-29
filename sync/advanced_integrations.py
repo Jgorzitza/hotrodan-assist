@@ -137,6 +137,7 @@ class IntegrationManager:
             IntegrationConfig(
                 name="webhook_receiver",
                 type=IntegrationType.WEBHOOK,
+                base_url="https://your-domain.com",
                 webhook_url="https://your-domain.com/webhook/inventory",
                 webhook_secret="your_webhook_secret",
                 data_format=DataFormat.JSON

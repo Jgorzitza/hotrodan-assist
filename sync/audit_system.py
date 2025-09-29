@@ -293,7 +293,7 @@ class AuditSystem:
         
         # Check count-based conditions
         if "count" in conditions:
-            count = self._count_recent_events(event, conditions["count_window"] or 3600)
+            count = self._count_recent_events(event, conditions.get("count_window", 3600))
             if count < conditions["count"]:
                 return False
         
