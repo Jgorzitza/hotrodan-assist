@@ -2,43 +2,32 @@
 
 echo "=== BING WEBMASTER TOOLS CREDENTIALS SETUP ==="
 echo ""
-echo "🔍 Bing Webmaster Tools API Setup:"
-echo "   - Requires Microsoft Azure App Registration"
-echo "   - Different from Google OAuth (separate process)"
-echo "   - Need Client ID, Client Secret, and Refresh Token"
+echo "🔍 Using /consumers/ endpoint for Microsoft Account users"
 echo ""
 
-echo "📋 BING API SETUP STEPS:"
-echo "1. Go to: https://portal.azure.com/"
-echo "2. Navigate to: Azure Active Directory > App registrations"
-echo "3. Click 'New registration'"
-echo "4. Name: 'Bing Webmaster Tools API'"
-echo "5. Redirect URI: https://www.bing.com/webmasters/"
-echo "6. Click 'Register'"
-echo "7. Note down: Application (client) ID"
-echo "8. Go to 'Certificates & secrets' > 'New client secret'"
-echo "9. Note down: Client secret value"
-echo "10. Go to 'API permissions' > 'Add a permission'"
-echo "11. Select 'Bing Webmaster Tools API' > 'Delegated permissions'"
-echo "12. Grant 'Bing.WebmasterTools.Read' permission"
+echo "📋 YOUR /CONSUMERS/ OAUTH URL:"
+echo "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?client_id=5ac8d58b-668b-4ccf-ab2b-c53b831d55f8&response_type=code&redirect_uri=https://jwt.ms&scope=api://5ac8d58b-668b-4ccf-ab2b-c53b831d55f8/access_as_user&response_mode=query"
 echo ""
 
-echo "🔧 OAUTH 2.0 PLAYGROUND STEPS:"
-echo "1. Go to: https://developers.google.com/oauthplayground/"
-echo "2. Click gear icon → 'Use your own OAuth credentials'"
-echo "3. Enter Client ID: [Your Bing Client ID]"
-echo "4. Enter Client Secret: [Your Bing Client Secret]"
-echo "5. Select scope: https://www.bing.com/webmasters/"
-echo "6. Click 'Authorize APIs' and sign in with Microsoft account"
-echo "7. Click 'Exchange authorization code for tokens'"
-echo "8. Copy the Refresh Token"
+echo "🔍 STEPS:"
+echo "1. Copy the URL above and open it in your browser"
+echo "2. Sign in with your Microsoft account"
+echo "3. You should be redirected to jwt.ms with tokens in the URL"
+echo "4. The URL will look like:"
+echo "   https://jwt.ms/#access_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIs...&refresh_token=0.AAAA...&token_type=Bearer&expires_in=3600"
+echo "5. Copy the 'refresh_token' part (everything after 'refresh_token=' and before '&')"
 echo ""
 
-read -p "Enter Bing Client ID: " BING_CLIENT_ID
+read -p "Enter Bing Client ID (5ac8d58b-668b-4ccf-ab2b-c53b831d55f8): " BING_CLIENT_ID
 read -p "Enter Bing Client Secret: " BING_CLIENT_SECRET
 read -p "Enter Bing Refresh Token: " BING_REFRESH_TOKEN
 
-if [ -z "$BING_CLIENT_ID" ] || [ -z "$BING_CLIENT_SECRET" ] || [ -z "$BING_REFRESH_TOKEN" ]; then
+# Use the provided client ID if empty
+if [ -z "$BING_CLIENT_ID" ]; then
+    BING_CLIENT_ID="5ac8d58b-668b-4ccf-ab2b-c53b831d55f8"
+fi
+
+if [ -z "$BING_CLIENT_SECRET" ] || [ -z "$BING_REFRESH_TOKEN" ]; then
     echo "❌ Missing credentials. Exiting."
     exit 1
 fi
