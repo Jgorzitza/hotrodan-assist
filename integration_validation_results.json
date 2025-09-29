@@ -1,0 +1,60 @@
+{
+  "validations": {
+    "shopify_integration": {
+      "status": "error",
+      "message": "Shopify integration failed: 404",
+      "error": "{\"detail\":\"Not Found\"}"
+    },
+    "pos_integration": {
+      "status": "error",
+      "message": "POS integration failed: 404",
+      "error": "{\"detail\":\"Not Found\"}"
+    },
+    "wms_integration": {
+      "status": "error",
+      "message": "WMS integration failed: 404",
+      "error": "{\"detail\":\"Not Found\"}"
+    },
+    "notification_integration": {
+      "status": "error",
+      "message": "Notification integration validated (0/2 successful)",
+      "results": [
+        {
+          "sku": "NOTIFY-WIDGET-001",
+          "error": "HTTP 404"
+        },
+        {
+          "sku": "NOTIFY-WIDGET-002",
+          "error": "HTTP 404"
+        }
+      ]
+    },
+    "database_integration": {
+      "status": "error",
+      "message": "Database integration validated (0/2 successful)",
+      "results": [
+        {
+          "error": "HTTP 404",
+          "status": "failed"
+        },
+        {
+          "error": "HTTP 404",
+          "status": "failed"
+        }
+      ]
+    },
+    "end_to_end_workflow": {
+      "status": "partial",
+      "message": "End-to-end workflow validation (0/4 steps successful)",
+      "steps": [
+        "\u2717 Stock sync failed: 404",
+        "\u2717 Safety stock calculation failed: 404",
+        "\u2717 Purchase recommendations failed: 404",
+        "\u2717 BOM creation failed: 404"
+      ],
+      "success_rate": 0.0
+    }
+  },
+  "success_rate": 0.0,
+  "timestamp": "2025-09-29T12:17:04.493917"
+}
