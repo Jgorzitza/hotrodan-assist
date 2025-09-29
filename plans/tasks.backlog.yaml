@@ -1,7 +1,7 @@
 # Task backlog (owned by Manager). Status: TODO|DOING|DONE. Each task must reference a node id from rpg.json.
 
 sprint_start: 2025-09-28
-sprint_goal: "Ship first navigable Shopify Admin dashboard backed by live RAG + Approvals loop for CS, with mock data toggles removed."
+sprint_goal: Ship first navigable Shopify Admin dashboard backed by live RAG + Approvals loop for CS, with mock data toggles removed.
 
 tasks:
   - id: repo.cleanup

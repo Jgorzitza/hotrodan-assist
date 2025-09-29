@@ -4,8 +4,8 @@ import {
   OptimizedReorderCalculator,
   PerformanceMonitor,
   DEFAULT_PERFORMANCE_CONFIG,
-} from "../../../dashboard/app/lib/inventory/performance";
-import type { InventorySkuDemand } from "../../../dashboard/app/types/dashboard";
+} from "../../../apps/dashboard/app/lib/inventory/performance";
+import type { InventorySkuDemand } from "../../../apps/dashboard/app/types/dashboard";
 
 // Helper function to create mock SKU data
 const createMockSku = (id: string, velocity: number): InventorySkuDemand => ({

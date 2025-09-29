@@ -108,9 +108,9 @@ class TestRetry {
   generateRetryReport(results) {
     console.log('\n📊 Test Retry Report:');
     
-    let totalTests = results.length;
-    let successfulTests = results.filter(r => r.success).length;
-    let failedTests = totalTests - successfulTests;
+    const totalTests = results.length;
+    const successfulTests = results.filter(r => r.success).length;
+    const failedTests = totalTests - successfulTests;
     
     console.log(`Total Tests: ${totalTests}`);
     console.log(`Successful: ${successfulTests}`);

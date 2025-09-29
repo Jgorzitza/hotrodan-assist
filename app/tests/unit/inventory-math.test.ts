@@ -10,7 +10,7 @@ import {
   calculateDemandStandardDeviation,
   calculateVelocityDeciles,
   getZScore,
-} from "../../../dashboard/app/lib/inventory/math";
+} from "../../../apps/dashboard/app/lib/inventory/math";
 
 describe("calculateStockoutDate", () => {
   beforeEach(() => {

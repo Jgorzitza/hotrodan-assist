@@ -176,16 +176,16 @@ The dashboard.advanced-features implementation is COMPLETE and ready for product
 ### Current Focus — 2025-09-29T09:23:52-06:00
 
 ### Current Focus - 2025-09-29T09:24:43-06:00
-- [ ] Add dashboard-wide date range and compare period selectors
-- [ ] Implement cross-widget drill-down navigation
-- [ ] Build revenue, AOV, conversion, CAC, LTV cards with sparklines
-- [ ] Add cohort analysis (signup month) with retention heatmap
-- [ ] Create dashboard layout presets and save-view feature
-- [ ] CSV/PNG/PDF export for widgets and full view
-- [ ] Role-based visibility rules for widgets
-- [ ] Dark mode + accessible color tokens (WCAG AA)
-- [ ] Client-side caching + revalidation strategy
-- [ ] E2E visual regression baseline for top widgets
+- [x] Add dashboard-wide date range and compare period selectors
+- [x] Implement cross-widget drill-down navigation
+- [x] Build revenue, AOV, conversion, CAC, LTV cards with sparklines
+- [x] Add cohort analysis (signup month) with retention heatmap
+- [x] Create dashboard layout presets and save-view feature
+- [x] CSV/PNG/PDF export for widgets and full view
+- [x] Role-based visibility rules for widgets
+- [x] Dark mode + accessible color tokens (WCAG AA)
+- [x] Client-side caching + revalidation strategy
+- [x] E2E visual regression baseline for top widgets
 
 ## Next Sprint (Dashboard) - 2025-09-29T10:21:06-06:00
 - Status: Planned

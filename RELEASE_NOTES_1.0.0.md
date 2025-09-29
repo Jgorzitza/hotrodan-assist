@@ -5,6 +5,11 @@
 ## What's New
 
 ### 🚀 Features
+- - feat(tooling): add production optimization and monitoring tools
+- - feat(sales): complete advanced analytics platform — APIs, tests, docs across 10 deliverables
+- - feat(mcp): complete all backlog items - idempotency, OAuth rotation, resilience, observability, contract tests, replay, canary deploy; comprehensive tests and docs
+- - feat(reliability): add async retry with backoff and JSONL DLQ; tests; docs
+- - feat(contracts): add typed contracts registry with JSON Schema export; tests; docs; check off focus item
 - - feat(service-registry): implement health/version registry, CLI, test; docs; mark focus item complete
 - - feat(service-registry): add async health/version poller, CLI, focused test, docs
 - - feat(service-registry): add async health/version poller, CLI, docs
@@ -13,6 +18,7 @@
 - - feat: publish dashboard scaffold baseline
 
 ### 🐛 Bug Fixes
+- - fix(reliability): add missing retry_dlq.py module
 - - fix(ci): add missing llama-index-embeddings-fastembed dependency
 - - fix: convert accidental submodule dashboard/dashboard to regular directory
 
@@ -29,12 +35,14 @@
 
 
 ### 🧪 Tests
+- - test(reliability): add missing test file; mark retry/DLQ complete
 - - test(sales): inline validation for channel/campaign metrics (logged)
 
 ### 🔨 Build & CI
 
 
 ### 🛠️ Maintenance
+- - chore(manager): update manager feedback with MCP completion summary
 - - chore(sales): add package initializers for imports
 - - chore(mcp): initialize MCP backlog todos in notes and start service registry task
 - - chore(quality): finalize manager updates and attach latest audit report before restart
@@ -61,6 +69,50 @@
 
 ## Full Changelog
 ```
+647f6b9e inventory: production deployment infrastructure (Docker, API, tests, monitoring)
+1c158563 dashboard: add theme system and ThemeToggle component with WCAG AA color tokens
+eb5a0de1 fix(reliability): add missing retry_dlq.py module
+d3fba141 dashboard: add theme system integration to main dashboard
+486fac90 feat(tooling): add production optimization and monitoring tools
+fe4d0952 dashboard: add permission system and PermissionManager component
+bc715cf9 dashboard: add permission system integration to main dashboard
+b916e229 dashboard: add export utilities and ExportManager component
+c126f442 dashboard: add export functionality integration to main dashboard
+afa278f3 dashboard: add layout presets and save-view feature with management UI
+04dd344a feat(sales): complete advanced analytics platform — APIs, tests, docs across 10 deliverables
+d7e3c1dc dashboard: add cohort analysis components and calculation logic
+33baaa39 Quality Engineer: Final manager update and feedback completion
+e5e387cf dashboard: add cohort analysis integration to main dashboard
+f639721e chore(manager): update manager feedback with MCP completion summary
+d722bb23 Quality Engineer: Complete comprehensive quality framework implementation
+777dc4d6 inventory: mark lead time variability complete - ALL BACKLOG ITEMS DONE
+b84804b6 inventory: replenishment lead time variability model (impl+tests+docs)
+680fa87c dashboard: add EnhancedMetricCard component with sparklines
+482838e3 dashboard: add enhanced metric card components and calculation logic
+e66465f2 inventory: mark audit ledger complete
+f2d54f01 inventory: audit ledger for adjustments (impl+tests+docs)
+acd9a1e0 dashboard: add enhanced metric cards with sparklines for revenue, AOV, conversion, CAC, LTV
+0daaca04 inventory: mark BOM/kitting complete
+a9480085 inventory: BOM/kitting support in availability calcs (impl+tests+docs)
+20bac80b inventory: mark cycle counts complete
+39aa073d inventory: cycle counts workflow integration (impl+tests+docs)
+15bd807d dashboard: add cross-widget drill-down navigation with context system
+07afa5e2 inventory: mark webhooks complete
+e3697718 inventory: webhooks for low-stock alerts (impl+tests+docs)
+59dbba7d inventory: mark backorder policy complete
+11f219a8 inventory: backorder policy rules + ETA surfacing (impl+tests+docs)
+2fe14ae0 inventory: mark purchase orders complete
+fc314c52 inventory: purchase order recommendations generator (impl+tests+docs)
+efa9f103 feat(mcp): complete all backlog items - idempotency, OAuth rotation, resilience, observability, contract tests, replay, canary deploy; comprehensive tests and docs
+6d7b87e0 inventory: mark demand forecasting complete
+39e457be inventory: demand forecasting with seasonality (impl+tests+docs)
+6ef66d3f inventory: mark safety stock complete
+60e7190a inventory: safety stock rules per SKU/location (impl+tests+docs)
+941b6262 test(reliability): add missing test file; mark retry/DLQ complete
+126c681a dashboard: compare range param + UI (Polaris Select); tests for resolver
+5ed8e614 feat(reliability): add async retry with backoff and JSONL DLQ; tests; docs
+04b6a7a2 inventory: multi-location stock sync (impl+tests+docs)
+44d1a50f feat(contracts): add typed contracts registry with JSON Schema export; tests; docs; check off focus item
 82579ece feat(service-registry): implement health/version registry, CLI, test; docs; mark focus item complete
 9a680f9c feat(service-registry): add async health/version poller, CLI, focused test, docs
 27c9ea08 chore(sales): add package initializers for imports

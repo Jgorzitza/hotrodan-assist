@@ -2,7 +2,6 @@ import type { SalesDataset } from "~/types/dashboard";
 import { fetchSalesAnalytics, type FetchSalesAnalyticsParams } from "./analytics.server";
 import { analyzeFunnel, exportFunnelToCSV } from "./funnel.server";
 import { generateExperimentSuggestions, exportExperimentsToCSV } from "./experiments.server";
-import * as SalesAPI from "./analytics-api.server";
 
 /**
  * Enhanced sales analytics with funnel analysis and experiment suggestions
@@ -15,17 +14,6 @@ export type EnhancedSalesAnalytics = {
   dataset: SalesDataset;
   funnel: ReturnType<typeof analyzeFunnel>;
   experiments: ReturnType<typeof generateExperimentSuggestions>;
-  // New Sales Analytics Platform integrations
-  channelCampaign?: Awaited<ReturnType<typeof SalesAPI.apiChannelCampaignMetrics>>;
-  attribution?: Awaited<ReturnType<typeof SalesAPI.apiAttributionCompare>>;
-  funnelDropoff?: Awaited<ReturnType<typeof SalesAPI.apiFunnelDropoff>>;
-  forecast?: Awaited<ReturnType<typeof SalesAPI.apiForecastRollup>>;
-  pricing?: Awaited<ReturnType<typeof SalesAPI.apiPricingElasticity>>;
-  margin?: Awaited<ReturnType<typeof SalesAPI.apiMarginAnalysis>>;
-  churn?: Awaited<ReturnType<typeof SalesAPI.apiChurnRisk>>;
-  nudge?: Awaited<ReturnType<typeof SalesAPI.apiNextBestActions>>;
-  qbr?: Awaited<ReturnType<typeof SalesAPI.apiQbrMbrPack>>;
-  repPerformance?: Awaited<ReturnType<typeof SalesAPI.apiRepPerformance>>;
 };
 
 export type SalesInsightsExport = {
@@ -42,163 +30,7 @@ export async function fetchEnhancedSalesAnalytics(params: FetchSalesAnalyticsPar
   const funnel = analyzeFunnel(dataset);
   const experiments = generateExperimentSuggestions(dataset);
   
-  // Try to fetch Sales Analytics Platform data
-  let channelCampaign, attribution, funnelDropoff, forecast, pricing, margin, churn, nudge, qbr, repPerformance;
-  
-  try {
-    // Convert dataset to API format
-    const records = convertDatasetToRecords(dataset);
-    const events = convertDatasetToEvents(dataset);
-    const customers = convertDatasetToCustomers(dataset);
-    
-    // Fetch all analytics in parallel
-    const [
-      channelResult,
-      attributionResult,
-      funnelResult,
-      forecastResult,
-      pricingResult,
-      marginResult,
-      churnResult,
-      nudgeResult,
-      qbrResult,
-      repResult
-    ] = await Promise.allSettled([
-      SalesAPI.apiChannelCampaignMetrics(records),
-      SalesAPI.apiAttributionCompare(events),
-      SalesAPI.apiFunnelDropoff(events, ['view', 'add_to_cart', 'checkout', 'purchase']),
-      SalesAPI.apiForecastRollup(records, ['channel', 'campaign']),
-      SalesAPI.apiPricingElasticity(records),
-      SalesAPI.apiMarginAnalysis(records, ['channel']),
-      SalesAPI.apiChurnRisk(customers),
-      SalesAPI.apiNextBestActions(customers),
-      SalesAPI.apiQbrMbrPack(convertDatasetToQbrData(dataset)),
-      SalesAPI.apiRepPerformance([]) // No rep data in current dataset
-    ]);
-    
-    if (channelResult.status === 'fulfilled') channelCampaign = channelResult.value;
-    if (attributionResult.status === 'fulfilled') attribution = attributionResult.value;
-    if (funnelResult.status === 'fulfilled') funnelDropoff = funnelResult.value;
-    if (forecastResult.status === 'fulfilled') forecast = forecastResult.value;
-    if (pricingResult.status === 'fulfilled') pricing = pricingResult.value;
-    if (marginResult.status === 'fulfilled') margin = marginResult.value;
-    if (churnResult.status === 'fulfilled') churn = churnResult.value;
-    if (nudgeResult.status === 'fulfilled') nudge = nudgeResult.value;
-    if (qbrResult.status === 'fulfilled') qbr = qbrResult.value;
-    if (repResult.status === 'fulfilled') repPerformance = repResult.value;
-    
-  } catch (error) {
-    console.warn('Sales Analytics Platform integration failed:', error);
-  }
-  
-  return { 
-    dataset, 
-    funnel, 
-    experiments,
-    channelCampaign,
-    attribution,
-    funnelDropoff,
-    forecast,
-    pricing,
-    margin,
-    churn,
-    nudge,
-    qbr,
-    repPerformance
-  };
-}
-
-/**
- * Converts SalesDataset to records format for API
- */
-function convertDatasetToRecords(dataset: SalesDataset): unknown[] {
-  const records: unknown[] = [];
-  
-  // Convert trend data
-  dataset.trend.forEach((point, index) => {
-    records.push({
-      date: point.date,
-      revenue: point.revenue.amount,
-      orders: point.orders,
-      conversion_rate: point.conversionRate,
-      channel: 'organic', // Default channel
-      campaign: 'default'
-    });
-  });
-  
-  // Convert channel breakdown
-  dataset.channelBreakdown.forEach(channel => {
-    records.push({
-      channel: channel.channel,
-      campaign: 'default',
-      revenue: channel.revenue.amount,
-      orders: Math.round(channel.revenue.amount / dataset.totals.averageOrderValue.amount),
-      conversion_rate: channel.conversionRate,
-      sessions: Math.round(channel.revenue.amount / dataset.totals.averageOrderValue.amount * 100 / channel.conversionRate)
-    });
-  });
-  
-  return records;
-}
-
-/**
- * Converts SalesDataset to events format for API
- */
-function convertDatasetToEvents(dataset: SalesDataset): unknown[] {
-  const events: unknown[] = [];
-  
-  dataset.trend.forEach((point, index) => {
-    events.push({
-      user_id: `user_${index}`,
-      timestamp: point.date,
-      event_name: 'view'
-    });
-    
-    if (point.orders > 0) {
-      events.push({
-        user_id: `user_${index}`,
-        timestamp: point.date,
-        event_name: 'purchase'
-      });
-    }
-  });
-  
-  return events;
-}
-
-/**
- * Converts SalesDataset to customers format for API
- */
-function convertDatasetToCustomers(dataset: SalesDataset): unknown[] {
-  const customers: unknown[] = [];
-  
-  // Generate sample customer data
-  for (let i = 0; i < Math.min(100, dataset.totals.totalOrders); i++) {
-    customers.push({
-      customer_id: `customer_${i}`,
-      purchases: [{
-        amount: dataset.totals.averageOrderValue.amount,
-        date: dataset.range?.start || new Date().toISOString()
-      }]
-    });
-  }
-  
-  return customers;
-}
-
-/**
- * Converts SalesDataset to QBR data format
- */
-function convertDatasetToQbrData(dataset: SalesDataset): unknown {
-  return {
-    revenue: dataset.totals.currentTotal.amount,
-    growth_rate: dataset.totals.deltaPercentage,
-    customers: dataset.totals.totalOrders,
-    conversion_rate: dataset.totals.conversionRate,
-    top_channel: dataset.channelBreakdown[0]?.channel || 'Unknown',
-    retention_rate: 75.0,
-    avg_order_value: dataset.totals.averageOrderValue.amount
-  };
+  return { dataset, funnel, experiments };
 }
 
 /**

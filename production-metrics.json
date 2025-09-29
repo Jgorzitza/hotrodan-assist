@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-09-29T17:54:01.205Z",
+  "uptime": {
+    "milliseconds": 20026,
+    "seconds": 20,
+    "minutes": 0,
+    "hours": 0
+  },
+  "metrics": {
+    "memoryUsage": {
+      "percentage": "80.42",
+      "rss": 47710208,
+      "heapUsed": 4720560,
+      "heapTotal": 5869568
+    },
+    "cpuUsage": {
+      "percentage": "2.88",
+      "user": 16463,
+      "system": 12347
+    },
+    "responseTime": {
+      "average": 0,
+      "min": 0,
+      "max": 0
+    },
+    "requests": {
+      "total": 0,
+      "perSecond": 0
+    },
+    "errors": {
+      "total": 0,
+      "rate": "0.00"
+    }
+  },
+  "alerts": [
+    {
+      "type": "memory",
+      "severity": "high",
+      "message": "Memory usage 80.4% exceeds threshold 80.0%",
+      "value": 0.8042431742847174,
+      "threshold": 0.8,
+      "timestamp": 1759168441205
+    }
+  ],
+  "thresholds": {
+    "memoryUsage": 0.8,
+    "cpuUsage": 0.9,
+    "responseTime": 1000,
+    "errorRate": 0.05
+  }
+}

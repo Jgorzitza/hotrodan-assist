@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-09-29T17:54:16.515Z",
+  "totalAlerts": 2,
+  "alerts": [
+    {
+      "type": "newErrorType",
+      "severity": "medium",
+      "message": "New error type detected: database",
+      "value": "database",
+      "timestamp": 1759168455516
+    },
+    {
+      "type": "newErrorType",
+      "severity": "medium",
+      "message": "New error type detected: api",
+      "value": "api",
+      "timestamp": 1759168456515
+    }
+  ]
+}

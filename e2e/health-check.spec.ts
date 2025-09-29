@@ -35,8 +35,8 @@ test.describe('Health Check Tests', () => {
         console.log(`⚠️ Dashboard returned status: ${response?.status()}`);
         // Don't fail the test - this is expected if server isn't running
       }
-    } catch (error) {
-      console.log(`ℹ️ Dashboard not accessible (expected if server not running): ${error.message}`);
+    } catch (error: unknown) {
+      console.log(`ℹ️ Dashboard not accessible (expected if server not running): ${(error as Error).message}`);
       // This is expected behavior when server isn't running
     }
   });

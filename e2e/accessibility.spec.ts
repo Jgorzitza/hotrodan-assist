@@ -47,8 +47,8 @@ test.describe('Accessibility Tests', () => {
       console.log(`- Inapplicable: ${accessibilityScanResults.inapplicable.length}`);
       console.log(`- Passed: ${accessibilityScanResults.passes.length}`);
 
-    } catch (error) {
-      console.log(`ℹ️ Accessibility test skipped (server not running): ${error.message}`);
+    } catch (error: unknown) {
+      console.log(`ℹ️ Accessibility test skipped (server not running): ${(error as Error).message}`);
       // Don't fail the test if server is not running
     }
   });

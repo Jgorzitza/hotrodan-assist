@@ -48,7 +48,7 @@ class FlakyTestDetector {
 
   parseTestResults(output, runNumber, duration, failed = false) {
     const lines = output.split('\n');
-    let currentTest = null;
+    const currentTest = null;
     
     for (const line of lines) {
       // Parse test results (adjust patterns based on your test runner)

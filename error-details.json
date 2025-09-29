@@ -1,0 +1,64 @@
+{
+  "timestamp": "2025-09-29T17:54:16.515Z",
+  "totalErrors": 2,
+  "errors": [
+    {
+      "id": "error-1759168455515-ca00q7rup",
+      "timestamp": 1759168455515,
+      "type": "database",
+      "severity": "high",
+      "message": "Database connection failed",
+      "stack": "Error: Connection timeout\n    at Database.connect (/app/db.js:10:5)",
+      "context": {
+        "source": "database",
+        "operation": "connect"
+      },
+      "metadata": {},
+      "resolved": false
+    },
+    {
+      "id": "error-1759168456515-r2jn1za29",
+      "timestamp": 1759168456515,
+      "type": "api",
+      "severity": "medium",
+      "message": "API rate limit exceeded",
+      "stack": "Error: Rate limit exceeded\n    at ApiClient.request (/app/api.js:25:10)",
+      "context": {
+        "source": "api",
+        "endpoint": "/users"
+      },
+      "metadata": {},
+      "resolved": false
+    }
+  ],
+  "statistics": {
+    "total": 2,
+    "byType": {
+      "database": 1,
+      "api": 1
+    },
+    "bySeverity": {
+      "high": 1,
+      "medium": 1
+    },
+    "byHour": {
+      "11": 2
+    },
+    "recentErrors": [
+      {
+        "id": "error-1759168455515-ca00q7rup",
+        "type": "database",
+        "severity": "high",
+        "message": "Database connection failed",
+        "timestamp": 1759168455515
+      },
+      {
+        "id": "error-1759168456515-r2jn1za29",
+        "type": "api",
+        "severity": "medium",
+        "message": "API rate limit exceeded",
+        "timestamp": 1759168456515
+      }
+    ]
+  }
+}

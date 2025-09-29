@@ -1,0 +1,41 @@
+{
+  "performance": {
+    "interval": 30000,
+    "logFile": "logs/performance/performance.log",
+    "metricsFile": "monitoring/performance-metrics.json",
+    "alertThresholds": {
+      "memoryUsage": 0.85,
+      "cpuUsage": 0.90,
+      "responseTime": 1000,
+      "errorRate": 0.05
+    }
+  },
+  "errors": {
+    "logFile": "logs/errors/error-tracker.log",
+    "errorFile": "monitoring/error-details.json",
+    "alertFile": "monitoring/error-alerts.json",
+    "maxErrors": 1000,
+    "alertThresholds": {
+      "errorRate": 0.05,
+      "consecutiveErrors": 10,
+      "criticalErrorRate": 0.01
+    }
+  },
+  "system": {
+    "interval": 60000,
+    "logFile": "logs/system/system-monitor.log",
+    "healthCheckFile": "monitoring/system-health.json",
+    "services": [
+      { "name": "database", "port": 5432, "type": "tcp" },
+      { "name": "redis", "port": 6379, "type": "tcp" },
+      { "name": "api", "port": 3000, "type": "http", "endpoint": "/health" },
+      { "name": "dashboard", "port": 3001, "type": "http", "endpoint": "/health" }
+    ],
+    "thresholds": {
+      "diskUsage": 0.85,
+      "memoryUsage": 0.90,
+      "cpuUsage": 0.80,
+      "loadAverage": 4.0
+    }
+  }
+}
