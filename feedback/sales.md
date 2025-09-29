@@ -63,3 +63,21 @@
 8) Nudge system: next-best action per segment
 9) QBR/MBR pack generator (PDF)
 10) Rep performance dashboard + coaching insights
+
+> Process: Use canonical feedback/sales.md for all updates. Non-canonical files are archived.
+
+### Current Focus - 2025-09-29T09:24:43-06:00
+- [ ] Revenue/AOV/conv by channel and campaign
+- [ ] Attribution model comparison (first/last/multi-touch)
+- [ ] Funnel drop-off analysis with step annotations
+- [ ] Forecast rollup with confidence intervals
+- [ ] Pricing elasticity estimator
+- [ ] Margin analysis after fees/discounts/returns
+- [ ] Churn indicator + save-offer playbooks
+- [ ] Nudge system: next-best action per segment
+- [ ] QBR/MBR pack generator (PDF)
+- [ ] Rep performance dashboard + coaching insights
+
+## Next Sprint (Sales) - 2025-09-29T10:22:27-06:00
+- Status: Planned
+- Owner: Sales Insights Engineer

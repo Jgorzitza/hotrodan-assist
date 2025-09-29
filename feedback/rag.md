@@ -69,3 +69,29 @@
 8) Multi-tenant index isolation and quotas
 9) Metadata governance (PII redaction)
 10) Cost dashboard for embedding/LLM spend
+# RAG Advanced Platform — Completion
+
+- Timestamp: 2025-09-29T09:04:28-06:00
+- Status: COMPLETE
+- Artifacts: app/rag_api/advanced_platform.py, app/rag_api/README_ADVANCED.md
+- Endpoints: POST /query, GET /health, GET /metrics, GET /models (API :8001)
+- Notes: Safe fallbacks; Redis optional; OpenAI optional (retrieval-only fallback).
+
+
+> Process: Use canonical feedback/rag.md for all updates. Non-canonical files are archived.
+
+### Current Focus - 2025-09-29T09:24:43-06:00
+- [ ] Document pipeline: dedupe, semantic chunking, TOC-aware splits
+- [ ] Hybrid retrieval (BM25 + dense) with re-ranking
+- [ ] Freshness and recency decay strategies
+- [ ] Safe responses: policy filters + citation enforcement
+- [ ] Vector store compaction + orphan cleanup
+- [ ] Query telemetry and feedback loop (thumbs up/down)
+- [ ] Evaluation harness with golden sets and KPIs
+- [ ] Multi-tenant index isolation and quotas
+- [ ] Metadata governance (PII redaction)
+- [ ] Cost dashboard for embedding/LLM spend
+
+## Next Sprint (RAG) - 2025-09-29T10:22:02-06:00
+- Status: Planned
+- Owner: RAG Engineer

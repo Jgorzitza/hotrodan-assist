@@ -69,3 +69,21 @@
 8) Test data factories and snapshot stabilizers
 9) Makefiles/NPM scripts for common ops
 10) Trace-first debugging templates
+
+> Process: Use canonical feedback/tooling.md for all updates. Non-canonical files are archived.
+
+### Current Focus - 2025-09-29T09:24:43-06:00
+- [ ] Monorepo/multi-repo strategy doc and implementation
+- [ ] Codegen for clients/SDKs (OpenAPI/GraphQL)
+- [ ] Pre-commit format/lint/type-check; CI gates
+- [ ] Create new feature scaffolder (plop/nx)
+- [ ] Release notes and version bump automation
+- [ ] Secret scanning and license checks
+- [ ] Local dev: one-command bootstrap + seeded data
+- [ ] Test data factories and snapshot stabilizers
+- [ ] Makefiles/NPM scripts for common ops
+- [ ] Trace-first debugging templates
+
+## Next Sprint (Tooling) - 2025-09-29T10:22:52-06:00
+- Status: Planned
+- Owner: Tooling Engineer

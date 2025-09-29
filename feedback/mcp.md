@@ -64,3 +64,21 @@
 8) Contract tests against mocks
 9) Backfill/replay tooling with guardrails
 10) Canary deploy and traffic shifting
+
+> Process: Use canonical feedback/mcp.md for all updates. Non-canonical files are archived.
+
+### Current Focus - 2025-09-29T09:24:43-06:00
+- [ ] Service registry with health and versions
+- [ ] Typed contracts + schema registry
+- [ ] Retry/backoff and DLQ for failed events
+- [ ] Idempotent handlers; exactly-once where feasible
+- [ ] OAuth secrets rotation and vault integration
+- [ ] Rate limiting and circuit breakers
+- [ ] Traces/metrics/logs correlation (OTel)
+- [ ] Contract tests against mocks
+- [ ] Backfill/replay tooling with guardrails
+- [ ] Canary deploy and traffic shifting
+
+## Next Sprint (MCP) - 2025-09-29T10:22:38-06:00
+- Status: Planned
+- Owner: MCP Engineer

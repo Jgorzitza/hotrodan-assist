@@ -65,3 +65,22 @@
 8) Incident playbooks and simulations
 9) Cross-browser/device matrix in CI
 10) Test result triage dashboard
+
+> Process: Use canonical feedback/quality.md for all updates. Non-canonical files are archived.
+
+### Current Focus - 2025-09-29T09:24:43-06:00
+- [ ] Contract/e2e suites for top flows
+- [ ] Synthetic monitoring for critical paths
+- [ ] Accessibility audits and fixes (axe)
+- [ ] Security checks (SAST/DAST) integrated
+- [ ] Load and soak tests with thresholds
+- [ ] Flaky test auto-retry classification
+- [ ] Error budget policy + SLO dashboards
+- [ ] Incident playbooks and simulations
+- [ ] Cross-browser/device matrix in CI
+- [ ] Test result triage dashboard
+
+## Next Sprint (Quality) - 2025-09-29T10:23:05-06:00
+- Status: Planned
+- Owner: Quality Engineer
+- Note: Non-feedback edits require staging feedback/QUALITY_ALLOW_CODE_CHANGES.

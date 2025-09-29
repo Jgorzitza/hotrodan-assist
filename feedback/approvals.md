@@ -69,3 +69,21 @@
 8) Admin builder UI for workflows + validation
 9) Metrics: time-to-approve, bottlenecks, reopen rate
 10) API endpoints (create, act, query) with RBAC
+
+> Process: Use canonical feedback/approvals.md for all updates. Non-canonical files are archived.
+
+### Current Focus - 2025-09-29T09:24:43-06:00
+- [ ] Define approval workflow DSL (YAML/JSON schema)
+- [ ] Multi-level routing + conditional branches
+- [ ] Parallel approval stages with quorum rules
+- [ ] SLAs, reminders, escalations, auto-approve on timeout
+- [ ] Reassignment, delegate, and withdraw actions
+- [ ] Audit trail with signed events
+- [ ] Webhook emitters on state transitions
+- [ ] Admin builder UI for workflows + validation
+- [ ] Metrics: time-to-approve, bottlenecks, reopen rate
+- [ ] API endpoints (create, act, query) with RBAC
+
+## Next Sprint (Approvals) - 2025-09-29T10:21:34-06:00
+- Status: Planned
+- Owner: Approvals Engineer

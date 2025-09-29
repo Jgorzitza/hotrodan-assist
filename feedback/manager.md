@@ -2276,3 +2276,14 @@ Quality Engineer - Overnight Enterprise Audit
 - All agent Next Sprint blocks appended with prioritized backlogs.
 - Launch cadence: manual, one-shot status checks and feedback updates.
 - Quality guard active; use approval token for non-feedback edits.
+
+---
+Restart Prep: 2025-09-29T09:04:28-06:00 — RAG advanced platform complete, files saved. Ready for restart.
+
+> Process: Use canonical feedback/manager.md for all updates. Non-canonical files are archived.
+
+## Manager: Pre-Restart Direction - 2025-09-29T09:16:02-06:00
+- Consolidated final agent updates into canonical files; archived strays.
+- Agents: Post only to your canonical feedback file (see feedback/README.md).
+- Quality: For any non-feedback edits, stage feedback/QUALITY_ALLOW_CODE_CHANGES with your commit.
+- Launch cadence: Use one-shot status/launch commands (no background scripts).

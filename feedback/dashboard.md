@@ -170,3 +170,24 @@ The dashboard.advanced-features implementation is COMPLETE and ready for product
 8) Dark mode + accessible color tokens (WCAG AA)
 9) Client-side caching + revalidation strategy
 10) E2E visual regression baseline for top widgets
+
+> Process: Use canonical feedback/dashboard.md for all updates. Non-canonical files are archived.
+
+### Current Focus — 2025-09-29T09:23:52-06:00
+
+### Current Focus - 2025-09-29T09:24:43-06:00
+- [ ] Add dashboard-wide date range and compare period selectors
+- [ ] Implement cross-widget drill-down navigation
+- [ ] Build revenue, AOV, conversion, CAC, LTV cards with sparklines
+- [ ] Add cohort analysis (signup month) with retention heatmap
+- [ ] Create dashboard layout presets and save-view feature
+- [ ] CSV/PNG/PDF export for widgets and full view
+- [ ] Role-based visibility rules for widgets
+- [ ] Dark mode + accessible color tokens (WCAG AA)
+- [ ] Client-side caching + revalidation strategy
+- [ ] E2E visual regression baseline for top widgets
+
+## Next Sprint (Dashboard) - 2025-09-29T10:21:06-06:00
+- Status: Planned
+- Owner: Dashboard Engineer
+- Start when ready.
