@@ -23,6 +23,7 @@ import {
   SkeletonDisplayText,
   SkeletonThumbnail,
   Text,
+  Select,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { PolarisVizProvider, SparkLineChart } from "@shopify/polaris-viz";
@@ -42,6 +43,7 @@ import {
   DASHBOARD_RANGE_PRESETS,
   DEFAULT_DASHBOARD_RANGE,
   resolveDashboardRangeKey,
+  resolveCompareRangeKey,
   withDashboardRangeParam,
 } from "~/lib/date-range";
 import { scenarioFromRequest } from "~/mocks";
@@ -49,6 +51,8 @@ import { getDashboardOverview, type DashboardOverview } from "~/mocks/dashboard"
 import { USE_MOCK_DATA } from "~/mocks/config.server";
 import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
 import type { DashboardRangeKey, MockScenario } from "~/types/dashboard";
+import { DashboardProvider } from "~/lib/dashboard-context";
+import { DrillDownNavigation, DrillDownButton } from "~/components/DrillDownNavigation";
 
 const HOME_RANGE_KEYS: Array<Exclude<DashboardRangeKey, "14d">> = DASHBOARD_RANGE_KEY_LIST.filter(
   (key): key is Exclude<DashboardRangeKey, "14d"> => key !== "14d",
@@ -153,9 +157,17 @@ export default function DashboardRoute() {
   const prefetchedSalesHref = useRef<string | null>(null);
 
   const activeRange = resolveDashboardRangeKey(
+ 
+  const activeCompare = resolveCompareRangeKey(searchParams.get("compare"));
     searchParams.get("range"),
+ 
+  const activeCompare = resolveCompareRangeKey(searchParams.get("compare"));
     data.range ?? DEFAULT_DASHBOARD_RANGE,
+ 
+  const activeCompare = resolveCompareRangeKey(searchParams.get("compare"));
   );
+ 
+  const activeCompare = resolveCompareRangeKey(searchParams.get("compare"));
 
   const navigationLocation = navigation.location;
   const isHomeNavigation = navigation.state !== "idle" && navigationLocation?.pathname === "/app";
@@ -179,10 +191,85 @@ export default function DashboardRoute() {
   };
 
   const handleRangeSelect = (value: DashboardRangeKey) => {
+ 
+  const handleCompareSelect = (value: string) => {
     const params = new URLSearchParams(searchParams);
-    params.set("range", value);
+    if (value === "none") {
+      params.delete("compare");
+    } else {
+      params.set("compare", value);
+    }
     navigate(`?${params.toString()}`, { replace: true });
   };
+
+  const compareOptions = [
+    { label: "No compare", value: "none" },
+    ...DASHBOARD_RANGE_KEY_LIST.map((key) => ({ label: `Compare ${key.toUpperCase()}`, value: key })),
+  ];
+    const params = new URLSearchParams(searchParams);
+ 
+  const handleCompareSelect = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value === "none") {
+      params.delete("compare");
+    } else {
+      params.set("compare", value);
+    }
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  const compareOptions = [
+    { label: "No compare", value: "none" },
+    ...DASHBOARD_RANGE_KEY_LIST.map((key) => ({ label: `Compare ${key.toUpperCase()}`, value: key })),
+  ];
+    params.set("range", value);
+ 
+  const handleCompareSelect = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value === "none") {
+      params.delete("compare");
+    } else {
+      params.set("compare", value);
+    }
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  const compareOptions = [
+    { label: "No compare", value: "none" },
+    ...DASHBOARD_RANGE_KEY_LIST.map((key) => ({ label: `Compare ${key.toUpperCase()}`, value: key })),
+  ];
+    navigate(`?${params.toString()}`, { replace: true });
+ 
+  const handleCompareSelect = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value === "none") {
+      params.delete("compare");
+    } else {
+      params.set("compare", value);
+    }
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  const compareOptions = [
+    { label: "No compare", value: "none" },
+    ...DASHBOARD_RANGE_KEY_LIST.map((key) => ({ label: `Compare ${key.toUpperCase()}`, value: key })),
+  ];
+  };
+ 
+  const handleCompareSelect = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value === "none") {
+      params.delete("compare");
+    } else {
+      params.set("compare", value);
+    }
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  const compareOptions = [
+    { label: "No compare", value: "none" },
+    ...DASHBOARD_RANGE_KEY_LIST.map((key) => ({ label: `Compare ${key.toUpperCase()}`, value: key })),
+  ];
 
   const sparklineData: DataPoint[] = data.sparkline.map((value, index) => ({
     key: index,

@@ -56,7 +56,7 @@ test.describe('Accessibility Tests', () => {
   test('should have proper ARIA labels and roles', async ({ page }) => {
     // Test basic accessibility patterns
     await page.setContent(`
-      <html>
+      <html lang="en">
         <head><title>Accessibility Test</title></head>
         <body>
           <h1>Test Page</h1>
@@ -80,7 +80,7 @@ test.describe('Accessibility Tests', () => {
 
   test('should have proper color contrast', async ({ page }) => {
     await page.setContent(`
-      <html>
+      <html lang="en">
         <head><title>Color Contrast Test</title></head>
         <body style="background-color: white;">
           <p style="color: #333333;">This text should have sufficient contrast</p>
@@ -101,7 +101,7 @@ test.describe('Accessibility Tests', () => {
 
   test('should have proper keyboard navigation', async ({ page }) => {
     await page.setContent(`
-      <html>
+      <html lang="en">
         <head><title>Keyboard Navigation Test</title></head>
         <body>
           <button>First Button</button>
@@ -121,7 +121,7 @@ test.describe('Accessibility Tests', () => {
     // Run accessibility scan
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(['wcag2aa'])
-      .withRules(['keyboard'])
+      .withTags(['wcag2a'])
       .analyze();
 
     expect(accessibilityScanResults.violations).toHaveLength(0);
