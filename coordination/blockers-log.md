@@ -11,3 +11,5 @@
 - Append new rows when blockers emerge; edit `Status`/`Resolution` as they progress.
 - Reference coordination memos or feedback notes for deeper context.
 - Close entries only after confirming downstream consumers are unblocked.
+| 2025-09-29 | All Teams | Teams sitting idle despite having approved work | Tooling | Resolved | Created TEAMS-UNBLOCK-SIGNAL.md - all teams have approved work and no blockers |
+| 2025-09-29 | All Teams | Phase 1 complete, teams waiting for Phase 2 tasks | Manager | Resolved | Created PHASE2-LAUNCH-SIGNAL.md and expanded task backlog with 15 new tasks |

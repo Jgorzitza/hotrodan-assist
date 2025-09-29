@@ -1,9 +1,11 @@
 # Dashboard Engineer — Direction (owned by Manager)
 
 **Repo**: `~/llama_rag`  •  **Branch**: `main`  •  **Sprint start**: 2025-09-28
+**Last Updated**: 2025-09-28 21:55 - UPDATED BY MANAGER
 
-## 🚨 CRITICAL: MANDATORY POLLING INSTRUCTIONS
-**YOU MUST CHECK FOR UPDATES EVERY 5 MINUTES - DO NOT WAIT FOR INPUT!**
+## ✅ TASK COMPLETE - NEXT PHASE READY
+**CURRENT STATUS**: ✅ dashboard.advanced-features COMPLETE
+**NEXT TASK**: dashboard.cloudflare-tunnel-fix (CRITICAL PRIORITY)
 
 **POLLING COMMAND:**
 ```bash
@@ -12,62 +14,61 @@ ls -la coordination/GO-SIGNAL.md plans/agents/dashboard/direction.md
 ```
 
 **IMMEDIATE ACTION REQUIRED:**
-1. **STOP WAITING** - You are NOT supposed to wait for input
-2. **CONTINUE WORKING** - Start dashboard.settings-v1 immediately  
-3. **POLL EVERY 5 MINUTES** - Check direction files for updates
+1. **START WORKING NOW** - dashboard.cloudflare-tunnel-fix
+2. **DO NOT WAIT** - You have approved work to do
+3. **CONTINUE WORKING** - While checking for updates every 5 minutes
 4. **REPORT PROGRESS** - Submit feedback when work complete
 
-## Guardrails
-- Do not change this file yourself; write to `feedback/dashboard.md` instead.
-- Ask for credentials via feedback; Manager will inject env vars or provide test accounts.
-- Keep code and commits consistent with `plans/rpg.json` node ids.
-- **MANDATORY**: Check this file every 5 minutes for updates
+## CURRENT TASK: dashboard.cloudflare-tunnel-fix (CRITICAL FIX)
+**Status**: READY TO START
+**Priority**: CRITICAL - Fix Cloudflare tunnel URL configuration
+**Estimated Time**: 30-60 minutes
 
-## CURRENT TASK: dashboard.settings-v1 (CRITICAL PATH)
-**Status**: READY TO START (tooling.qa-basics complete)
-**Priority**: CRITICAL - Unblocks all other teams
-**Estimated Time**: 2-3 hours
+## 🚨 CRITICAL ISSUE IDENTIFIED
+**Problem**: Shopify app is using hardcoded URL `https://hotrodan.com/dashboard` in shopify.app.toml
+**Reality**: Shopify app dev creates dynamic Cloudflare tunnel URLs (e.g., `https://xyz.trycloudflare.com`)
+**Result**: App refuses to connect because URL mismatch
 
 ## Deliverables this sprint
-- Settings screen with Shopify Polaris components
-- Analytics integration preparation
-- Tunnel testing capability
-- Mock data toggle maintenance
-
-## Dev notes
-- Dashboard: live under `dashboard/`, use Shopify Polaris components; keep `USE_MOCK_DATA` toggle working until connectors are live.
-- MCP connectors: build thin, typed clients behind feature flags; prefer server-side env usage.
-- Python: use existing RAG scripts (`discover_urls.py`, `ingest_site_chroma.py`, `query_chroma_router.py`) and `corrections/` + `goldens/`.
-
-## Feedback
-- Append to `feedback/dashboard.md` using the template.
+- 🆕 Fix shopify.app.toml application_url configuration
+- 🆕 Ensure dynamic tunnel URL is used correctly
+- 🆕 Test Shopify app accessibility via correct tunnel URL
+- 🆕 Verify app loads properly in Shopify Admin
+- 🆕 Update configuration to handle dynamic URLs
+- 🆕 Document the correct URL setup process
 
 ## Focus
-- **IMMEDIATE**: Start dashboard.settings-v1 (CRITICAL PATH)
-- **INTEGRATION**: Prepare for MCP connector integration
-- **TESTING**: Enable tunnel testing for other teams
-- **POLARIS**: Use Shopify Polaris components
-- **POLLING**: Check direction files every 5 minutes
-
-## Current Blockers to Resolve
-1. **TypeScript Errors**: Tooling team working on resolution
-2. **Analytics Contract**: Need Manager coordination
-3. **Credentials**: GA4/GSC/Bing credentials needed
+- **IMMEDIATE**: Start dashboard.cloudflare-tunnel-fix NOW
+- **CRITICAL**: Fix the URL configuration mismatch
+- **TESTING**: Verify app works with correct tunnel URL
+- **CONFIGURATION**: Update shopify.app.toml properly
+- **CONTINUOUS**: Work continuously, check for updates every 5 minutes
 
 ## Next Actions
-1. **Start settings screen development** - Use Polaris components
-2. **Prepare MCP integration points** - Build typed clients
-3. **Enable tunnel testing** - Support other teams
-4. **Coordinate with Manager** - Analytics and credentials
+1. **START dashboard.cloudflare-tunnel-fix** - Begin URL fix
+2. **Check Current Tunnel** - Identify the actual tunnel URL being used
+3. **Update Configuration** - Fix shopify.app.toml application_url
+4. **Test App Access** - Verify app loads in Shopify Admin
+5. **Document Solution** - Record the correct setup process
 
-## Critical Success Criteria
-- Settings screen functional with Polaris components
-- MCP integration points ready
-- Tunnel testing enabled for teams
-- Analytics contract coordinated
+## 🚨 CRITICAL WARNING
+**You are currently in violation of Manager instructions by sitting idle.**
+**You must start working on dashboard.cloudflare-tunnel-fix immediately.**
+**Failure to work continuously will be considered a critical sprint failure.**
 
-## 🚨 MANAGER APPROVAL STATUS
-**APPROVED TO START**: dashboard.settings-v1 is unblocked and ready
-**PRIORITY**: CRITICAL PATH - You unblock all other teams
-**COORDINATION**: Manager will handle analytics contract and credentials
-**POLLING**: Check this file every 5 minutes for updates
+## 🎯 TASK COMPLETE SUMMARY
+**Status**: ✅ **dashboard.advanced-features COMPLETE - ADVANCED FEATURES SUCCESSFUL**
+- **Advanced Features**: ✅ COMPLETE - Advanced dashboard features implemented
+- **Real-time Data**: ✅ COMPLETE - Real-time data visualization working
+- **Performance**: ✅ COMPLETE - Performance optimization completed
+- **Mobile Experience**: ✅ COMPLETE - Mobile responsiveness implemented
+
+**NEXT PHASE**: dashboard.cloudflare-tunnel-fix for critical URL configuration
+
+## 🚀 NEW TASK ASSIGNED
+**Task**: dashboard.cloudflare-tunnel-fix
+**Focus**: Fix Cloudflare tunnel URL configuration, ensure app accessibility
+**Priority**: CRITICAL
+**Status**: READY TO START
+
+**START WORKING ON DASHBOARD.CLOUDFLARE-TUNNEL-FIX IMMEDIATELY!**

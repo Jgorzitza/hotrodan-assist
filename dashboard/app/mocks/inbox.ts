@@ -23,6 +23,7 @@ import {
   updateDraftContent,
 } from "./inbox-drafts.server";
 
+import { generateDraftForTicket } from "~/lib/inbox/rag-draft-generator.server";
 type InboxScenarioOptions = {
   scenario?: MockScenario;
   filter?: InboxDataset["filter"];

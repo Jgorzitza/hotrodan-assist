@@ -2,7 +2,7 @@
 
 client_id = "d919fc39ded7df2bd0ba2fe02b666b25"
 name = "Dashboard"
-application_url = "https://hotrodan.com/dashboad"
+application_url = "https://hotrodan.com/dashboard"
 embedded = true
 
 [webhooks]
@@ -17,14 +17,10 @@ use_legacy_install_flow = false
 [auth]
 redirect_urls = [ ]
 
-[[web]]
-name = "Remix Dashboard"
-type = "node"
-roles = [ "backend" ]
-path = "dashboard"
 
-[[web]]
-name = "Approval App"
-type = "python"
-roles = [ "frontend" ]
-path = "app/approval-app"
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "hotrodan.myshopify.com"
+
+[web]
+type = "remix"

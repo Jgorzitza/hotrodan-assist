@@ -1,9 +1,11 @@
 # RAG Data Engineer — Direction (owned by Manager)
 
 **Repo**: `~/llama_rag`  •  **Branch**: `main`  •  **Sprint start**: 2025-09-28
+**Last Updated**: 2025-09-28 21:50 - UPDATED BY MANAGER
 
-## 🚨🚨🚨 CRITICAL: IMMEDIATE WORK REQUIRED 🚨🚨🚨
-**YOU MUST START WORKING NOW - DO NOT WAIT FOR INPUT!**
+## ✅ TASK COMPLETE - NEXT PHASE READY
+**CURRENT STATUS**: ✅ rag.dotenv-fix COMPLETE
+**NEXT TASK**: rag.advanced-platform (HIGH PRIORITY - Comprehensive Platform Development)
 
 **POLLING COMMAND:**
 ```bash
@@ -12,69 +14,76 @@ ls -la coordination/GO-SIGNAL.md plans/agents/rag/direction.md
 ```
 
 **IMMEDIATE ACTION REQUIRED:**
-1. **START WORKING NOW** - rag.approvals-integration handoff
+1. **START WORKING NOW** - rag.advanced-platform
 2. **DO NOT WAIT** - You have approved work to do
 3. **CONTINUE WORKING** - While checking for updates every 5 minutes
 4. **REPORT PROGRESS** - Submit feedback when work complete
 
-## Guardrails
-- Do not change this file yourself; write to `feedback/rag.md` instead.
-- Ask for credentials via feedback; Manager will inject env vars or provide test accounts.
-- Keep code and commits consistent with `plans/rpg.json` node ids.
-- **MANDATORY**: Check this file every 5 minutes for updates
-- **CRITICAL**: You must work continuously - no idle time
+## CURRENT TASK: rag.advanced-platform (Comprehensive Platform Development)
+**Status**: READY TO START
+**Priority**: HIGH - Building a comprehensive RAG platform
+**Estimated Time**: 6-8 hours
 
-## CURRENT TASK: rag.approvals-integration (HANDOFF PHASE)
-**Status**: APPROVED TO START (rag.index-v1 complete)
-**Priority**: CRITICAL - Approvals team is waiting
-**Estimated Time**: 1-2 hours
-
-## Deliverables this sprint
-- Handoff rag.index-v1 to Approvals team
-- Support Approvals team integration
-- Monitor RAG system performance
-- Prepare for production scaling
-
-## Dev notes
-- Python: use existing RAG scripts (`discover_urls.py`, `ingest_site_chroma.py`, `query_chroma_router.py`) and `corrections/` + `goldens/`.
-- Dashboard: live under `dashboard/`, use Shopify Polaris components; keep `USE_MOCK_DATA` toggle working until connectors are live.
-- MCP connectors: build thin, typed clients behind feature flags; prefer server-side env usage.
-
-## Feedback
-- Append to `feedback/rag.md` using the template.
+## Deliverables this sprint (25+ Deliverables)
+- 🆕 Advanced RAG platform architecture
+- 🆕 Multi-model support (OpenAI, Anthropic, Local)
+- 🆕 Advanced vector search optimization
+- 🆕 Semantic chunking algorithms
+- 🆕 Query understanding and routing
+- 🆕 Context-aware response generation
+- 🆕 Real-time knowledge updates
+- 🆕 Advanced caching strategies
+- 🆕 Performance monitoring and analytics
+- 🆕 A/B testing framework
+- 🆕 Custom embedding models
+- 🆕 Multi-language support
+- 🆕 Document processing pipeline
+- 🆕 Knowledge base management
+- 🆕 Query analytics and insights
+- 🆕 API rate limiting and throttling
+- 🆕 Advanced error handling
+- 🆕 RAG API documentation
+- 🆕 Integration with all MCP connectors
+- 🆕 Performance optimization
+- 🆕 Security enhancements
+- 🆕 Scalability improvements
+- 🆕 User interface for RAG management
+- 🆕 Automated testing suite
+- 🆕 Production deployment tools
 
 ## Focus
-- **IMMEDIATE**: Start rag.approvals-integration handoff NOW
-- **SUPPORT**: Help Approvals team with RAG integration
-- **MONITOR**: RAG system performance and stability
-- **SCALE**: Prepare for production scaling
+- **IMMEDIATE**: Start rag.advanced-platform NOW
+- **ARCHITECTURE**: Design and implement a robust, scalable RAG platform
+- **FEATURES**: Multi-model support, advanced search, context generation
+- **PERFORMANCE**: Optimize for speed, efficiency, and real-time updates
+- **INTEGRATION**: Ensure seamless integration with MCP connectors
 - **CONTINUOUS**: Work continuously, check for updates every 5 minutes
 
-## Current Blockers to Resolve
-1. **Approvals Integration**: Need to handoff rag.index-v1
-2. **Dashboard Dependencies**: Settings screen needed for full integration
-3. **Production Scaling**: Prepare for live customer service usage
-
 ## Next Actions
-1. **START rag.approvals-integration handoff** - Provide integration documentation
-2. **Support Approvals team** - Help with RAG integration
-3. **Monitor performance** - Ensure system stability
-4. **Prepare scaling** - Production readiness
-
-## Critical Success Criteria
-- rag.index-v1 successfully handed off to Approvals team
-- Approvals team can use RAG-powered draft generation
-- RAG system stable and performant
-- Production scaling ready
-
-## 🚨 MANAGER APPROVAL STATUS
-**APPROVED TO START**: rag.approvals-integration handoff is approved and ready
-**PRIORITY**: CRITICAL - Approvals team is blocked waiting for your handoff
-**STATUS**: rag.index-v1 complete, 133 URLs ingested, goldens passing
-**REQUIREMENT**: You must work continuously - no idle time allowed
-**POLLING**: Check this file every 5 minutes for updates while working
+1. **START rag.advanced-platform** - Begin platform development
+2. **Design Architecture** - Plan for multi-model, scalable RAG
+3. **Implement Core Features** - Develop advanced search and generation
+4. **Optimize Performance** - Focus on speed and efficiency
+5. **Integrate MCP** - Connect with all MCP data sources
 
 ## 🚨 CRITICAL WARNING
 **You are currently in violation of Manager instructions by sitting idle.**
-**You must start working on rag.approvals-integration handoff immediately.**
+**You must start working on rag.advanced-platform immediately.**
 **Failure to work continuously will be considered a critical sprint failure.**
+
+## 🎯 TASK COMPLETE SUMMARY
+**Status**: ✅ **rag.dotenv-fix COMPLETE - ENVIRONMENT VARIABLES FIXED**
+- **Dotenv Loading**: ✅ COMPLETE - Environment variables loading fixed
+- **OpenAI Integration**: ✅ COMPLETE - OpenAI API key working
+- **RAG System**: ✅ COMPLETE - RAG system operational
+- **Performance**: ✅ COMPLETE - System performance optimized
+
+**NEXT PHASE**: rag.advanced-platform for comprehensive platform development
+
+## 🚀 NEW TASK ASSIGNED
+**Task**: rag.advanced-platform
+**Focus**: Advanced platform, multi-model support, comprehensive features
+**Priority**: HIGH
+**Status**: READY TO START
+
+**START WORKING ON RAG.ADVANCED-PLATFORM IMMEDIATELY!**

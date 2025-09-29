@@ -1,0 +1,70 @@
+{
+  "calendar": {
+    "entries": [],
+    "workflows": [
+      {
+        "id": "blog_standard",
+        "name": "Standard Blog Post Workflow",
+        "steps": [
+          {
+            "type": "status_change",
+            "status": "draft"
+          },
+          {
+            "type": "assign",
+            "assignee": "content_writer"
+          },
+          {
+            "type": "status_change",
+            "status": "review"
+          },
+          {
+            "type": "assign",
+            "assignee": "editor"
+          },
+          {
+            "type": "status_change",
+            "status": "approved"
+          },
+          {
+            "type": "schedule",
+            "date": "auto"
+          }
+        ],
+        "auto_approve": false,
+        "notification_emails": [
+          "content-team@company.com"
+        ],
+        "created_at": "2025-09-28T19:59:42.630540"
+      },
+      {
+        "id": "quick_publish",
+        "name": "Quick Publish Workflow",
+        "steps": [
+          {
+            "type": "status_change",
+            "status": "draft"
+          },
+          {
+            "type": "status_change",
+            "status": "approved"
+          },
+          {
+            "type": "schedule",
+            "date": "immediate"
+          }
+        ],
+        "auto_approve": true,
+        "notification_emails": [],
+        "created_at": "2025-09-28T19:59:42.630560"
+      }
+    ],
+    "performance_data": {},
+    "team_members": [],
+    "created_at": "2025-09-28T19:59:42.630530",
+    "updated_at": "2025-09-28T19:59:42.630536"
+  },
+  "performance_data": {},
+  "recommendations": [],
+  "exported_at": "2025-09-28T19:59:45.430751"
+}

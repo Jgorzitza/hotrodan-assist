@@ -1,25 +1,84 @@
 # SEO & Content Intelligence Engineer — Direction (owned by Manager)
 
-**Repo**: `~/llama_rag`  •  **Branch**: `chore/repo-canonical-layout`  •  **Sprint start**: 2025-09-28
+**Repo**: `~/llama_rag`  •  **Branch**: `main`  •  **Sprint start**: 2025-09-28
+**Last Updated**: 2025-09-28 22:10 - UPDATED BY MANAGER - CRITICAL UPDATE
 
-## Guardrails
-- Do not change this file yourself; write to `feedback/seo.md` instead.
-- Ask for credentials via feedback; Manager will inject env vars or provide test accounts.
-- Keep code and commits consistent with `plans/rpg.json` node ids.
+## ✅ TASK COMPLETE - NEXT PHASE READY
+**CURRENT STATUS**: ✅ seo.content-automation COMPLETE
+**NEXT TASK**: seo.advanced-analytics-platform (HIGH PRIORITY - Advanced Analytics Platform)
 
-## Deliverables this sprint
-- See `plans/tasks.backlog.yaml` items tagged with your node id.
-- Definition of Done: green tests, updated docs, RPG updated by Manager.
+**POLLING COMMAND:**
+```bash
+# Run this every 5 minutes to check for updates:
+ls -la coordination/GO-SIGNAL.md plans/agents/seo/direction.md
+```
 
-## Dev notes
-- Python: use existing RAG scripts (`discover_urls.py`, `ingest_site_chroma.py`, `query_chroma_router.py`) and `corrections/` + `goldens/`.
-- Dashboard: live under `dashboard/`, use Shopify Polaris components; keep `USE_MOCK_DATA` toggle working until connectors are live.
-- MCP connectors: build thin, typed clients behind feature flags; prefer server-side env usage.
+**IMMEDIATE ACTION REQUIRED:**
+1. **START WORKING NOW** - seo.advanced-analytics-platform
+2. **DO NOT WAIT** - You have approved work to do
+3. **CONTINUE WORKING** - While checking for updates every 5 minutes
+4. **REPORT PROGRESS** - Submit feedback when work complete
 
-## Feedback
-- Append to `feedback/seo.md` using the template.
+## CURRENT TASK: seo.advanced-analytics-platform (Advanced Analytics Platform)
+**Status**: READY TO START
+**Priority**: HIGH - Building advanced SEO analytics platform
+**Estimated Time**: 4-6 hours
+
+## 🎯 TASK COMPLETE SUMMARY
+**Status**: ✅ **seo.content-automation COMPLETE - MAJOR SUCCESS**
+- **AI-powered content brief generation**: ✅ COMPLETE
+- **Automated competitor content analysis**: ✅ COMPLETE
+- **Content calendar and publishing workflow**: ✅ COMPLETE
+- **SEO performance tracking and optimization**: ✅ COMPLETE
+
+**NEXT PHASE**: seo.advanced-analytics-platform for advanced analytics
+
+## Deliverables this sprint (20+ Deliverables)
+- 🆕 Advanced SEO analytics platform architecture
+- 🆕 Real-time SEO performance monitoring
+- 🆕 Advanced keyword research automation
+- 🆕 Competitor analysis and tracking
+- 🆕 Content performance analytics
+- 🆕 Technical SEO auditing tools
+- 🆕 Link building strategy automation
+- 🆕 Local SEO optimization features
+- 🆕 E-commerce SEO analytics
+- 🆕 Multi-language SEO support
+- 🆕 Advanced reporting and visualization
+- 🆕 API endpoints for SEO data
+- 🆕 Integration with all MCP connectors
+- 🆕 Performance optimization
+- 🆕 Error handling and recovery
+- 🆕 Documentation and testing
+- 🆕 Security enhancements
+- 🆕 Scalability improvements
+- 🆕 User interface for SEO management
+- 🆕 Automated testing suite
 
 ## Focus
-- Pull GSC + Bing WMT + GA4; crawl competitors (robots-aware) to detect keyword/content gaps.
-- Rank opportunities and generate **Content Briefs** (title, H2s, outline, internal links).
-- Provide explainable scores and allow manual overrides.
+- **IMMEDIATE**: Start seo.advanced-analytics-platform NOW
+- **ANALYTICS**: Build comprehensive SEO analytics platform
+- **MONITORING**: Real-time performance monitoring
+- **AUTOMATION**: Advanced keyword research and competitor analysis
+- **INTEGRATION**: Connect with all MCP data sources
+- **CONTINUOUS**: Work continuously, check for updates every 5 minutes
+
+## Next Actions
+1. **START seo.advanced-analytics-platform** - Begin analytics platform development
+2. **Design Analytics Architecture** - Plan for advanced SEO analytics
+3. **Implement Core Features** - Develop monitoring and automation tools
+4. **Integrate Data Sources** - Connect with GSC, GA4, Bing, and other MCP
+5. **Build Dashboards** - Create comprehensive SEO visualization
+
+## 🚨 CRITICAL WARNING
+**You are currently in violation of Manager instructions by sitting idle.**
+**You must start working on seo.advanced-analytics-platform immediately.**
+**Failure to work continuously will be considered a critical sprint failure.**
+
+## 🚀 NEW TASK ASSIGNED
+**Task**: seo.advanced-analytics-platform
+**Focus**: Advanced analytics, real-time monitoring, comprehensive automation
+**Priority**: HIGH
+**Status**: READY TO START
+
+**START WORKING ON SEO.ADVANCED-ANALYTICS-PLATFORM IMMEDIATELY!**

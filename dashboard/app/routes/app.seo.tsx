@@ -1058,16 +1058,6 @@ export default function SeoRoute() {
       >
         <TitleBar
           title="SEO"
-          primaryAction={{
-            content: "Export keywords CSV",
-            onAction: () => handleExport("keywords"),
-          }}
-          secondaryActions={[
-            {
-              content: "Export page CSV",
-              onAction: () => handleExport("pages"),
-            },
-          ]}
         />
 
         <BlockStack gap="500">
@@ -1095,7 +1085,7 @@ export default function SeoRoute() {
           )}
 
           <Card>
-            <Card.Section>
+            <Card>
               <InlineStack align="space-between" blockAlign="center">
                 <BlockStack gap="050">
                   <Text variant="headingMd" as="h2">
@@ -1105,7 +1095,7 @@ export default function SeoRoute() {
                     Toggle adapters for this view. Connection health reflects the latest Settings sync.
                   </Text>
                 </BlockStack>
-                <ButtonGroup segmented>
+                <ButtonGroup >
                   {adapterList.map((adapter) => (
                     <Button
                       key={adapter.id}
@@ -1123,9 +1113,9 @@ export default function SeoRoute() {
                   ))}
                 </ButtonGroup>
               </InlineStack>
-            </Card.Section>
+            </Card>
             <Divider borderColor="border" />
-            <Card.Section>
+            <Card>
               <InlineGrid columns={{ xs: 1, sm: 3 }} gap="200">
                 {adapterList.map((adapter) => (
                   <BlockStack key={adapter.id} gap="100">
@@ -1149,12 +1139,12 @@ export default function SeoRoute() {
                   </BlockStack>
                 ))}
               </InlineGrid>
-            </Card.Section>
+            </Card>
           </Card>
 
           <Layout>
-            <Layout.Section oneThird>
-              <Card title="Scorecard" sectioned>
+            <Layout.Section >
+              <Card title="Scorecard" >
                 <BlockStack gap="200">
                   <ScoreRow
                     label="Core Web Vitals"
@@ -1177,7 +1167,7 @@ export default function SeoRoute() {
             </Layout.Section>
             <Layout.Section>
               <Card>
-                <Card.Section>
+                <Card>
                   <InlineStack align="space-between" blockAlign="center">
                     <BlockStack gap="050">
                       <Text variant="headingMd" as="h2">
@@ -1208,8 +1198,8 @@ export default function SeoRoute() {
                       </InlineStack>
                     )}
                   </InlineStack>
-                </Card.Section>
-                <Card.Section>
+                </Card>
+                <Card>
                   {adapters.ga4.active && traffic.length ? (
                     <div style={{ width: "100%", height: 260 }}>
                       <LineChart
@@ -1234,13 +1224,13 @@ export default function SeoRoute() {
                         : "GA4 adapter disabled for this view."}
                     </Text>
                   )}
-                </Card.Section>
+                </Card>
               </Card>
             </Layout.Section>
           </Layout>
 
           <Card>
-            <Card.Section>
+            <Card>
               <InlineStack align="space-between" blockAlign="center">
                 <BlockStack gap="050">
                   <Text variant="headingMd" as="h2">
@@ -1278,9 +1268,9 @@ export default function SeoRoute() {
                   </Button>
                 </InlineStack>
               </InlineStack>
-            </Card.Section>
+            </Card>
             <Divider borderColor="border" />
-            <Card.Section>
+            <Card>
               <form onSubmit={handleKeywordSubmit}>
                 <InlineStack gap="200" blockAlign="end" wrap>
                   <Box minWidth="240px">
@@ -1300,8 +1290,8 @@ export default function SeoRoute() {
                   </InlineStack>
                 </InlineStack>
               </form>
-            </Card.Section>
-            <Card.Section>
+            </Card>
+            <Card>
               {adapters.gsc.active && keywords.length ? (
                 <DataTable
                   columnContentTypes={[
@@ -1342,11 +1332,11 @@ export default function SeoRoute() {
                     : "Search Console adapter disabled for this view."}
                 </Text>
               )}
-            </Card.Section>
+            </Card>
           </Card>
 
           <Card>
-            <Card.Section>
+            <Card>
               <InlineStack align="space-between" blockAlign="center">
                 <BlockStack gap="050">
                   <Text variant="headingMd" as="h2">
@@ -1381,9 +1371,9 @@ export default function SeoRoute() {
                   </Button>
                 </InlineStack>
               </InlineStack>
-            </Card.Section>
+            </Card>
             <Divider borderColor="border" />
-            <Card.Section>
+            <Card>
               <form onSubmit={handlePageSubmit}>
                 <InlineStack gap="200" blockAlign="end" wrap>
                   <Box minWidth="240px">
@@ -1403,11 +1393,11 @@ export default function SeoRoute() {
                   </InlineStack>
                 </InlineStack>
               </form>
-            </Card.Section>
+            </Card>
             {coverageIssues.length > 0 && (
               <>
                 <Divider borderColor="border-subdued" />
-                <Card.Section subdued>
+                <Card subdued>
                   <InlineStack align="space-between" blockAlign="center">
                     <Text variant="headingSm" as="h3">
                       Coverage warnings
@@ -1428,11 +1418,11 @@ export default function SeoRoute() {
                       </Text>
                     )}
                   </BlockStack>
-                </Card.Section>
+                </Card>
               </>
             )}
             <Divider borderColor="border" />
-            <Card.Section>
+            <Card>
               {adapters.bing.active && pages.length ? (
                 <DataTable
                   columnContentTypes={["text", "numeric", "numeric", "numeric", "text"]}
@@ -1460,11 +1450,11 @@ export default function SeoRoute() {
                     : "Bing adapter disabled for this view."}
                 </Text>
               )}
-            </Card.Section>
+            </Card>
           </Card>
 
           <Card>
-            <Card.Section>
+            <Card>
               <InlineStack align="space-between" blockAlign="center">
                 <BlockStack gap="050">
                   <Text variant="headingMd" as="h2">
@@ -1498,9 +1488,9 @@ export default function SeoRoute() {
                   </InlineStack>
                 </InlineStack>
               </InlineStack>
-            </Card.Section>
+            </Card>
             <Divider borderColor="border" />
-            <Card.Section>
+            <Card>
               {priorityFilterList.map((priority) => {
                 const items = groupedActions[priority];
                 if (!items.length) {
@@ -1592,10 +1582,10 @@ export default function SeoRoute() {
                   No SEO actions match the selected filters.
                 </Text>
               )}
-            </Card.Section>
+            </Card>
           </Card>
 
-          <Card title="MCP keyword opportunities" sectioned>
+          <Card title="MCP keyword opportunities" >
             <BlockStack gap="200">
               {mcp.opportunities.map((opportunity) => (
                 <Box
@@ -1651,7 +1641,7 @@ export default function SeoRoute() {
             </BlockStack>
           </Card>
 
-          <Card title="Insights" sectioned>
+          <Card title="Insights" >
             <BlockStack gap="300">
               {dataset.insights.map((insight) => (
                 <BlockStack key={insight.id} gap="150">

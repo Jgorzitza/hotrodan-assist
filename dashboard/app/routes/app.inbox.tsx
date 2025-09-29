@@ -282,7 +282,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         useMockDataset = false;
       } catch (error) {
         console.error("inbox loader: assistants fetch failed", error);
-        dataset = getInboxScenario({
+        dataset = await getInboxScenario({
           scenario,
           filter,
           channelFilter,
@@ -305,7 +305,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   if (!dataset) {
-    dataset = getInboxScenario({
+    dataset = await getInboxScenario({
       scenario,
       filter,
       channelFilter,
@@ -558,8 +558,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const pageSize = clampPageSize(Number(url.searchParams.get("pageSize") ?? "12"));
   const scenario = scenarioFromRequest(request);
 
-  const findTicketWithFallback = (): InboxTicket | undefined => {
-    const scopedDataset = getInboxScenario({
+  const findTicketWithFallback = async (): Promise<InboxTicket | undefined> => {
+    const scopedDataset = await getInboxScenario({
       scenario,
       filter,
       channelFilter,
@@ -573,7 +573,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return scopedTicket;
     }
 
-    const fallbackDataset = getInboxScenario({
+    const fallbackDataset = await getInboxScenario({
       scenario,
       filter: "all",
       channelFilter: "all",
@@ -628,7 +628,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       comment,
     );
 
-    const ticket = findTicketWithFallback();
+    const ticket = await findTicketWithFallback();
     const draft = getInboxDraft(ticketId);
 
     if (!ticket || !draft) {
@@ -696,7 +696,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       ? approveInboxDraft(ticketId, trimmedContent, updatedBy)
       : updateInboxDraft(ticketId, trimmedContent, updatedBy);
 
-  const ticket = findTicketWithFallback();
+  const ticket = await findTicketWithFallback();
 
   if (!ticket) {
     return json<InboxActionResponse>(
@@ -1411,9 +1411,8 @@ export default function InboxRoute() {
       title="Inbox"
       subtitle="Monitor conversations, approvals, and SLA breaches across channels."
     >
-      <TitleBar title="Inbox" primaryAction={{ content: "New message", url: "#" }} />
       <Layout>
-        <Layout.Section oneThird>
+        <Layout.Section >
           <BlockStack gap="300">
             {(dataset.alert || dataset.error || useMockData) && (
               <BlockStack gap="200">

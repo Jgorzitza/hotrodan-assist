@@ -1372,11 +1372,6 @@ export default function SalesRoute() {
       >
       <TitleBar
         title="Sales"
-        primaryAction={{
-          content: exportLoading ? "Exporting…" : "Export CSV",
-          loading: exportLoading,
-          onAction: handleExport,
-        }}
       />
       <BlockStack gap="500">
         {(dataset.alert || dataset.error || useMockData) && (
@@ -1405,7 +1400,7 @@ export default function SalesRoute() {
         )}
 
         <Card>
-          <Card.Header
+          <Card
             title="Revenue summary"
             actions={[
               {
@@ -1414,7 +1409,7 @@ export default function SalesRoute() {
               },
             ]}
           />
-          <Card.Section>
+          <Card>
             <InlineStack align="space-between" blockAlign="center">
               <InlineStack gap="200">
                 <Select
@@ -1424,7 +1419,7 @@ export default function SalesRoute() {
                   value={filters.granularity}
                   onChange={handleGranularityChange}
                 />
-                <ButtonGroup segmented>
+                <ButtonGroup >
                   {DASHBOARD_RANGE_KEY_LIST.map((option) => (
                     <Button
                       key={option}
@@ -1447,8 +1442,8 @@ export default function SalesRoute() {
                 {dataset.range.label}
               </Badge>
             </InlineStack>
-          </Card.Section>
-          <Card.Section>
+          </Card>
+          <Card>
             <InlineGrid columns={{ xs: 1, sm: 2, lg: 4 }} gap="300">
               <MetricTile
                 label="Current revenue"
@@ -1478,11 +1473,11 @@ export default function SalesRoute() {
                 }
               />
             </InlineGrid>
-          </Card.Section>
+          </Card>
         </Card>
 
         <Card title="Performance drilldown">
-          <Card.Section>
+          <Card>
             <InlineStack align="space-between" blockAlign="center" wrap>
               <InlineStack gap="200" wrap>
                 {drilldown.breadcrumbs.map((crumb, index) => (
@@ -1508,8 +1503,8 @@ export default function SalesRoute() {
                 </Button>
               )}
             </InlineStack>
-          </Card.Section>
-          <Card.Section>
+          </Card>
+          <Card>
             <InlineGrid columns={{ xs: 1, sm: 2, lg: 4 }} gap="300">
               <MetricSummary label="GMV" value={drilldown.metrics.gmv.formatted} />
               <MetricSummary
@@ -1525,8 +1520,8 @@ export default function SalesRoute() {
                 value={`${drilldown.metrics.returningRate.toFixed(1)}%`}
               />
             </InlineGrid>
-          </Card.Section>
-          <Card.Section>
+          </Card>
+          <Card>
             {drilldownTable.rows.length ? (
               <DataTable
                 columnContentTypes={drilldownTable.columnTypes}
@@ -1538,13 +1533,13 @@ export default function SalesRoute() {
                 No data available for this selection.
               </Text>
             )}
-          </Card.Section>
+          </Card>
         </Card>
 
         <Layout>
           <Layout.Section>
             <Card title="Revenue trend">
-              <Card.Section>
+              <Card>
                 {revenueTrendSeries.length ? (
                   <div style={{ width: "100%", height: 220 }}>
                     <SparkLineChart
@@ -1563,8 +1558,8 @@ export default function SalesRoute() {
                     Revenue trend data unavailable.
                   </Text>
                 )}
-              </Card.Section>
-              <Card.Section>
+              </Card>
+              <Card>
                 {trendRows.length ? (
                   <DataTable
                     columnContentTypes={["text", "text", "numeric"]}
@@ -1576,12 +1571,12 @@ export default function SalesRoute() {
                     No revenue entries for this period.
                   </Text>
                 )}
-              </Card.Section>
+              </Card>
             </Card>
           </Layout.Section>
           <Layout.Section secondary>
             <Card title="Channel breakdown">
-              <Card.Section>
+              <Card>
                 {channelBreakdownSeries.length ? (
                   <div style={{ width: "100%", height: channelChartHeight }}>
                     <BarChart
@@ -1604,9 +1599,9 @@ export default function SalesRoute() {
                     No channel data available.
                   </Text>
                 )}
-              </Card.Section>
+              </Card>
               {dataset.channelBreakdown.length ? (
-                <Card.Section>
+                <Card>
                   <BlockStack gap="300">
                     {dataset.channelBreakdown.map((channel) => (
                       <InlineStack
@@ -1628,7 +1623,7 @@ export default function SalesRoute() {
                       </InlineStack>
                     ))}
                   </BlockStack>
-                </Card.Section>
+                </Card>
               ) : null}
             </Card>
           </Layout.Section>
@@ -1796,7 +1791,7 @@ function MetricTile({
 }) {
   return (
     <Card background="bg-surface-secondary">
-      <Card.Section>
+      <Card>
         <BlockStack gap="050">
           <Text as="span" variant="bodySm" tone="subdued">
             {label}
@@ -1808,7 +1803,7 @@ function MetricTile({
             {delta}
           </Text>
         </BlockStack>
-      </Card.Section>
+      </Card>
     </Card>
   );
 }

@@ -2,7 +2,7 @@
 
 client_id = "d919fc39ded7df2bd0ba2fe02b666b25"
 name = "Dashboard"
-application_url = "https://hotrodan.com/dashboard"
+application_url = "https://example.com"
 embedded = true
 
 [webhooks]

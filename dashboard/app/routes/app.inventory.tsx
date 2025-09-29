@@ -575,7 +575,6 @@ export default function InventoryRoute() {
       >
       <TitleBar
         title="Inventory"
-        primaryAction={{ content: "New purchase order", url: "#" }}
       />
 
       <BlockStack gap="400">
@@ -602,7 +601,7 @@ export default function InventoryRoute() {
         <InlineGrid columns={{ xs: 1, md: 3 }} gap="300">
           {summaryCards.map((card) => (
             <Card key={card.id}>
-              <Card.Section>
+              <Card>
                 <BlockStack gap="100">
                   <Text variant="bodyMd" as="span">
                     {card.label}
@@ -611,12 +610,12 @@ export default function InventoryRoute() {
                     {card.value}
                   </Text>
                 </BlockStack>
-              </Card.Section>
+              </Card>
             </Card>
           ))}
         </InlineGrid>
 
-        <Card title="MCP inventory signals" sectioned>
+        <Card title="MCP inventory signals" >
           <BlockStack gap="200">
             {mcp.signals.map((signal) => (
               <Box
@@ -675,18 +674,18 @@ export default function InventoryRoute() {
         <Layout>
           <Layout.Section>
             <Card>
-              <Card.Section>
+              <Card>
                 <InlineStack align="space-between" blockAlign="center">
                   <Tabs tabs={bucketTabs} selected={selectedTabIndex} onSelect={handleTabChange} fitted />
                   <Button onClick={handleBucketExport} loading={exportFetcher.state !== "idle" && exportFetcher.formData?.get("bucketId") === activeBucket}>
                     Export bucket CSV
                   </Button>
                 </InlineStack>
-              </Card.Section>
+              </Card>
 
               <Divider />
 
-              <Card.Section>
+              <Card>
                 <BlockStack gap="300">
                   {activeBucketMeta?.description && (
                     <Text variant="bodySm" tone="subdued">
@@ -775,7 +774,7 @@ export default function InventoryRoute() {
                     </>
                   )}
                 </BlockStack>
-              </Card.Section>
+              </Card>
             </Card>
           </Layout.Section>
         </Layout>
@@ -792,9 +791,9 @@ export default function InventoryRoute() {
 
           {payload.vendors.length === 0 ? (
             <Card>
-              <Card.Section>
+              <Card>
                 <Text variant="bodyMd">No vendor drafts available yet.</Text>
-              </Card.Section>
+              </Card>
             </Card>
           ) : (
             payload.vendors.map((vendor) => {
@@ -805,7 +804,7 @@ export default function InventoryRoute() {
 
               return (
                 <Card key={vendor.vendorId} title={vendor.vendorName}>
-                  <Card.Section>
+                  <Card>
                     <InlineStack gap="400">
                       <Text variant="bodyMd" as="span">
                         Lead time: {vendor.leadTimeDays} days
@@ -817,9 +816,9 @@ export default function InventoryRoute() {
                         Draft total: {formatCurrency(totalDraftValue, vendor.budgetRemaining.currency)}
                       </Text>
                     </InlineStack>
-                  </Card.Section>
+                  </Card>
 
-                  <Card.Section>
+                  <Card>
                     <BlockStack gap="200">
                       {vendor.items.map((item) => (
                         <Box
@@ -866,9 +865,9 @@ export default function InventoryRoute() {
                         </Box>
                       ))}
                     </BlockStack>
-                  </Card.Section>
+                  </Card>
 
-                  <Card.Section subdued>
+                  <Card subdued>
                     <TextField
                       label="Planner notes"
                       multiline
@@ -880,9 +879,9 @@ export default function InventoryRoute() {
                         }))
                       }
                     />
-                  </Card.Section>
+                  </Card>
 
-                  <Card.Section>
+                  <Card>
                     <InlineStack align="end" gap="200">
                       <ButtonGroup>
                         <Button
@@ -900,7 +899,7 @@ export default function InventoryRoute() {
                         </Button>
                       </ButtonGroup>
                     </InlineStack>
-                  </Card.Section>
+                  </Card>
                 </Card>
               );
             })

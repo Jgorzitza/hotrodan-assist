@@ -683,7 +683,7 @@ export default function SettingsRoute() {
   const fieldErrors = actionData?.fieldErrors ?? {};
 
   const isSubmitting = (targetIntent: string) =>
-    navigation.state === "submitting" &&
+    navigation.state === "ting" &&
     navigation.formData?.get("intent") === targetIntent;
 
   const healthTableRows = healthChecks.map((check) => [
@@ -723,8 +723,8 @@ export default function SettingsRoute() {
       <Layout>
         <Layout.Section>
           <Card>
-            <Card.Header title="System Health" />
-            <Card.Section>
+            <Card title="System Health" />
+            <Card>
               <BlockStack gap="400">
                 <InlineStack align="space-between" blockAlign="center">
                   <Text as="h3" variant="headingMd">
@@ -733,7 +733,7 @@ export default function SettingsRoute() {
                   <Form method="post">
                     <input type="hidden" name="intent" value="refresh-health" />
                     <Button
-                      submit
+                      
                       loading={isSubmitting("refresh-health")}
                       size="slim"
                     >
@@ -748,14 +748,14 @@ export default function SettingsRoute() {
                   rows={healthTableRows}
                 />
               </BlockStack>
-            </Card.Section>
+            </Card>
           </Card>
         </Layout.Section>
 
         <Layout.Section>
           <Card>
-            <Card.Header title="Environment Variables" />
-            <Card.Section>
+            <Card title="Environment Variables" />
+            <Card>
               <BlockStack gap="400">
                 <Text as="h3" variant="headingMd">
                   Configuration Status
@@ -767,14 +767,14 @@ export default function SettingsRoute() {
                   rows={envTableRows}
                 />
               </BlockStack>
-            </Card.Section>
+            </Card>
           </Card>
         </Layout.Section>
 
         <Layout.Section>
           <Card>
-            <Card.Header title="Operational thresholds" />
-            <Card.Section>
+            <Card title="Operational thresholds" />
+            <Card>
               <Form method="post">
                 <input type="hidden" name="intent" value="update-thresholds" />
                 <FormLayout>
@@ -839,7 +839,7 @@ export default function SettingsRoute() {
                     helpText="Inventory flagged as overstock when buffer exceeds this percentage."
                   />
                   <Button
-                    submit
+                    
                     primary
                     loading={isSubmitting("update-thresholds")}
                   >
@@ -847,14 +847,14 @@ export default function SettingsRoute() {
                   </Button>
                 </FormLayout>
               </Form>
-            </Card.Section>
+            </Card>
           </Card>
         </Layout.Section>
 
         <Layout.Section>
           <Card>
-            <Card.Header title="Integrations" />
-            <Card.Section>
+            <Card title="Integrations" />
+            <Card>
               <BlockStack gap="400">
                 {(
                   Object.keys(providerMeta) as SettingsProvider[]
@@ -867,7 +867,7 @@ export default function SettingsRoute() {
                     actionData?.meta?.provider === provider
                       ? fieldErrors[`secret-${provider}`]
                       : undefined;
-                  const submittingSecret =
+                  const tingSecret =
                     isSubmitting("update-secret") &&
                     navigation.formData?.get("provider") === provider;
                   const credentialPlaceholder =
@@ -880,7 +880,7 @@ export default function SettingsRoute() {
                         ? `Routing via ${mcpOverridesState.endpoint}.`
                         : "Falling back to MCP_API_URL or mock transport."
                       : undefined;
-                  const submittingOverrides =
+                  const tingOverrides =
                     provider === "mcp" &&
                     isSubmitting("update-mcp-overrides");
 
@@ -954,12 +954,12 @@ export default function SettingsRoute() {
                               />
                               <InlineStack gap="200">
                                 <Button
-                                  submit
+                                  
                                   primary
                                   name="actionType"
                                   value="save"
                                   loading={
-                                    submittingSecret &&
+                                    tingSecret &&
                                     navigation.formData?.get("actionType") !== "remove"
                                   }
                                 >
@@ -968,12 +968,12 @@ export default function SettingsRoute() {
                                 <Button
                                   variant="secondary"
                                   tone="critical"
-                                  submit
+                                  
                                   name="actionType"
                                   value="remove"
                                   disabled={!secret}
                                   loading={
-                                    submittingSecret &&
+                                    tingSecret &&
                                     navigation.formData?.get("actionType") === "remove"
                                   }
                                   onClick={() =>
@@ -1092,16 +1092,16 @@ export default function SettingsRoute() {
                                 </FormLayout>
                                 <InlineStack gap="200">
                                   <Button
-                                    submit
+                                    
                                     primary
-                                    loading={submittingOverrides}
+                                    loading={tingOverrides}
                                   >
                                     Save MCP overrides
                                   </Button>
                                   <Button
                                     type="button"
                                     variant="secondary"
-                                    disabled={submittingOverrides}
+                                    disabled={tingOverrides}
                                     onClick={() =>
                                       setMcpOverrideDraft({
                                         endpoint: "",
@@ -1124,7 +1124,7 @@ export default function SettingsRoute() {
                           <input type="hidden" name="provider" value={provider} />
                           <InlineStack gap="300">
                             <Button
-                              submit
+                              
                               loading={
                                 isSubmitting("test-connection") &&
                                 navigation.formData?.get("provider") === provider
@@ -1149,14 +1149,14 @@ export default function SettingsRoute() {
                   );
                 })}
               </BlockStack>
-            </Card.Section>
+            </Card>
           </Card>
         </Layout.Section>
 
         <Layout.Section>
           <Card>
-            <Card.Header title="Feature toggles" />
-            <Card.Section>
+            <Card title="Feature toggles" />
+            <Card>
               <Form method="post">
                 <input type="hidden" name="intent" value="update-toggles" />
                 <BlockStack gap="300">
@@ -1264,7 +1264,7 @@ export default function SettingsRoute() {
                       />
                     )}
                   <Button
-                    submit
+                    
                     primary
                     loading={isSubmitting("update-toggles")}
                   >
@@ -1272,7 +1272,7 @@ export default function SettingsRoute() {
                   </Button>
                 </BlockStack>
               </Form>
-            </Card.Section>
+            </Card>
           </Card>
         </Layout.Section>
       </Layout>

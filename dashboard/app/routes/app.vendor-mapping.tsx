@@ -179,7 +179,6 @@ export default function VendorMappingRoute() {
     >
       <TitleBar
         title="Vendor Mapping"
-        primaryAction={{ content: "Add vendor", onAction: handleCreateVendor }}
       />
 
       <BlockStack gap="400">
@@ -206,7 +205,7 @@ export default function VendorMappingRoute() {
         <Layout>
           <Layout.Section>
             <Card>
-              <Card.Section>
+              <Card>
                 <InlineStack align="space-between" blockAlign="center">
                   <Text variant="headingMd" as="h2">
                     Vendors ({payload.vendors.length})
@@ -215,11 +214,11 @@ export default function VendorMappingRoute() {
                     <Button onClick={handleCreateVendor}>Add vendor</Button>
                   </ButtonGroup>
                 </InlineStack>
-              </Card.Section>
+              </Card>
 
               <Divider />
 
-              <Card.Section>
+              <Card>
                 {payload.vendors.length === 0 ? (
                   <EmptyState
                     heading="No vendors found"
@@ -306,7 +305,7 @@ export default function VendorMappingRoute() {
                     ))}
                   </IndexTable>
                 )}
-              </Card.Section>
+              </Card>
             </Card>
           </Layout.Section>
         </Layout>

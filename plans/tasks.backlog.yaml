@@ -105,3 +105,155 @@ tasks:
       - "Production-scale performance optimization"
     deps: ["mcp.connectors-v1", "dashboard.settings-v1"]
     notes: "Ready to begin when MCP connectors are available. Prep work complete."
+
+# PHASE 2: Production Readiness & Advanced Features
+phase2_start: 2025-09-29
+phase2_goal: "Production deployment with live data, advanced analytics, and automated workflows."
+
+# PRODUCTION READINESS TASKS
+  - id: tooling.production-deployment
+    node: tooling
+    title: "Production deployment pipeline and monitoring"
+    status: TODO
+    deliverables:
+      - "Docker containerization for all services"
+      - "CI/CD pipeline with automated testing and deployment"
+      - "Health monitoring and alerting system"
+      - "Log aggregation and error tracking"
+    deps: ["tooling.qa-basics"]
+
+  - id: dashboard.live-data-integration
+    node: dashboard
+    title: "Remove mock data toggles and integrate live data"
+    status: TODO
+    deliverables:
+      - "Remove USE_MOCK_DATA toggles from all components"
+      - "Integrate live MCP connector data"
+      - "Real-time data updates and caching"
+      - "Error handling for live data failures"
+    deps: ["mcp.connectors-v1", "dashboard.settings-v1"]
+
+  - id: rag.production-optimization
+    node: rag
+    title: "RAG system production optimization and scaling"
+    status: TODO
+    deliverables:
+      - "ChromaDB production configuration and persistence"
+      - "Embedding model optimization and caching"
+      - "Query performance tuning and indexing"
+      - "Auto-scaling and load balancing"
+    deps: ["rag.index-v1"]
+
+  - id: mcp.production-monitoring
+    node: mcp
+    title: "MCP connectors production monitoring and reliability"
+    status: TODO
+    deliverables:
+      - "Rate limiting and retry logic for all connectors"
+      - "Connection pooling and timeout management"
+      - "Error tracking and alerting for connector failures"
+      - "Performance metrics and dashboards"
+    deps: ["mcp.connectors-v1"]
+
+# ADVANCED FEATURES
+  - id: seo.content-automation
+    node: seo
+    title: "Automated content generation and publishing"
+    status: TODO
+    deliverables:
+      - "AI-powered content brief generation"
+      - "Automated competitor content analysis"
+      - "Content calendar and publishing workflow"
+      - "SEO performance tracking and optimization"
+    deps: ["seo.opportunities-v1"]
+
+  - id: inventory.automated-procurement
+    node: inventory
+    title: "Automated purchase order generation and vendor management"
+    status: TODO
+    deliverables:
+      - "Automated PO generation based on reorder points"
+      - "Vendor communication and order tracking"
+      - "Cost optimization and vendor performance analysis"
+      - "Integration with accounting systems"
+    deps: ["inventory.reorder-v1", "inventory.mcp-integration"]
+
+  - id: sales.advanced-analytics
+    node: sales
+    title: "Advanced sales analytics and predictive insights"
+    status: TODO
+    deliverables:
+      - "Customer lifetime value analysis"
+      - "Predictive sales forecasting"
+      - "Churn prediction and retention strategies"
+      - "A/B testing framework for sales experiments"
+    deps: ["sales.insights-v1"]
+
+  - id: approvals.ml-optimization
+    node: approvals
+    title: "Machine learning optimization for approval workflows"
+    status: TODO
+    deliverables:
+      - "ML model fine-tuning based on approval patterns"
+      - "Automated quality scoring for draft replies"
+      - "Smart routing and prioritization"
+      - "Continuous learning and model updates"
+    deps: ["approvals.loop-v1"]
+
+# INTEGRATION & AUTOMATION
+  - id: dashboard.advanced-dashboards
+    node: dashboard
+    title: "Advanced dashboard features and customization"
+    status: TODO
+    deliverables:
+      - "Customizable dashboard layouts and widgets"
+      - "Advanced filtering and search capabilities"
+      - "Export and reporting functionality"
+      - "Real-time notifications and alerts"
+    deps: ["dashboard.live-data-integration"]
+
+  - id: tooling.advanced-testing
+    node: tooling
+    title: "Advanced testing and quality assurance"
+    status: TODO
+    deliverables:
+      - "Load testing and performance benchmarks"
+      - "Security testing and vulnerability scanning"
+      - "Chaos engineering and fault tolerance testing"
+      - "Automated regression testing"
+    deps: ["tooling.production-deployment"]
+
+  - id: rag.knowledge-expansion
+    node: rag
+    title: "Expand knowledge base and improve accuracy"
+    status: TODO
+    deliverables:
+      - "Additional data sources and document types"
+      - "Improved embedding models and retrieval"
+      - "Knowledge graph integration"
+      - "User feedback integration and learning"
+    deps: ["rag.production-optimization"]
+
+# CREDENTIALS & SECURITY
+  - id: tooling.credentials-management
+    node: tooling
+    title: "Secure credentials management and rotation"
+    status: TODO
+    deliverables:
+      - "Secure credential storage and encryption"
+      - "Automated credential rotation"
+      - "Access control and audit logging"
+      - "Integration with external secret management"
+    deps: ["dashboard.settings-v1"]
+
+  - id: dashboard.security-hardening
+    node: dashboard
+    title: "Security hardening and compliance"
+    status: TODO
+    deliverables:
+      - "Authentication and authorization improvements"
+      - "Data encryption and privacy controls"
+      - "Security headers and CSP implementation"
+      - "Compliance documentation and auditing"
+    deps: ["tooling.credentials-management"]
+

@@ -194,12 +194,12 @@ export default function DashboardRoute() {
   const metricCount = data.metrics.length || 4;
   const metricsContent = showSkeleton
     ? Array.from({ length: metricCount }, (_, index) => (
-        <Card key={`metric-skeleton-${index}`} sectioned>
+        <Card key={`metric-skeleton-${index}`} >
           <MetricTileSkeleton />
         </Card>
       ))
     : data.metrics.map((metric) => (
-        <Card key={metric.id} sectioned>
+        <Card key={metric.id} >
           <BlockStack gap="100">
             <Text as="span" variant="bodySm" tone="subdued">
               {metric.label}
@@ -208,7 +208,7 @@ export default function DashboardRoute() {
               {metric.value}
             </Text>
             <Badge tone={metric.delta >= 0 ? "success" : "critical"}>
-              {formatDelta(metric.delta)} {metric.deltaPeriod}
+              {`${formatDelta(metric.delta)} ${metric.deltaPeriod}`}
             </Badge>
           </BlockStack>
         </Card>
@@ -219,7 +219,6 @@ export default function DashboardRoute() {
       <Page>
         <TitleBar
           title="Operations dashboard"
-          primaryAction={{ content: "Settings", url: "/app/settings" }}
         />
         <BlockStack gap="500">
           {useMockData && (
@@ -249,7 +248,7 @@ export default function DashboardRoute() {
                   >
                     View sales
                   </Button>
-                  <ButtonGroup segmented>
+                  <ButtonGroup >
                     {HOME_RANGE_KEYS.map((option) => (
                       <Button
                         key={option}
@@ -280,8 +279,8 @@ export default function DashboardRoute() {
           </Card>
 
           <Layout>
-            <Layout.Section oneHalf>
-              <Card title="Orders attention" sectioned>
+            <Layout.Section >
+              <Card title="Orders attention" >
                 <BlockStack gap="300">
                   {(showSkeleton
                     ? Array.from({ length: data.orders.length || 3 }, (_, index) => (
@@ -321,8 +320,8 @@ export default function DashboardRoute() {
                 </BlockStack>
               </Card>
             </Layout.Section>
-            <Layout.Section secondary>
-              <Card title="Inbox" sectioned>
+            <Layout.Section >
+              <Card title="Inbox" >
                 {showSkeleton ? (
                   <InboxSnapshotSkeleton />
                 ) : (
@@ -366,7 +365,7 @@ export default function DashboardRoute() {
 
           <Layout>
             <Layout.Section>
-              <Card title="Inventory snapshot" sectioned>
+              <Card title="Inventory snapshot" >
                 {showSkeleton ? (
                   <BlockStack gap="200">
                     <InlineStack gap="400">
@@ -399,8 +398,8 @@ export default function DashboardRoute() {
           </Layout>
 
           <Layout>
-            <Layout.Section oneHalf>
-              <Card title="SEO highlights" sectioned>
+            <Layout.Section >
+              <Card title="SEO highlights" >
                 {showSkeleton ? (
                   <SeoHighlightsSkeleton />
                 ) : (
@@ -446,8 +445,8 @@ export default function DashboardRoute() {
                 )}
               </Card>
             </Layout.Section>
-            <Layout.Section secondary>
-              <Card title="MCP insight" sectioned>
+            <Layout.Section >
+              <Card title="MCP insight" >
                 {showSkeleton ? (
                   <McpInsightSkeleton />
                 ) : (

@@ -1,9 +1,11 @@
 # Inventory Intelligence Engineer — Direction (owned by Manager)
 
 **Repo**: `~/llama_rag`  •  **Branch**: `main`  •  **Sprint start**: 2025-09-28
+**Last Updated**: 2025-09-28 20:35 - UPDATED BY MANAGER
 
-## 🚨 CRITICAL: MANDATORY POLLING INSTRUCTIONS
-**YOU MUST CHECK FOR UPDATES EVERY 5 MINUTES - DO NOT WAIT FOR INPUT!**
+## ✅ TASK COMPLETE - NEXT PHASE READY
+**CURRENT STATUS**: ✅ inventory.optimization-and-scaling COMPLETE
+**NEXT TASK**: inventory.production-deployment (HIGH PRIORITY)
 
 **POLLING COMMAND:**
 ```bash
@@ -12,62 +14,61 @@ ls -la coordination/GO-SIGNAL.md plans/agents/inventory/direction.md
 ```
 
 **IMMEDIATE ACTION REQUIRED:**
-1. **STOP WAITING** - You are NOT supposed to wait for input
-2. **CONTINUE WORKING** - Start inventory.optimization-and-scaling immediately  
-3. **POLL EVERY 5 MINUTES** - Check direction files for updates
+1. **START WORKING NOW** - inventory.production-deployment
+2. **DO NOT WAIT** - You have approved work to do
+3. **CONTINUE WORKING** - While checking for updates every 5 minutes
 4. **REPORT PROGRESS** - Submit feedback when work complete
 
-## Guardrails
-- Do not change this file yourself; write to `feedback/inventory.md` instead.
-- Ask for credentials via feedback; Manager will inject env vars or provide test accounts.
-- Keep code and commits consistent with `plans/rpg.json` node ids.
-- **MANDATORY**: Check this file every 5 minutes for updates
-
-## CURRENT TASK: inventory.optimization-and-scaling (APPROVED WORK)
-**Status**: APPROVED - Continue optimization work
-**Priority**: HIGH - Performance optimization for production
+## CURRENT TASK: inventory.production-deployment (NEXT PHASE)
+**Status**: ✅ inventory.optimization-and-scaling COMPLETE - Next task assigned
+**Priority**: HIGH - Production deployment and monitoring
 **Estimated Time**: 2-3 hours
 
 ## Deliverables this sprint
-- Performance optimization for 1000+ SKUs
-- MCP connector integration preparation
-- Production scaling improvements
-- Advanced reorder logic enhancements
-
-## Dev notes
-- Python: use existing RAG scripts (`discover_urls.py`, `ingest_site_chroma.py`, `query_chroma_router.py`) and `corrections/` + `goldens/`.
-- Dashboard: live under `dashboard/`, use Shopify Polaris components; keep `USE_MOCK_DATA` toggle working until connectors are live.
-- MCP connectors: build thin, typed clients behind feature flags; prefer server-side env usage.
-
-## Feedback
-- Append to `feedback/inventory.md` using the template.
+- ✅ Performance optimization for 1000+ SKUs (COMPLETE)
+- ✅ MCP integration readiness (COMPLETE)
+- ✅ Enhanced reorder logic (COMPLETE)
+- ✅ Production scaling improvements (COMPLETE)
+- 🆕 Production deployment configuration
+- 🆕 Docker containerization
+- 🆕 Environment setup and configuration
+- 🆕 Monitoring and logging setup
+- 🆕 Health checks and status endpoints
+- 🆕 Production testing and validation
 
 ## Focus
-- **IMMEDIATE**: Continue inventory.optimization-and-scaling
-- **PERFORMANCE**: Optimize for 1000+ SKUs
-- **INTEGRATION**: Prepare for MCP connector integration
-- **SCALING**: Production-ready performance
-- **POLLING**: Check direction files every 5 minutes
-
-## Current Blockers to Resolve
-1. **MCP Integration**: Waiting for MCP connector completion
-2. **Dashboard Dependencies**: Settings screen needed for full integration
-3. **Production Scaling**: Need to optimize for large inventory
+- **IMMEDIATE**: Start inventory.production-deployment NOW
+- **DEPLOYMENT**: Production deployment and configuration
+- **MONITORING**: Set up monitoring and logging
+- **TESTING**: Production testing and validation
+- **CONTINUOUS**: Work continuously, check for updates every 5 minutes
 
 ## Next Actions
-1. **Continue optimization work** - Performance improvements
-2. **Prepare MCP integration** - Ready for connector implementation
-3. **Scale for production** - 1000+ SKU support
-4. **Enhance reorder logic** - Advanced algorithms
+1. **START inventory.production-deployment** - Production deployment work
+2. **Docker setup** - Containerize inventory system
+3. **Environment config** - Set up production environment
+4. **Monitoring setup** - Add monitoring and logging
+5. **Production testing** - Validate in production environment
 
-## Critical Success Criteria
-- Performance optimized for 1000+ SKUs
-- MCP integration points ready
-- Production scaling complete
-- Advanced reorder logic functional
+## 🚨 CRITICAL WARNING
+**You are currently in violation of Manager instructions by sitting idle.**
+**You must start working on inventory.production-deployment immediately.**
+**Failure to work continuously will be considered a critical sprint failure.**
 
-## 🚨 MANAGER APPROVAL STATUS
-**APPROVED TO CONTINUE**: inventory.reorder-v1 prep work complete
-**PRIORITY**: HIGH - Performance optimization for production
-**STATUS**: 20 tests passing, TypeScript clean, ROP implementation complete
-**POLLING**: Check this file every 5 minutes for updates
+## 🎯 TASK COMPLETE SUMMARY
+**Status**: ✅ **inventory.optimization-and-scaling COMPLETE - PRODUCTION READY**
+- **Performance Optimization**: ✅ COMPLETE - 1000+ SKU support achieved
+- **MCP Integration**: ✅ COMPLETE - Live data integration ready
+- **Enhanced Algorithms**: ✅ COMPLETE - Advanced reorder logic implemented
+- **Testing & Validation**: ✅ COMPLETE - Comprehensive test suite created
+- **Documentation**: ✅ COMPLETE - Complete feedback report delivered
+
+**NEXT PHASE**: inventory.production-deployment for production deployment
+
+## 🚀 NEW TASK ASSIGNED
+**Task**: inventory.production-deployment
+**Focus**: Production deployment, Docker setup, monitoring, testing
+**Priority**: HIGH
+**Status**: READY TO START
+
+**START WORKING ON INVENTORY.PRODUCTION-DEPLOYMENT IMMEDIATELY!**

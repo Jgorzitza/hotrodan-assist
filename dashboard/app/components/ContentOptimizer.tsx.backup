@@ -1,0 +1,386 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Card,
+  Page,
+  Layout,
+  Text,
+  Button,
+  TextField,
+  BlockStack,
+  InlineStack,
+  Badge,
+  DataTable,
+  Modal,
+  Banner,
+  ProgressBar,
+  Divider,
+  Box,
+  InlineGrid,
+  Icon,
+  Tooltip,
+} from '@shopify/polaris';
+import {
+  AnalyticsMajor,
+  EditMajor,
+  ViewMajor,
+  AlertTriangleMajor,
+  CheckCircleMajor,
+  InfoMajor,
+} from '@shopify/polaris-icons';
+
+interface ContentAnalysis {
+  url: string;
+  title: string;
+  meta_description: string;
+  h1: string;
+  h2s: string[];
+  content: string;
+  word_count: number;
+  readability_score: number;
+  seo_score: number;
+  overall_score: number;
+  issues: string[];
+  suggestions: string[];
+  keyword_density: Record<string, number>;
+  internal_links: string[];
+  external_links: string[];
+  images: string[];
+  headings_structure: Record<string, number>;
+  created_at: string;
+}
+
+interface OptimizationSuggestion {
+  type: string;
+  priority: string;
+  title: string;
+  description: string;
+  current_value: string;
+  suggested_value: string;
+  impact: string;
+  effort: string;
+  code_example?: string;
+}
+
+interface ContentOptimizationReport {
+  url: string;
+  analysis: ContentAnalysis;
+  suggestions: OptimizationSuggestion[];
+  priority_actions: string[];
+  estimated_impact: string;
+  effort_required: string;
+  created_at: string;
+}
+
+interface ContentOptimizerProps {
+  initialUrl?: string;
+}
+
+export function ContentOptimizer({ initialUrl = '' }: ContentOptimizerProps) {
+  const [url, setUrl] = useState(initialUrl);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [report, setReport] = useState<ContentOptimizationReport | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<OptimizationSuggestion | null>(null);
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
+
+  const analyzeContent = async () => {
+    if (!url.trim()) {
+      setError('Please enter a URL to analyze');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setError(null);
+    setReport(null);
+
+    try {
+      // Simulate API call - replace with actual endpoint
+      const response = await fetch('/api/seo/optimize-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze content');
+      }
+
+      const data = await response.json();
+      setReport(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to analyze content');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'success';
+    if (score >= 60) return 'warning';
+    return 'critical';
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'critical';
+      case 'medium': return 'warning';
+      case 'low': return 'info';
+      default: return 'info';
+    }
+  };
+
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'high': return AlertTriangleMajor;
+      case 'medium': return InfoMajor;
+      case 'low': return CheckCircleMajor;
+      default: return InfoMajor;
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: OptimizationSuggestion) => {
+    setSelectedSuggestion(suggestion);
+    setShowSuggestionModal(true);
+  };
+
+  const suggestionsTableRows = report?.suggestions.map((suggestion, index) => [
+    suggestion.title,
+    <Badge status={getPriorityColor(suggestion.priority)}>
+      {suggestion.priority}
+    </Badge>,
+    suggestion.type,
+    suggestion.impact,
+    suggestion.effort,
+    <Button
+      size="slim"
+      onClick={() => handleSuggestionClick(suggestion)}
+    >
+      View Details
+    </Button>,
+  ]) || [];
+
+  return (
+    <Page
+      title="Content Optimizer"
+      subtitle="Analyze and optimize your content for better SEO performance"
+      primaryAction={{
+        content: 'Analyze Content',
+        onAction: analyzeContent,
+        loading: isAnalyzing,
+        disabled: !url.trim(),
+      }}
+    >
+      <Layout>
+        <Layout.Section>
+          <Card>
+            <BlockStack gap="400">
+              <Text variant="headingMd">Enter URL to Analyze</Text>
+              <TextField
+                label="Website URL"
+                value={url}
+                onChange={setUrl}
+                placeholder="https://example.com"
+                autoComplete="url"
+              />
+              {error && (
+                <Banner status="critical">
+                  <Text>{error}</Text>
+                </Banner>
+              )}
+            </BlockStack>
+          </Card>
+        </Layout.Section>
+
+        {isAnalyzing && (
+          <Layout.Section>
+            <Card>
+              <BlockStack gap="400">
+                <Text variant="headingMd">Analyzing Content...</Text>
+                <ProgressBar progress={75} />
+                <Text>This may take a few moments while we analyze your content.</Text>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+        )}
+
+        {report && (
+          <>
+            <Layout.Section>
+              <Card>
+                <BlockStack gap="400">
+                  <Text variant="headingMd">Content Analysis Summary</Text>
+                  <InlineGrid columns={4} gap="400">
+                    <Box>
+                      <Text variant="headingLg" color={getScoreColor(report.analysis.overall_score)}>
+                        {report.analysis.overall_score.toFixed(1)}
+                      </Text>
+                      <Text>Overall Score</Text>
+                    </Box>
+                    <Box>
+                      <Text variant="headingLg" color={getScoreColor(report.analysis.seo_score)}>
+                        {report.analysis.seo_score.toFixed(1)}
+                      </Text>
+                      <Text>SEO Score</Text>
+                    </Box>
+                    <Box>
+                      <Text variant="headingLg" color={getScoreColor(report.analysis.readability_score)}>
+                        {report.analysis.readability_score.toFixed(1)}
+                      </Text>
+                      <Text>Readability</Text>
+                    </Box>
+                    <Box>
+                      <Text variant="headingLg">
+                        {report.analysis.word_count}
+                      </Text>
+                      <Text>Word Count</Text>
+                    </Box>
+                  </InlineGrid>
+                </BlockStack>
+              </Card>
+            </Layout.Section>
+
+            <Layout.Section>
+              <Card>
+                <BlockStack gap="400">
+                  <Text variant="headingMd">Content Elements</Text>
+                  <InlineGrid columns={2} gap="400">
+                    <BlockStack gap="200">
+                      <Text variant="headingSm">Title Tag</Text>
+                      <Text>{report.analysis.title || 'Missing'}</Text>
+                    </BlockStack>
+                    <BlockStack gap="200">
+                      <Text variant="headingSm">Meta Description</Text>
+                      <Text>{report.analysis.meta_description || 'Missing'}</Text>
+                    </BlockStack>
+                    <BlockStack gap="200">
+                      <Text variant="headingSm">H1 Tag</Text>
+                      <Text>{report.analysis.h1 || 'Missing'}</Text>
+                    </BlockStack>
+                    <BlockStack gap="200">
+                      <Text variant="headingSm">H2 Tags</Text>
+                      <Text>{report.analysis.h2s.length} found</Text>
+                    </BlockStack>
+                  </InlineGrid>
+                </BlockStack>
+              </Card>
+            </Layout.Section>
+
+            {report.analysis.issues.length > 0 && (
+              <Layout.Section>
+                <Card>
+                  <BlockStack gap="400">
+                    <Text variant="headingMd">Issues Identified</Text>
+                    <BlockStack gap="200">
+                      {report.analysis.issues.map((issue, index) => (
+                        <InlineStack key={index} gap="200">
+                          <Icon source={AlertTriangleMajor} color="critical" />
+                          <Text>{issue}</Text>
+                        </InlineStack>
+                      ))}
+                    </BlockStack>
+                  </BlockStack>
+                </Card>
+              </Layout.Section>
+            )}
+
+            <Layout.Section>
+              <Card>
+                <BlockStack gap="400">
+                  <Text variant="headingMd">Optimization Suggestions</Text>
+                  <DataTable
+                    columnContentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
+                    headings={['Suggestion', 'Priority', 'Type', 'Impact', 'Effort', 'Action']}
+                    rows={suggestionsTableRows}
+                  />
+                </BlockStack>
+              </Card>
+            </Layout.Section>
+
+            <Layout.Section>
+              <Card>
+                <BlockStack gap="400">
+                  <Text variant="headingMd">Priority Actions</Text>
+                  <BlockStack gap="200">
+                    {report.priority_actions.map((action, index) => (
+                      <InlineStack key={index} gap="200">
+                        <Icon source={CheckCircleMajor} color="success" />
+                        <Text>{action}</Text>
+                      </InlineStack>
+                    ))}
+                  </BlockStack>
+                  <Divider />
+                  <InlineGrid columns={2} gap="400">
+                    <Box>
+                      <Text variant="headingSm">Estimated Impact</Text>
+                      <Text>{report.estimated_impact}</Text>
+                    </Box>
+                    <Box>
+                      <Text variant="headingSm">Effort Required</Text>
+                      <Text>{report.effort_required}</Text>
+                    </Box>
+                  </InlineGrid>
+                </BlockStack>
+              </Card>
+            </Layout.Section>
+          </>
+        )}
+
+        {selectedSuggestion && (
+          <Modal
+            open={showSuggestionModal}
+            onClose={() => setShowSuggestionModal(false)}
+            title={selectedSuggestion.title}
+            primaryAction={{
+              content: 'Got it',
+              onAction: () => setShowSuggestionModal(false),
+            }}
+          >
+            <Modal.Section>
+              <BlockStack gap="400">
+                <Text variant="headingMd">Description</Text>
+                <Text>{selectedSuggestion.description}</Text>
+                
+                <InlineGrid columns={2} gap="400">
+                  <Box>
+                    <Text variant="headingSm">Current Value</Text>
+                    <Text>{selectedSuggestion.current_value}</Text>
+                  </Box>
+                  <Box>
+                    <Text variant="headingSm">Suggested Value</Text>
+                    <Text>{selectedSuggestion.suggested_value}</Text>
+                  </Box>
+                </InlineGrid>
+
+                <InlineGrid columns={2} gap="400">
+                  <Box>
+                    <Text variant="headingSm">Impact</Text>
+                    <Badge status={getPriorityColor(selectedSuggestion.impact.toLowerCase())}>
+                      {selectedSuggestion.impact}
+                    </Badge>
+                  </Box>
+                  <Box>
+                    <Text variant="headingSm">Effort</Text>
+                    <Badge status={getPriorityColor(selectedSuggestion.effort.toLowerCase())}>
+                      {selectedSuggestion.effort}
+                    </Badge>
+                  </Box>
+                </InlineGrid>
+
+                {selectedSuggestion.code_example && (
+                  <Box>
+                    <Text variant="headingSm">Code Example</Text>
+                    <Box padding="300" background="bg-surface-secondary">
+                      <Text fontFamily="mono">{selectedSuggestion.code_example}</Text>
+                    </Box>
+                  </Box>
+                )}
+              </BlockStack>
+            </Modal.Section>
+          </Modal>
+        )}
+      </Layout>
+    </Page>
+  );
+}
