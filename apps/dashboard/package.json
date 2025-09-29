@@ -2,6 +2,8 @@
   "name": "app",
   "private": true,
   "scripts": {
+    "test:visual": "cd tests/visual-regression && ./run-visual-tests.sh",
+    "test:visual:update": "cd tests/visual-regression && UPDATE_SNAPSHOTS=true ./run-visual-tests.sh",
     "build": "remix vite:build",
     "dev": "shopify app dev",
     "config:link": "shopify app config link",

@@ -1,3 +1,6 @@
+import { CacheManager, CacheStatus } from "~/components/CacheManager";
+import { useCacheManager } from "~/hooks/useCache";
+import { dataService } from "~/lib/data-service";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useRef } from "react";
@@ -23,7 +26,6 @@ import {
   SkeletonDisplayText,
   SkeletonThumbnail,
   Text,
-  Select,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { PolarisVizProvider, SparkLineChart } from "@shopify/polaris-viz";
@@ -43,7 +45,6 @@ import {
   DASHBOARD_RANGE_PRESETS,
   DEFAULT_DASHBOARD_RANGE,
   resolveDashboardRangeKey,
-  resolveCompareRangeKey,
   withDashboardRangeParam,
 } from "~/lib/date-range";
 import { scenarioFromRequest } from "~/mocks";
@@ -51,18 +52,6 @@ import { getDashboardOverview, type DashboardOverview } from "~/mocks/dashboard"
 import { USE_MOCK_DATA } from "~/mocks/config.server";
 import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
 import type { DashboardRangeKey, MockScenario } from "~/types/dashboard";
-import { DashboardProvider } from "~/lib/dashboard-context";
-import { EnhancedMetricCard, EnhancedMetricCardSkeleton } from "~/components/EnhancedMetricCard";
-import { generateEnhancedMetrics, calculateMetricInsights } from "~/lib/enhanced-metrics";
-import { CohortAnalysis } from "~/components/CohortAnalysis";
-import { DashboardPresetManager } from "~/components/DashboardPresetManager";
-import { ExportManager } from "~/components/ExportManager";
-import { PermissionManager, PermissionGuard } from "~/components/PermissionManager";
-import { ThemeToggle, ThemeProvider, useTheme } from "~/components/ThemeToggle";
-import "~/styles/theme.css";
-import { createMockUser, type UserRole } from "~/lib/permissions";
-import { generateCohortData, calculateCohortInsights } from "~/lib/cohort-analysis";
-import { DrillDownNavigation, DrillDownButton } from "~/components/DrillDownNavigation";
 
 const HOME_RANGE_KEYS: Array<Exclude<DashboardRangeKey, "14d">> = DASHBOARD_RANGE_KEY_LIST.filter(
   (key): key is Exclude<DashboardRangeKey, "14d"> => key !== "14d",
@@ -78,19 +67,6 @@ const SALES_PERIOD_BY_RANGE: Record<DashboardRangeKey, string> = {
 
 type LoaderData = {
   data: DashboardOverview;
-  enhancedMetrics: EnhancedMetricData[];
-  metricInsights: {
-    bestPerformer: EnhancedMetricData;
-    worstPerformer: EnhancedMetricData;
-    overallTrend: "positive" | "negative" | "neutral";
-  };
-  cohortData: CohortData[];
-  cohortInsights: {
-    averageRetention: number;
-    bestCohort: CohortData;
-    worstCohort: CohortData;
-    retentionTrend: "improving" | "declining" | "stable";
-  };
   useMockData: boolean;
   scenario: MockScenario;
   mcp: {
@@ -99,16 +75,6 @@ type LoaderData = {
     source?: string;
     generatedAt?: string;
   };
-};
-  useMockData: boolean;
-  scenario: MockScenario;
-  mcp: {
-    enabled: boolean;
-    usingMocks: boolean;
-    source?: string;
-    generatedAt?: string;
-  };
-};
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -130,11 +96,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const usingMocks = shouldUseMcpMocks(toggles);
 
   const data = await getDashboardOverview(range, scenario);
- 
-  const enhancedMetrics = generateEnhancedMetrics(range);
-  const cohortData = generateCohortData(6);
-  const cohortInsights = calculateCohortInsights(cohortData);
-  const metricInsights = calculateMetricInsights(enhancedMetrics);
 
   const shouldHydrateMcp = featureEnabled || USE_MOCK_DATA;
   let mcpSource: string | undefined;
@@ -169,10 +130,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return json<LoaderData>(
     {
       data,
-      enhancedMetrics,
-      metricInsights,
-      cohortData,
-      cohortInsights,
       useMockData: USE_MOCK_DATA,
       scenario,
       mcp: {
@@ -191,9 +148,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function DashboardRoute() {
-  const { data, enhancedMetrics, metricInsights, cohortData, cohortInsights, useMockData, scenario, mcp } = useLoaderData<typeof loader>();
-  const [currentRole, setCurrentRole] = useState<UserRole>("viewer");
-  const userPermissions = createMockUser(currentRole);
+  const { data, useMockData, scenario, mcp } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const navigation = useNavigation();
@@ -201,17 +156,9 @@ export default function DashboardRoute() {
   const prefetchedSalesHref = useRef<string | null>(null);
 
   const activeRange = resolveDashboardRangeKey(
- 
-  const activeCompare = resolveCompareRangeKey(searchParams.get("compare"));
     searchParams.get("range"),
- 
-  const activeCompare = resolveCompareRangeKey(searchParams.get("compare"));
     data.range ?? DEFAULT_DASHBOARD_RANGE,
- 
-  const activeCompare = resolveCompareRangeKey(searchParams.get("compare"));
   );
- 
-  const activeCompare = resolveCompareRangeKey(searchParams.get("compare"));
 
   const navigationLocation = navigation.location;
   const isHomeNavigation = navigation.state !== "idle" && navigationLocation?.pathname === "/app";
@@ -235,85 +182,10 @@ export default function DashboardRoute() {
   };
 
   const handleRangeSelect = (value: DashboardRangeKey) => {
- 
-  const handleCompareSelect = (value: string) => {
     const params = new URLSearchParams(searchParams);
-    if (value === "none") {
-      params.delete("compare");
-    } else {
-      params.set("compare", value);
-    }
-    navigate(`?${params.toString()}`, { replace: true });
-  };
-
-  const compareOptions = [
-    { label: "No compare", value: "none" },
-    ...DASHBOARD_RANGE_KEY_LIST.map((key) => ({ label: `Compare ${key.toUpperCase()}`, value: key })),
-  ];
-    const params = new URLSearchParams(searchParams);
- 
-  const handleCompareSelect = (value: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (value === "none") {
-      params.delete("compare");
-    } else {
-      params.set("compare", value);
-    }
-    navigate(`?${params.toString()}`, { replace: true });
-  };
-
-  const compareOptions = [
-    { label: "No compare", value: "none" },
-    ...DASHBOARD_RANGE_KEY_LIST.map((key) => ({ label: `Compare ${key.toUpperCase()}`, value: key })),
-  ];
     params.set("range", value);
- 
-  const handleCompareSelect = (value: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (value === "none") {
-      params.delete("compare");
-    } else {
-      params.set("compare", value);
-    }
     navigate(`?${params.toString()}`, { replace: true });
   };
-
-  const compareOptions = [
-    { label: "No compare", value: "none" },
-    ...DASHBOARD_RANGE_KEY_LIST.map((key) => ({ label: `Compare ${key.toUpperCase()}`, value: key })),
-  ];
-    navigate(`?${params.toString()}`, { replace: true });
- 
-  const handleCompareSelect = (value: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (value === "none") {
-      params.delete("compare");
-    } else {
-      params.set("compare", value);
-    }
-    navigate(`?${params.toString()}`, { replace: true });
-  };
-
-  const compareOptions = [
-    { label: "No compare", value: "none" },
-    ...DASHBOARD_RANGE_KEY_LIST.map((key) => ({ label: `Compare ${key.toUpperCase()}`, value: key })),
-  ];
-  };
- 
-  const handleCompareSelect = (value: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (value === "none") {
-      params.delete("compare");
-    } else {
-      params.set("compare", value);
-    }
-    navigate(`?${params.toString()}`, { replace: true });
-  };
-
-  const compareOptions = [
-    { label: "No compare", value: "none" },
-    ...DASHBOARD_RANGE_KEY_LIST.map((key) => ({ label: `Compare ${key.toUpperCase()}`, value: key })),
-  ];
 
   const sparklineData: DataPoint[] = data.sparkline.map((value, index) => ({
     key: index,
@@ -324,25 +196,304 @@ export default function DashboardRoute() {
 
   const metricCount = data.metrics.length || 4;
   const metricsContent = showSkeleton
-    ? Array.from({ length: 5 }, (_, index) => (
-        <PermissionGuard widgetId={metric.id} userPermissions={userPermissions}><EnhancedMetricCardSkeleton key={`enhanced-metric-skeleton-${index}`} />
+    ? Array.from({ length: metricCount }, (_, index) => (
+        <Card key={`metric-skeleton-${index}`} >
+          <MetricTileSkeleton />
+        </Card>
       ))
-    : enhancedMetrics.map((metric) => (
-        <PermissionGuard widgetId={metric.id} userPermissions={userPermissions}><EnhancedMetricCard
-          key={metric.id}
-          metric={metric}
-          onClick={() => {
-            // Add drill-down functionality here
-            console.log(`Drilling down to ${metric.id} details`);
-          }}
-        />
-  </PermissionGuard>
+    : data.metrics.map((metric) => (
+        <Card key={metric.id} >
+          <BlockStack gap="100">
+            <Text as="span" variant="bodySm" tone="subdued">
+              {metric.label}
+            </Text>
+            <Text as="p" variant="headingLg">
+              {metric.value}
+            </Text>
+            <Badge tone={metric.delta >= 0 ? "success" : "critical"}>
+              {`${formatDelta(metric.delta)} ${metric.deltaPeriod}`}
+            </Badge>
+          </BlockStack>
+        </Card>
       ));
+
+  return (
+    <PolarisVizProvider>
+      <Page data-testid="dashboard-container">
+        <TitleBar
+          title="Operations dashboard"
+          <CacheStatus compact />
+        />
+        <BlockStack gap="500">
+          {useMockData && (
+            <Banner
+              title={`Mock data scenario: ${scenario}`}
+              tone={scenario === "warning" ? "warning" : "info"}
+            >
+              <p>
+                Change the `mockState` query parameter (base, empty, warning, error)
+          )}
+          <CacheManager onCacheUpdate={() => {}} />
+                to preview different UI permutations.
+              </p>
+            </Banner>
+          )}
+          <Card>
+            <BlockStack gap="200">
+              <InlineStack align="space-between" blockAlign="center">
+                <Text as="h2" variant="headingLg">
+                  Sales overview
+                </Text>
+                <InlineStack gap="200" blockAlign="center">
+                  <Button
+                    variant="plain"
+                    url={salesHref}
+                    onMouseEnter={handleSalesPrefetch}
+                    onFocus={handleSalesPrefetch}
+                    onTouchStart={handleSalesPrefetch}
+                  >
+                    View sales
+                  </Button>
+                  <ButtonGroup >
+                    {HOME_RANGE_KEYS.map((option) => (
+                      <Button
+                        key={option}
+                        pressed={activeRange === option}
+                        onClick={() => handleRangeSelect(option)}
+                      >
+                        {option.toUpperCase()}
+                      </Button>
+                    ))}
+                  </ButtonGroup data-testid="date-range-selector">
+                  <Text as="span" tone="subdued" variant="bodySm">
+                    {rangeLabel}
+                  </Text>
+                </InlineStack>
+              </InlineStack>
+              <InlineGrid columns={{ xs: 1, sm: 2, lg: 4 }} gap="300">
+                {metricsContent}
+              </InlineGrid>
+              {showSkeleton ? (
+                <SalesSparklineSkeleton />
+              ) : (
+                <SalesSparkline
+                  points={sparklineData}
+                  rangeLabel={rangeLabel}
+                />
+              )}
+            </BlockStack>
+          </Card>
+
+          <Layout>
+            <Layout.Section >
+              <Card title="Orders attention" >
+                <BlockStack gap="300">
+                  {(showSkeleton
+                    ? Array.from({ length: data.orders.length || 3 }, (_, index) => (
+                        <OrderBucketSkeleton key={`order-skeleton-${index}`} />
+                      ))
+                    : data.orders.map((bucket) => (
+                        <InlineStack
+                          key={bucket.id}
+                          align="space-between"
+                          blockAlign="center"
+                        >
+                          <BlockStack gap="050">
+                            <Text as="p" variant="headingMd">
+                              {bucket.label}
+                            </Text>
+                            <Text as="span" variant="bodySm" tone="subdued">
+                              {bucket.description}
+                            </Text>
+                          </BlockStack>
+                          <InlineStack gap="200" blockAlign="center">
+                            <Text as="span" variant="headingMd">
+                              {bucket.count}
+                            </Text>
+                            <Button
+                              url={withDashboardRangeParam(
+                                bucket.href,
+                                activeRange,
+                                sharedLinkOptions,
+                              )}
+                              accessibilityLabel={`View ${bucket.label}`}
+                            >
+                              Open
+                            </Button>
+                          </InlineStack>
+                        </InlineStack>
+                      )))}
+                </BlockStack>
+              </Card>
+            </Layout.Section>
+            <Layout.Section >
+              <Card title="Inbox" >
+                {showSkeleton ? (
+                  <InboxSnapshotSkeleton />
+                ) : (
+                  <BlockStack gap="200">
+                    <InlineStack align="space-between">
+                      <Text variant="bodyMd" as="span">
+                        Outstanding
+                      </Text>
+                      <Text variant="headingMd" as="span">
+                        {data.inbox.outstanding}
+                      </Text>
+                    </InlineStack>
+                    <InlineStack align="space-between">
+                      <Text variant="bodyMd" as="span">
+                        Overdue &gt;12h
+                      </Text>
+                      <Text variant="headingMd" as="span">
+                        {data.inbox.overdueHours}
+                      </Text>
+                    </InlineStack>
+                    <InlineStack align="space-between">
+                      <Text variant="bodyMd" as="span">
+                        AI approvals pending
+                      </Text>
+                      <Text variant="headingMd" as="span">
+                        {data.inbox.approvalsPending}
+                      </Text>
+                    </InlineStack>
+                    <Button
+                      url={withDashboardRangeParam("/app/inbox", activeRange, sharedLinkOptions)}
+                      tone="primary"
+                      variant="plain"
+                    >
+                      Go to inbox
+                    </Button>
+                  </BlockStack>
+                )}
+              </Card>
+            </Layout.Section>
+          </Layout>
+
+          <Layout>
+            <Layout.Section>
+              <Card title="Inventory snapshot" >
+                {showSkeleton ? (
+                  <BlockStack gap="200">
+                    <InlineStack gap="400">
+                      {Array.from({ length: 3 }, (_, index) => (
+                        <MetricTileSkeleton key={`inventory-skeleton-${index}`} />
+                      ))}
+                    </InlineStack>
+                    <SkeletonDisplayText size="small" />
+                  </BlockStack>
+                ) : (
+                  <>
+                    <InlineStack gap="400">
+                      <MetricTile label="Low stock" value={data.inventory.lowStock} />
+                      <MetricTile
+                        label="POs in flight"
+                        value={data.inventory.purchaseOrdersInFlight}
+                      />
+                      <MetricTile label="Overstock" value={data.inventory.overstock} />
+                    </InlineStack>
+                    <Button
+                      url={withDashboardRangeParam("/app/inventory", activeRange, sharedLinkOptions)}
+                      accessibilityLabel="View inventory planner"
+                    >
+                      Open inventory planner
+                    </Button>
+                  </>
+                )}
+              </Card>
+            </Layout.Section>
+          </Layout>
+
+          <Layout>
+            <Layout.Section >
+              <Card title="SEO highlights" >
+                {showSkeleton ? (
+                  <SeoHighlightsSkeleton />
+                ) : (
+                  <BlockStack gap="200">
+                    <Text as="span" variant="bodyMd">
+                      Traffic Δ
+                    </Text>
+                    <Badge tone="success">+{data.seo.trafficDelta}%</Badge>
+                    <Text as="p" variant="bodySm">
+                      {data.seo.summary}
+                    </Text>
+                    <InlineStack gap="300">
+                      <Text variant="bodyMd" as="span">
+                        Rising queries
+                      </Text>
+                      <Text variant="headingMd" as="span">
+                        {data.seo.risingQueries}
+                      </Text>
+                    </InlineStack>
+                    <InlineStack gap="300">
+                      <Text variant="bodyMd" as="span">
+                        Rising pages
+                      </Text>
+                      <Text variant="headingMd" as="span">
+                        {data.seo.risingPages}
+                      </Text>
+                    </InlineStack>
+                    <InlineStack gap="300">
+                      <Text variant="bodyMd" as="span">
+                        Critical issues
+                      </Text>
+                      <Text variant="headingMd" tone="critical" as="span">
+                        {data.seo.criticalIssues}
+                      </Text>
+                    </InlineStack>
+                    <Button
+                      url={withDashboardRangeParam("/app/seo", activeRange, sharedLinkOptions)}
+                      variant="plain"
+                    >
+                      Dive into SEO
+                    </Button>
+                  </BlockStack>
+                )}
+              </Card>
+            </Layout.Section>
+            <Layout.Section >
+              <Card title="MCP insight" >
+                {showSkeleton ? (
+                  <McpInsightSkeleton />
+                ) : (
+                  <BlockStack gap="200">
+                    <Text as="p" variant="bodyMd">
+                      {data.mcpRecommendation}
+                    </Text>
+                    {!mcp.enabled && (
+                      <Text as="p" variant="bodySm" tone="subdued">
+                        Configure credentials and enable the MCP toggle in Settings to load live data.
+                      </Text>
+                    )}
+                    {mcp.usingMocks && (
+                      <Text as="p" variant="bodySm" tone="subdued">
+                        Showing mock data while `USE_MOCK_DATA` is enabled.
+                      </Text>
+                    )}
+                    {mcp.generatedAt && (
+                      <Text as="p" variant="bodySm" tone="subdued">
+                        Last updated {new Date(mcp.generatedAt).toLocaleString()} • {mcp.source ?? "mock"}
+                      </Text>
+                    )}
+                    <Button
+                      url={withDashboardRangeParam("/app/settings", activeRange, sharedLinkOptions)}
+                      variant="plain"
+                    >
+                      Manage MCP toggles
+                    </Button>
+                  </BlockStack>
+                )}
+              </Card>
+            </Layout.Section>
+          </Layout>
+        </BlockStack>
+      </Page>
+    </PolarisVizProvider>
+  );
 }
 
 function MetricTile({ label, value }: { label: string; value: number }) {
   return (
-    <ThemeProvider><DashboardProvider>
     <BlockStack gap="050">
       <Text as="span" variant="bodySm" tone="subdued">
         {label}
@@ -356,7 +507,6 @@ function MetricTile({ label, value }: { label: string; value: number }) {
 
 function MetricTileSkeleton() {
   return (
-    <ThemeProvider><DashboardProvider>
     <BlockStack gap="050">
       <SkeletonBodyText lines={1} />
       <SkeletonDisplayText size="small" />
@@ -366,7 +516,6 @@ function MetricTileSkeleton() {
 
 function OrderBucketSkeleton() {
   return (
-    <ThemeProvider><DashboardProvider>
     <InlineStack align="space-between" blockAlign="center" gap="200">
       <div style={{ flex: 1 }}>
         <BlockStack gap="050">
@@ -384,7 +533,6 @@ function OrderBucketSkeleton() {
 
 function InlineStatSkeleton() {
   return (
-    <ThemeProvider><DashboardProvider>
     <InlineStack align="space-between" blockAlign="center" gap="200">
       <div style={{ flex: 1 }}>
         <SkeletonBodyText lines={1} />
@@ -396,7 +544,6 @@ function InlineStatSkeleton() {
 
 function InboxSnapshotSkeleton() {
   return (
-    <ThemeProvider><DashboardProvider>
     <BlockStack gap="200">
       <InlineStatSkeleton />
       <InlineStatSkeleton />
@@ -408,7 +555,6 @@ function InboxSnapshotSkeleton() {
 
 function SeoHighlightsSkeleton() {
   return (
-    <ThemeProvider><DashboardProvider>
     <BlockStack gap="200">
       <SkeletonBodyText lines={1} />
       <SkeletonDisplayText size="small" />
@@ -423,7 +569,6 @@ function SeoHighlightsSkeleton() {
 
 function McpInsightSkeleton() {
   return (
-    <ThemeProvider><DashboardProvider>
     <BlockStack gap="200">
       <SkeletonBodyText lines={2} />
       <SkeletonBodyText lines={1} />
@@ -445,7 +590,6 @@ function SalesSparkline({
 }) {
   if (!points.length) {
     return (
-    <ThemeProvider><DashboardProvider>
       <Text as="p" variant="bodySm" tone="subdued">
         Sales trend data unavailable.
       </Text>
@@ -458,21 +602,18 @@ function SalesSparkline({
   }];
 
   return (
-    <ThemeProvider><DashboardProvider>
     <div style={{ width: "100%", height: 160 }}>
       <SparkLineChart
         accessibilityLabel={`Sales trend for the selected range ${rangeLabel}`}
         data={dataset}
         isAnimated={false}
       />
-  </PermissionGuard>
     </div>
   );
 }
 
 function SalesSparklineSkeleton() {
   return (
-    <ThemeProvider><DashboardProvider>
     <div
       style={{
         width: "100%",
