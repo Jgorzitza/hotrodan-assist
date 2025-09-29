@@ -1,0 +1,300 @@
+{
+  "start_time": "2025-09-29T14:37:10.880904",
+  "api_health": {
+    "tests": [
+      {
+        "name": "root_endpoint",
+        "passed": true,
+        "response_time": 0.0457158088684082,
+        "status_code": 200,
+        "details": {
+          "message": "Sales Analytics API is running",
+          "status": "healthy"
+        }
+      },
+      {
+        "name": "health_endpoint",
+        "passed": true,
+        "response_time": 0.0030126571655273438,
+        "status_code": 200,
+        "details": {
+          "status": "healthy",
+          "service": "sales-analytics-api"
+        }
+      }
+    ],
+    "summary": "2/2 health tests passed"
+  },
+  "endpoint_functionality": {
+    "tests": [
+      {
+        "name": "channel_campaign_metrics",
+        "passed": true,
+        "response_time": 0.004619598388671875,
+        "status_code": 200,
+        "response_size": 254,
+        "details": {
+          "success": true,
+          "metrics": {
+            "channels": {
+              "email": {
+                "revenue": 100,
+                "count": 1,
+                "aov": 100.0
+              },
+              "social": {
+                "revenue": 200,
+                "count": 1,
+                "aov": 200.0
+              },
+              "paid": {
+                "revenue": 150,
+                "count": 1,
+                "aov": 150.0
+              }
+            },
+            "overall": {
+              "total_revenue": 450,
+              "total_transactions": 3,
+              "overall_aov": 150.0
+            }
+          }
+        }
+      },
+      {
+        "name": "attribution_models",
+        "passed": false,
+        "response_time": 0.004045009613037109,
+        "status_code": 404,
+        "response_size": 22,
+        "details": "{\"detail\":\"Not Found\"}"
+      },
+      {
+        "name": "funnel_dropoff",
+        "passed": false,
+        "response_time": 0.0015316009521484375,
+        "status_code": 404,
+        "response_size": 22,
+        "details": "{\"detail\":\"Not Found\"}"
+      },
+      {
+        "name": "forecast_rollup",
+        "passed": false,
+        "response_time": 0.0012848377227783203,
+        "status_code": 404,
+        "response_size": 22,
+        "details": "{\"detail\":\"Not Found\"}"
+      },
+      {
+        "name": "pricing_elasticity",
+        "passed": false,
+        "response_time": 0.0012865066528320312,
+        "status_code": 404,
+        "response_size": 22,
+        "details": "{\"detail\":\"Not Found\"}"
+      }
+    ],
+    "summary": "1/5 endpoint tests passed"
+  },
+  "data_processing": {
+    "tests": [
+      {
+        "name": "small_dataset",
+        "passed": true,
+        "response_time": 0.0015861988067626953,
+        "data_size": 1,
+        "details": {
+          "success": true,
+          "metrics": {
+            "channels": {
+              "email": {
+                "revenue": 100,
+                "count": 1,
+                "aov": 100.0
+              }
+            },
+            "overall": {
+              "total_revenue": 100,
+              "total_transactions": 1,
+              "overall_aov": 100.0
+            }
+          }
+        }
+      },
+      {
+        "name": "medium_dataset",
+        "passed": true,
+        "response_time": 0.0025353431701660156,
+        "data_size": 100,
+        "details": {
+          "success": true,
+          "metrics": {
+            "channels": {
+              "channel_0": {
+                "revenue": 16830,
+                "count": 34,
+                "aov": 495.0
+              },
+              "channel_1": {
+                "revenue": 16170,
+                "count": 33,
+                "aov": 490.0
+              },
+              "channel_2": {
+                "revenue": 16500,
+                "count": 33,
+                "aov": 500.0
+              }
+            },
+            "overall": {
+              "total_revenue": 49500,
+              "total_transactions": 100,
+              "overall_aov": 495.0
+            }
+          }
+        }
+      },
+      {
+        "name": "large_dataset",
+        "passed": true,
+        "response_time": 0.0031626224517822266,
+        "data_size": 1000,
+        "details": {
+          "success": true,
+          "metrics": {
+            "channels": {
+              "channel_0": {
+                "revenue": 995000,
+                "count": 200,
+                "aov": 4975.0
+              },
+              "channel_1": {
+                "revenue": 997000,
+                "count": 200,
+                "aov": 4985.0
+              },
+              "channel_2": {
+                "revenue": 999000,
+                "count": 200,
+                "aov": 4995.0
+              },
+              "channel_3": {
+                "revenue": 1001000,
+                "count": 200,
+                "aov": 5005.0
+              },
+              "channel_4": {
+                "revenue": 1003000,
+                "count": 200,
+                "aov": 5015.0
+              }
+            },
+            "overall": {
+              "total_revenue": 4995000,
+              "total_transactions": 1000,
+              "overall_aov": 4995.0
+            }
+          }
+        }
+      },
+      {
+        "name": "empty_dataset",
+        "passed": false,
+        "response_time": 0.0015311241149902344,
+        "data_size": 0,
+        "details": {
+          "error": "No transaction data provided",
+          "metrics": {}
+        }
+      },
+      {
+        "name": "malformed_data",
+        "passed": false,
+        "response_time": 0.0015208721160888672,
+        "data_size": 1,
+        "details": {
+          "error": "Channel campaign metrics failed: unsupported operand type(s) for +: 'int' and 'str'"
+        }
+      }
+    ],
+    "summary": "3/5 data processing tests passed"
+  },
+  "performance_validation": {
+    "tests": [
+      {
+        "name": "response_time_consistency",
+        "passed": true,
+        "avg_response_time": 0.0018046379089355468,
+        "max_response_time": 0.002435922622680664,
+        "min_response_time": 0.001295328140258789,
+        "details": "Average: 0.002s, Max: 0.002s"
+      }
+    ],
+    "summary": "1/1 performance tests passed"
+  },
+  "concurrent_requests": {
+    "tests": [
+      {
+        "name": "concurrent_requests",
+        "passed": true,
+        "successful_requests": 10,
+        "total_requests": 10,
+        "avg_response_time": 0.007244420051574707,
+        "details": "10/10 concurrent requests succeeded"
+      }
+    ],
+    "summary": "1/1 concurrent request tests passed"
+  },
+  "error_handling": {
+    "tests": [
+      {
+        "name": "invalid_json",
+        "passed": false,
+        "status_code": 200,
+        "expected_status": 422,
+        "details": "{\"error\":\"No transaction data provided\",\"metrics\":{}}"
+      },
+      {
+        "name": "missing_required_field",
+        "passed": true,
+        "status_code": 200,
+        "expected_status": 200,
+        "details": "{\"error\":\"No transaction data provided\",\"metrics\":{}}"
+      },
+      {
+        "name": "null_data",
+        "passed": false,
+        "status_code": 200,
+        "expected_status": 422,
+        "details": "{\"error\":\"No transaction data provided\",\"metrics\":{}}"
+      },
+      {
+        "name": "very_large_payload",
+        "passed": true,
+        "status_code": 200,
+        "expected_status": 200,
+        "details": "{\"success\":true,\"metrics\":{\"channels\":{\"email\":{\"revenue\":1000000,\"count\":10000,\"aov\":100.0}},\"overall\":{\"total_revenue\":1000000,\"total_transactions\":10000,\"overall_aov\":100.0}}}"
+      }
+    ],
+    "summary": "2/4 error handling tests passed"
+  },
+  "integration_validation": {
+    "tests": [
+      {
+        "name": "data_flow_integration",
+        "passed": false,
+        "channel_status": 200,
+        "attribution_status": 404,
+        "details": "Data flows correctly between endpoints"
+      }
+    ],
+    "summary": "0/1 integration tests passed"
+  },
+  "end_time": "2025-09-29T14:37:11.017833",
+  "overall": {
+    "total_tests": 19,
+    "passed_tests": 10,
+    "success_rate": 52.63157894736842,
+    "validation_status": "FAILED"
+  }
+}

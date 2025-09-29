@@ -1,0 +1,137 @@
+{
+  "start_time": "2025-09-29T14:37:49.219719",
+  "api_health": {
+    "tests": [
+      {
+        "name": "root_endpoint",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d796a0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      },
+      {
+        "name": "health_endpoint",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d79f10>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      }
+    ],
+    "summary": "0/2 health tests passed"
+  },
+  "endpoint_functionality": {
+    "tests": [
+      {
+        "name": "channel_campaign_metrics",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7a720>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      },
+      {
+        "name": "attribution_models",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/attribution-models (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063fa7890>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      },
+      {
+        "name": "funnel_dropoff",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/funnel-dropoff (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7a270>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      },
+      {
+        "name": "forecast_rollup",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/forecast-rollup (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d79a30>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      },
+      {
+        "name": "pricing_elasticity",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/pricing-elasticity (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7b140>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      }
+    ],
+    "summary": "0/5 endpoint tests passed"
+  },
+  "data_processing": {
+    "tests": [
+      {
+        "name": "small_dataset",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d79580>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      },
+      {
+        "name": "medium_dataset",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d79ac0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      },
+      {
+        "name": "large_dataset",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7a960>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      },
+      {
+        "name": "empty_dataset",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7b6e0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      },
+      {
+        "name": "malformed_data",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7bfb0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      }
+    ],
+    "summary": "0/5 data processing tests passed"
+  },
+  "performance_validation": {
+    "tests": [],
+    "summary": "0/0 performance tests passed"
+  },
+  "concurrent_requests": {
+    "tests": [
+      {
+        "name": "concurrent_requests",
+        "passed": false,
+        "successful_requests": 0,
+        "total_requests": 10,
+        "avg_response_time": 0,
+        "details": "0/10 concurrent requests succeeded"
+      }
+    ],
+    "summary": "0/1 concurrent request tests passed"
+  },
+  "error_handling": {
+    "tests": [
+      {
+        "name": "invalid_json",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d78c80>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      },
+      {
+        "name": "missing_required_field",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7b8c0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      },
+      {
+        "name": "null_data",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063e033e0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      },
+      {
+        "name": "very_large_payload",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063e01f10>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      }
+    ],
+    "summary": "0/4 error handling tests passed"
+  },
+  "integration_validation": {
+    "tests": [
+      {
+        "name": "data_flow_integration",
+        "passed": false,
+        "error": "HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063e02d20>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+      }
+    ],
+    "summary": "0/1 integration tests passed"
+  },
+  "end_time": "2025-09-29T14:37:49.251953",
+  "overall": {
+    "total_tests": 18,
+    "passed_tests": 0,
+    "success_rate": 0.0,
+    "validation_status": "FAILED"
+  }
+}
