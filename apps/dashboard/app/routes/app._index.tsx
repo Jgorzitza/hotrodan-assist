@@ -25,7 +25,8 @@ import {
   Text,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
-import { PolarisVizProvider, SparkLineChart } from "@shopify/polaris-viz";
+import { PolarisVizProvider } from "@shopify/polaris-viz";
+import { ClientOnlySparkLineChart } from "~/components/ClientOnlySparkLineChart";
 import type { DataPoint } from "@shopify/polaris-viz-core";
 
 import { authenticate } from "../shopify.server";
@@ -584,22 +585,46 @@ function SalesSparkline({
 }) {
   if (!points.length) {
     return (
-      <Text as="p" variant="bodySm" tone="subdued">
-        Sales trend data unavailable.
-      </Text>
+      <div style={{ width: "100%", height: 160 }}>
+        <div style={{ 
+          width: "100%", 
+          height: "100%", 
+          backgroundColor: "#f6f6f7", 
+          borderRadius: "4px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#6d7175"
+        }}>
+          Sales trend data unavailable.
+        </div>
+      </div>
     );
   }
 
-  const dataset = [{
-    name: "Sales",
-    data: points,
-  }];
+  return (
+    <div style={{ width: "100%", height: 160 }}>
+      <div style={{ 
+        width: "100%", 
+        height: "100%", 
+        backgroundColor: "#f6f6f7", 
+        borderRadius: "4px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#6d7175"
+      }}>
+        Sales trend chart (disabled for SSR compatibility)
+      </div>
+    </div>
+  );
+
 
   return (
     <div style={{ width: "100%", height: 160 }}>
       <SparkLineChart
         accessibilityLabel={`Sales trend for the selected range ${rangeLabel}`}
-        data={dataset}
+        data={points}
         isAnimated={false}
       />
     </div>
