@@ -1,0 +1,288 @@
+import { useState, useEffect, useCallback, useRef } from "react";
+import { dashboardCache, cacheKeys, type CacheOptions, type CacheStats } from "~/lib/cache";
+
+export type UseCacheOptions<T> = CacheOptions & {
+  enabled?: boolean;
+  revalidateOnMount?: boolean;
+  revalidateOnFocus?: boolean;
+  revalidateOnReconnect?: boolean;
+  onSuccess?: (data: T) => void;
+  onError?: (error: Error) => void;
+  fallbackData?: T;
+};
+
+export type UseCacheResult<T> = {
+  data: T | null;
+  error: Error | null;
+  isLoading: boolean;
+  isValidating: boolean;
+  mutate: (data?: T, shouldRevalidate?: boolean) => void;
+  revalidate: () => Promise<void>;
+  clear: () => void;
+  stats: CacheStats;
+};
+
+export function useCache<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+  options: UseCacheOptions<T> = {}
+): UseCacheResult<T> {
+  const {
+    enabled = true,
+    revalidateOnMount = true,
+    revalidateOnFocus = false,
+    revalidateOnReconnect = false,
+    onSuccess,
+    onError,
+    fallbackData,
+    ...cacheOptions
+  } = options;
+
+  const [data, setData] = useState<T | null>(() => {
+    if (!enabled) return fallbackData ?? null;
+    return dashboardCache.get<T>(key) ?? fallbackData ?? null;
+  });
+  
+  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [stats, setStats] = useState<CacheStats>(dashboardCache.getStats());
+  
+  const fetcherRef = useRef(fetcher);
+  const keyRef = useRef(key);
+  const mountedRef = useRef(true);
+
+  // Update refs when they change
+  useEffect(() => {
+    fetcherRef.current = fetcher;
+    keyRef.current = key;
+  }, [fetcher, key]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  // Update stats periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (mountedRef.current) {
+        setStats(dashboardCache.getStats());
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Revalidate function
+  const revalidate = useCallback(async () => {
+    if (!enabled || !mountedRef.current) return;
+
+    setIsValidating(true);
+    setError(null);
+
+    try {
+      const newData = await fetcherRef.current();
+      
+      if (mountedRef.current) {
+        dashboardCache.set(keyRef.current, newData, cacheOptions);
+        setData(newData);
+        onSuccess?.(newData);
+      }
+    } catch (err) {
+      if (mountedRef.current) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        onError?.(error);
+      }
+    } finally {
+      if (mountedRef.current) {
+        setIsValidating(false);
+      }
+    }
+  }, [enabled, cacheOptions, onSuccess, onError]);
+
+  // Initial load
+  useEffect(() => {
+    if (!enabled) return;
+
+    const cachedData = dashboardCache.get<T>(keyRef.current);
+    
+    if (cachedData && !revalidateOnMount) {
+      setData(cachedData);
+      return;
+    }
+
+    if (revalidateOnMount || !cachedData) {
+      setIsLoading(true);
+      revalidate().finally(() => {
+        if (mountedRef.current) {
+          setIsLoading(false);
+        }
+      });
+    }
+  }, [enabled, revalidateOnMount, revalidate]);
+
+  // Focus revalidation
+  useEffect(() => {
+    if (!revalidateOnFocus || !enabled) return;
+
+    const handleFocus = () => {
+      revalidate();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [revalidateOnFocus, enabled, revalidate]);
+
+  // Reconnect revalidation
+  useEffect(() => {
+    if (!revalidateOnReconnect || !enabled) return;
+
+    const handleOnline = () => {
+      revalidate();
+    };
+
+    window.addEventListener("online", handleOnline);
+    return () => window.removeEventListener("online", handleOnline);
+  }, [revalidateOnReconnect, enabled, revalidate]);
+
+  // Cache revalidation listener
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleRevalidation = (event: CustomEvent) => {
+      if (event.detail.key === keyRef.current) {
+        revalidate();
+      }
+    };
+
+    window.addEventListener("cache-revalidation", handleRevalidation as EventListener);
+    return () => window.removeEventListener("cache-revalidation", handleRevalidation as EventListener);
+  }, [enabled, revalidate]);
+
+  // Mutate function
+  const mutate = useCallback((newData?: T, shouldRevalidate = true) => {
+    if (newData !== undefined) {
+      dashboardCache.set(keyRef.current, newData, cacheOptions);
+      setData(newData);
+    }
+
+    if (shouldRevalidate) {
+      revalidate();
+    }
+  }, [cacheOptions, revalidate]);
+
+  // Clear function
+  const clear = useCallback(() => {
+    dashboardCache.delete(keyRef.current);
+    setData(fallbackData ?? null);
+    setError(null);
+  }, [fallbackData]);
+
+  return {
+    data,
+    error,
+    isLoading,
+    isValidating,
+    mutate,
+    revalidate,
+    clear,
+    stats,
+  };
+}
+
+// Specialized hooks for common use cases
+export function useMetricsCache(range: string, compare?: string) {
+  return useCache(
+    cacheKeys.metrics(range, compare),
+    async () => {
+      // This would be replaced with actual API call
+      const response = await fetch(`/api/metrics?range=${range}${compare ? `&compare=${compare}` : ""}`);
+      if (!response.ok) throw new Error("Failed to fetch metrics");
+      return response.json();
+    },
+    {
+      ttl: 5 * 60 * 1000, // 5 minutes
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    }
+  );
+}
+
+export function useCohortCache(range: string) {
+  return useCache(
+    cacheKeys.cohort(range),
+    async () => {
+      // This would be replaced with actual API call
+      const response = await fetch(`/api/cohort?range=${range}`);
+      if (!response.ok) throw new Error("Failed to fetch cohort data");
+      return response.json();
+    },
+    {
+      ttl: 10 * 60 * 1000, // 10 minutes
+      revalidateOnFocus: true,
+    }
+  );
+}
+
+export function usePresetsCache() {
+  return useCache(
+    cacheKeys.presets(),
+    async () => {
+      // This would be replaced with actual API call
+      const response = await fetch("/api/presets");
+      if (!response.ok) throw new Error("Failed to fetch presets");
+      return response.json();
+    },
+    {
+      ttl: 15 * 60 * 1000, // 15 minutes
+      revalidateOnFocus: false,
+    }
+  );
+}
+
+// Cache management hook
+export function useCacheManager() {
+  const [stats, setStats] = useState<CacheStats>(dashboardCache.getStats());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStats(dashboardCache.getStats());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const clearCache = useCallback(() => {
+    dashboardCache.clear();
+    setStats(dashboardCache.getStats());
+  }, []);
+
+  const invalidatePattern = useCallback((pattern: string) => {
+    const count = dashboardCache.invalidate(pattern);
+    setStats(dashboardCache.getStats());
+    return count;
+  }, []);
+
+  const invalidateByVersion = useCallback((version: string) => {
+    const count = dashboardCache.invalidateByVersion(version);
+    setStats(dashboardCache.getStats());
+    return count;
+  }, []);
+
+  const updateConfig = useCallback((config: Partial<typeof dashboardCache.config>) => {
+    dashboardCache.updateConfig(config);
+  }, []);
+
+  return {
+    stats,
+    clearCache,
+    invalidatePattern,
+    invalidateByVersion,
+    updateConfig,
+    config: dashboardCache.getConfig(),
+  };
+}
