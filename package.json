@@ -102,7 +102,6 @@
     "prettier": "^3.6.2",
     "prisma": "^5.11.0",
     "standard-version": "^9.5.0",
-    "swagger-codegen-cli": "^2.2.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.4",
     "vitest": "^3.2.4"

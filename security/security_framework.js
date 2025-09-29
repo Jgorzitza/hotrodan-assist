@@ -239,3 +239,104 @@ const securityFramework = new SecurityFramework();
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = SecurityFramework;
 }
+
+    // Enhanced Security Functions
+    validateInput(input, type = 'string') {
+        if (!input) return false;
+        
+        const sanitizers = {
+            string: (str) => str.replace(/[<>\"'&]/g, (match) => {
+                const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
+                return entities[match];
+            }),
+            email: (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null,
+            url: (url) => {
+                try { new URL(url); return url; } catch { return null; }
+            },
+            number: (num) => !isNaN(parseFloat(num)) && isFinite(num) ? parseFloat(num) : null
+        };
+        
+        return sanitizers[type] ? sanitizers[type](input) : sanitizers.string(input);
+    }
+
+    generateSecureToken(length = 32) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let token = '';
+        for (let i = 0; i < length; i++) {
+            token += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return token;
+    }
+
+    hashPassword(password, salt = null) {
+        if (!salt) salt = this.generateSecureToken(16);
+        // In production, use bcrypt or similar
+        const crypto = require('crypto');
+        const hash = crypto.createHash('sha256').update(password + salt).digest('hex');
+        return { hash, salt };
+    }
+
+    rateLimitCheck(identifier, limit = 100, windowMs = 60000) {
+        const now = Date.now();
+        if (!this.rateLimits) this.rateLimits = new Map();
+        
+        const key = `rate_limit_${identifier}`;
+        const requests = this.rateLimits.get(key) || [];
+        
+        // Remove old requests outside window
+        const validRequests = requests.filter(time => now - time < windowMs);
+        
+        if (validRequests.length >= limit) {
+            return false; // Rate limit exceeded
+        }
+        
+        validRequests.push(now);
+        this.rateLimits.set(key, validRequests);
+        return true;
+    }
+
+    auditLog(action, userId = null, details = {}) {
+        const logEntry = {
+            timestamp: new Date().toISOString(),
+            action,
+            userId,
+            details,
+            ip: details.ip || 'unknown',
+            userAgent: details.userAgent || 'unknown'
+        };
+        
+        this.incidents.push(logEntry);
+        console.log(`🔍 Security Audit: ${action} by ${userId || 'anonymous'}`);
+        
+        // In production, write to secure audit log
+        return logEntry;
+    }
+
+    checkVulnerabilities() {
+        console.log('🔍 Running security vulnerability scan...');
+        
+        const vulnerabilities = [];
+        
+        // Check for common vulnerabilities
+        if (process.env.NODE_ENV === 'production' && !process.env.SECURE_COOKIES) {
+            vulnerabilities.push({
+                type: 'configuration',
+                severity: 'high',
+                description: 'Secure cookies not enabled in production'
+            });
+        }
+        
+        if (!process.env.API_KEY_ENCRYPTION) {
+            vulnerabilities.push({
+                type: 'encryption',
+                severity: 'medium',
+                description: 'API key encryption not configured'
+            });
+        }
+        
+        this.securityMetrics.vulnerabilitiesFound = vulnerabilities.length;
+        this.securityMetrics.lastScan = new Date().toISOString();
+        
+        return vulnerabilities;
+    }
+
