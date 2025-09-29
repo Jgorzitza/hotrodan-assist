@@ -56,6 +56,7 @@ import { EnhancedMetricCard, EnhancedMetricCardSkeleton } from "~/components/Enh
 import { generateEnhancedMetrics, calculateMetricInsights } from "~/lib/enhanced-metrics";
 import { CohortAnalysis } from "~/components/CohortAnalysis";
 import { DashboardPresetManager } from "~/components/DashboardPresetManager";
+import { ExportManager } from "~/components/ExportManager";
 import { generateCohortData, calculateCohortInsights } from "~/lib/cohort-analysis";
 import { DrillDownNavigation, DrillDownButton } from "~/components/DrillDownNavigation";
 
