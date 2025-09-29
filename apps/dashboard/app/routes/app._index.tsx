@@ -1,6 +1,3 @@
-import { CacheManager, CacheStatus } from "~/components/CacheManager";
-import { useCacheManager } from "~/hooks/useCache";
-import { dataService } from "~/lib/data-service";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useRef } from "react";
@@ -219,10 +216,9 @@ export default function DashboardRoute() {
 
   return (
     <PolarisVizProvider>
-      <Page data-testid="dashboard-container">
+      <Page>
         <TitleBar
           title="Operations dashboard"
-          <CacheStatus compact />
         />
         <BlockStack gap="500">
           {useMockData && (
@@ -232,8 +228,6 @@ export default function DashboardRoute() {
             >
               <p>
                 Change the `mockState` query parameter (base, empty, warning, error)
-          )}
-          <CacheManager onCacheUpdate={() => {}} />
                 to preview different UI permutations.
               </p>
             </Banner>
@@ -264,7 +258,7 @@ export default function DashboardRoute() {
                         {option.toUpperCase()}
                       </Button>
                     ))}
-                  </ButtonGroup data-testid="date-range-selector">
+                  </ButtonGroup>
                   <Text as="span" tone="subdued" variant="bodySm">
                     {rangeLabel}
                   </Text>

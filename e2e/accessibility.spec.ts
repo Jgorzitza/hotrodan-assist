@@ -107,7 +107,7 @@ test.describe('Accessibility Tests', () => {
           <button>First Button</button>
           <button>Second Button</button>
           <a href="#">Link</a>
-          <input type="text" />
+          <input type="text" aria-label="Test input field" placeholder="Enter text here" />
         </body>
       </html>
     `);
