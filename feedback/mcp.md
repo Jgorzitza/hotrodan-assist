@@ -69,7 +69,7 @@
 
 ### Current Focus - 2025-09-29T09:24:43-06:00
 - [ ] Service registry with health and versions
-- [ ] Typed contracts + schema registry
+- [x] Typed contracts + schema registry
 - [ ] Retry/backoff and DLQ for failed events
 - [ ] Idempotent handlers; exactly-once where feasible
 - [ ] OAuth secrets rotation and vault integration

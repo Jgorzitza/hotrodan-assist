@@ -1,0 +1,22 @@
+{
+  "name": "@llama-rag/api-client",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "codegen": "openapi-generator-cli generate -g typescript-axios -i ../../tools/codegen/specs/api.yaml -o ./src/generated/",
+    "codegen:watch": "openapi-generator-cli generate -g typescript-axios -i ../../tools/codegen/specs/api.yaml -o ./src/generated/ --watch"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "@llama-rag/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.4",
+    "@types/node": "^20.12.7"
+  }
+}

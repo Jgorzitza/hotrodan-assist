@@ -1,0 +1,40 @@
+overwrite: true
+schema: 
+  - "http://localhost:3000/graphql"
+  - "apps/dashboard/app/lib/graphql/**/*.graphql"
+documents: 
+  - "apps/**/*.graphql"
+  - "apps/**/*.gql"
+  - "apps/**/*.tsx"
+  - "apps/**/*.ts"
+  - "!apps/**/*.test.*"
+  - "!apps/**/*.spec.*"
+generates:
+  packages/graphql-types/src/generated/:
+    preset: near-operation-file
+    presetConfig:
+      extension: .generated.ts
+      baseTypesPath: types.ts
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      withHooks: true
+      withComponent: false
+      withHOC: false
+      skipTypename: false
+      enumsAsTypes: true
+      scalars:
+        DateTime: string
+        JSON: any
+  packages/graphql-types/src/schema.ts:
+    plugins:
+      - typescript
+      - typescript-resolvers
+    config:
+      useIndexSignature: true
+      contextType: "../context#GraphQLContext"
+      mappers:
+        User: "../types#User"
+        Product: "../types#Product"

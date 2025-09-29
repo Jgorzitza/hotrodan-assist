@@ -1,0 +1,22 @@
+{
+  "name": "@llama-rag/graphql-types",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "codegen": "graphql-codegen --config ../../tools/codegen/codegen.yml",
+    "codegen:watch": "graphql-codegen --config ../../tools/codegen/codegen.yml --watch"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.8.0",
+    "graphql": "^16.8.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.4",
+    "@types/node": "^20.12.7"
+  }
+}

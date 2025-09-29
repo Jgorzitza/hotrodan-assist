@@ -1,0 +1,55 @@
+# OpenAPI Code Generation Configuration
+generators:
+  # TypeScript Axios Client
+  typescript-axios:
+    input: "specs/api.yaml"
+    output: "packages/api-client/src/generated/"
+    config:
+      npmName: "@llama-rag/api-client"
+      npmVersion: "1.0.0"
+      supportsES6: true
+      useSingleRequestParameter: true
+      withSeparateModelsAndApi: true
+      modelPackage: "models"
+      apiPackage: "apis"
+      
+  # JavaScript SDK
+  javascript:
+    input: "specs/api.yaml"
+    output: "packages/js-sdk/src/generated/"
+    config:
+      projectName: "llama-rag-js-sdk"
+      projectVersion: "1.0.0"
+      moduleName: "LlamaRagSDK"
+      usePromises: true
+      
+  # Python SDK
+  python:
+    input: "specs/api.yaml"
+    output: "packages/python-sdk/"
+    config:
+      packageName: "llama_rag_sdk"
+      projectName: "llama-rag-python-sdk"
+      packageVersion: "1.0.0"
+      packageUrl: "https://github.com/llama-rag/sdk-python"
+      
+  # Go SDK
+  go:
+    input: "specs/api.yaml"
+    output: "packages/go-sdk/"
+    config:
+      packageName: "llamaragsdk"
+      packageVersion: "1.0.0"
+      gitUserId: "llama-rag"
+      gitRepoId: "sdk-go"
+      
+  # Java SDK
+  java:
+    input: "specs/api.yaml"
+    output: "packages/java-sdk/"
+    config:
+      groupId: "com.llamarag"
+      artifactId: "llama-rag-java-sdk"
+      artifactVersion: "1.0.0"
+      library: "okhttp-gson"
+      dateLibrary: "java8"

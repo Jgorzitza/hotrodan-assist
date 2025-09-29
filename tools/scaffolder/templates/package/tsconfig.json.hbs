@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "lib": ["es2020"{{#if (eq type "ui")}}, "dom"{{/if}}],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+    {{#if (eq type "ui")}},
+    "jsx": "react-jsx"{{/if}}
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

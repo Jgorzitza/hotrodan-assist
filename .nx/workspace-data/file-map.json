@@ -127,6 +127,10 @@
         "hash": "8492166866627408151"
       },
       {
+        "file": "app/__init__.py",
+        "hash": "13966568638260216223"
+      },
+      {
         "file": "app/approval-app/Dockerfile",
         "hash": "6920145401354374623"
       },
@@ -281,6 +285,10 @@
       {
         "file": "app/rag_api/requirements_production.txt",
         "hash": "11204228058532146401"
+      },
+      {
+        "file": "app/sales_analytics_platform/__init__.py",
+        "hash": "4374826344623841151"
       },
       {
         "file": "app/sales_analytics_platform/core/__init__.py",
@@ -1516,7 +1524,7 @@
       },
       {
         "file": "coordination/inbox/dashboard/2025-09-29-notes.md",
-        "hash": "8227220269841595712"
+        "hash": "13834896665741262955"
       },
       {
         "file": "coordination/inbox/data/2025-01-06-notes.md",
@@ -1548,7 +1556,7 @@
       },
       {
         "file": "coordination/inbox/inventory/2025-09-29-notes.md",
-        "hash": "10137177181328523593"
+        "hash": "18400657959626134781"
       },
       {
         "file": "coordination/inbox/manager/2025-09-28-notes.md",
@@ -1564,7 +1572,7 @@
       },
       {
         "file": "coordination/inbox/mcp/2025-09-29-notes.md",
-        "hash": "15348907816848187096"
+        "hash": "1386821969975764717"
       },
       {
         "file": "coordination/inbox/orders/2025-09-27-notes.md",
@@ -1572,7 +1580,7 @@
       },
       {
         "file": "coordination/inbox/quality/2025-09-29-notes.md",
-        "hash": "9140852037313312966"
+        "hash": "12426472154914166605"
       },
       {
         "file": "coordination/inbox/rag/2025-09-27-notes.md",
@@ -1588,7 +1596,7 @@
       },
       {
         "file": "coordination/inbox/sales/2025-09-29-notes.md",
-        "hash": "17496227736487580892"
+        "hash": "596094709876702920"
       },
       {
         "file": "coordination/inbox/sales/2025-10-09-notes.md",

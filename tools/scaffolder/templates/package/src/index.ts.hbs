@@ -1,0 +1,19 @@
+// {{capitalize name}} package
+
+{{#if (eq type "lib")}}
+export * from './lib/types';
+export * from './lib/utils';
+{{/if}}
+{{#if (eq type "api")}}
+export * from './client';
+export * from './types';
+export * from './errors';
+{{/if}}
+{{#if (eq type "ui")}}
+export * from './components';
+export * from './hooks';
+{{/if}}
+{{#if (eq type "db")}}
+export * from './schema';
+export * from './migrations';
+{{/if}}

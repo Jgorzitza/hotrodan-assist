@@ -1,0 +1,18 @@
+{
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "value": {
+      "title": "Value",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "value"
+  ],
+  "title": "Example",
+  "type": "object"
+}
