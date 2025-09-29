@@ -286,7 +286,12 @@ export default function DashboardRoute() {
         </Card>
       ))
     : data.metrics.map((metric) => ( data.metrics.map((metric) => (
-        <Card key={metric.id} >
+        <DrillDownButton
+              source="dashboard"
+              target="sales"
+              data={{ metric: metric.id, range: activeRange }}
+            >
+              <Card key={metric.id} >
           <BlockStack gap="100">
             <Text as="span" variant="bodySm" tone="subdued">
               {metric.label}
