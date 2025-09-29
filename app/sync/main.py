@@ -1,11 +1,12 @@
 """Sync service: normalize Zoho and Shopify events into Postgres + assistants."""
+
 from __future__ import annotations
 
 import base64
 import hmac
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional
 from uuid import uuid4
 
@@ -27,6 +28,7 @@ from sync.orders_api import (
 # ---------------------------------------------------------------------------
 # Database setup
 # ---------------------------------------------------------------------------
+
 
 def _database_url() -> str:
     raw = os.getenv("POSTGRES_URL", "sqlite+aiosqlite:///./assistants.db")
@@ -57,7 +59,9 @@ class ZohoMessage(Base):
     customer_email: Mapped[Optional[str]] = mapped_column(String(255))
     body: Mapped[str] = mapped_column(Text, nullable=False)
     raw: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
 
 
 class ShopifyEvent(Base):
@@ -67,7 +71,9 @@ class ShopifyEvent(Base):
     topic: Mapped[str] = mapped_column(String(255), nullable=False)
     shop_id: Mapped[Optional[str]] = mapped_column(String(255))
     payload: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
-    received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    received_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
 
 
 class ShopifyCustomer(Base):
@@ -80,7 +86,9 @@ class ShopifyCustomer(Base):
     phone: Mapped[Optional[str]] = mapped_column(String(128))
     tags: Mapped[List[str]] = mapped_column(JSON, default=list)
     raw: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
 
 
 class ShopifyOrder(Base):
@@ -94,9 +102,13 @@ class ShopifyOrder(Base):
     currency: Mapped[Optional[str]] = mapped_column(String(8))
     financial_status: Mapped[Optional[str]] = mapped_column(String(64))
     fulfillment_status: Mapped[Optional[str]] = mapped_column(String(64))
-    order_created_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    order_created_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True)
+    )
     raw: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
 
 
 class ShopifyInventoryLevel(Base):
@@ -106,7 +118,9 @@ class ShopifyInventoryLevel(Base):
     inventory_item_id: Mapped[str] = mapped_column(String(32), nullable=False)
     location_id: Mapped[str] = mapped_column(String(32), nullable=False)
     available: Mapped[Optional[int]] = mapped_column(Integer)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
     raw: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
 
 
@@ -116,18 +130,24 @@ class ShopifyInventoryLevel(Base):
 
 
 app = FastAPI(title="Sync Service", version="0.3.0")
-ASSISTANTS_DRAFT_URL = os.getenv("ASSISTANTS_DRAFT_URL", "http://assistants:8002/assistants/draft")
+ASSISTANTS_DRAFT_URL = os.getenv(
+    "ASSISTANTS_DRAFT_URL", "http://assistants:8002/assistants/draft"
+)
 DEFAULT_CHANNEL = "email"
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
 
 
-async def _post_draft(client: httpx.AsyncClient, payload: Dict[str, Any]) -> Dict[str, Any]:
+async def _post_draft(
+    client: httpx.AsyncClient, payload: Dict[str, Any]
+) -> Dict[str, Any]:
     try:
         resp = await client.post(ASSISTANTS_DRAFT_URL, json=payload, timeout=20.0)
         resp.raise_for_status()
         return resp.json()
     except httpx.HTTPError as exc:
-        raise HTTPException(status_code=502, detail=f"assistants service error: {exc}") from exc
+        raise HTTPException(
+            status_code=502, detail=f"assistants service error: {exc}"
+        ) from exc
 
 
 def _normalize_zoho(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -142,7 +162,9 @@ def _normalize_zoho(payload: Dict[str, Any]) -> Dict[str, Any]:
     )
     customer_email = message.get("from_email") or message.get("from")
     subject = message.get("subject") or meta.get("subject") or ""
-    plain_body = message.get("plain_body") or message.get("body") or data.get("body") or ""
+    plain_body = (
+        message.get("plain_body") or message.get("body") or data.get("body") or ""
+    )
     return {
         "conversation_id": conversation_id,
         "customer_email": customer_email,
@@ -169,14 +191,24 @@ def _verify_shopify_hmac(raw_body: bytes, signature: Optional[str]) -> None:
     if not SHOPIFY_WEBHOOK_SECRET:
         return
     if not signature:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing Shopify HMAC header")
-    digest = hmac.new(SHOPIFY_WEBHOOK_SECRET.encode("utf-8"), raw_body, "sha256").digest()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing Shopify HMAC header",
+        )
+    digest = hmac.new(
+        SHOPIFY_WEBHOOK_SECRET.encode("utf-8"), raw_body, "sha256"
+    ).digest()
     expected = base64.b64encode(digest).decode("utf-8")
     if not hmac.compare_digest(expected, signature):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Shopify HMAC signature")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Shopify HMAC signature",
+        )
 
 
-async def _upsert_shopify_customer(session: AsyncSession, payload: Dict[str, Any]) -> None:
+async def _upsert_shopify_customer(
+    session: AsyncSession, payload: Dict[str, Any]
+) -> None:
     customer_id = str(payload.get("id")) if payload.get("id") else None
     if not customer_id:
         return
@@ -208,7 +240,11 @@ async def _upsert_shopify_order(session: AsyncSession, payload: Dict[str, Any]) 
     record.name = payload.get("name")
     customer = payload.get("customer") or {}
     record.email = payload.get("email") or customer.get("email")
-    record.customer_id = str(customer.get("id")) if customer.get("id") else (payload.get("customer_id") and str(payload.get("customer_id")))
+    record.customer_id = (
+        str(customer.get("id"))
+        if customer.get("id")
+        else (payload.get("customer_id") and str(payload.get("customer_id")))
+    )
     record.total_price = payload.get("total_price")
     record.currency = payload.get("currency")
     record.financial_status = payload.get("financial_status")
@@ -216,7 +252,9 @@ async def _upsert_shopify_order(session: AsyncSession, payload: Dict[str, Any]) 
     created_at = payload.get("created_at") or payload.get("processed_at")
     if isinstance(created_at, str):
         try:
-            record.order_created_at = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+            record.order_created_at = datetime.fromisoformat(
+                created_at.replace("Z", "+00:00")
+            )
         except ValueError:
             record.order_created_at = None
     record.raw = payload
@@ -224,7 +262,9 @@ async def _upsert_shopify_order(session: AsyncSession, payload: Dict[str, Any]) 
     session.add(record)
 
 
-async def _upsert_inventory_level(session: AsyncSession, payload: Dict[str, Any]) -> None:
+async def _upsert_inventory_level(
+    session: AsyncSession, payload: Dict[str, Any]
+) -> None:
     item_id = payload.get("inventory_item_id")
     location_id = payload.get("location_id")
     if item_id is None or location_id is None:
@@ -242,7 +282,9 @@ async def _upsert_inventory_level(session: AsyncSession, payload: Dict[str, Any]
     updated_at = payload.get("updated_at")
     if isinstance(updated_at, str):
         try:
-            record.updated_at = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+            record.updated_at = datetime.fromisoformat(
+                updated_at.replace("Z", "+00:00")
+            )
         except ValueError:
             record.updated_at = now
     else:
@@ -251,7 +293,9 @@ async def _upsert_inventory_level(session: AsyncSession, payload: Dict[str, Any]
     session.add(record)
 
 
-async def _process_shopify_topic(session: AsyncSession, topic: str, payload: Dict[str, Any]) -> None:
+async def _process_shopify_topic(
+    session: AsyncSession, topic: str, payload: Dict[str, Any]
+) -> None:
     topic = (topic or "").lower()
     if topic.startswith("customers/"):
         await _upsert_shopify_customer(session, payload)
@@ -269,9 +313,15 @@ async def _parse_json_body(request: Request) -> Dict[str, Any]:
     try:
         payload = await request.json()
     except json.JSONDecodeError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid JSON payload: {exc}") from exc
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid JSON payload: {exc}",
+        ) from exc
     if not isinstance(payload, dict):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Request body must be a JSON object")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Request body must be a JSON object",
+        )
     return payload
 
 
@@ -329,7 +379,9 @@ def _orders_action_response(
     return response
 
 
-async def _load_orders(session: AsyncSession, order_ids: List[str]) -> List[ShopifyOrder]:
+async def _load_orders(
+    session: AsyncSession, order_ids: List[str]
+) -> List[ShopifyOrder]:
     if not order_ids:
         return []
     stmt = select(ShopifyOrder).where(ShopifyOrder.id.in_(order_ids))
@@ -376,7 +428,10 @@ async def shopify_webhook(req: Request) -> Dict[str, Any]:
     try:
         payload = json.loads(raw_body.decode("utf-8")) if raw_body else {}
     except json.JSONDecodeError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid JSON payload: {exc}") from exc
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid JSON payload: {exc}",
+        ) from exc
 
     topic = req.headers.get("X-Shopify-Topic") or payload.get("topic") or "unknown"
     shop_id = req.headers.get("X-Shopify-Shop-Domain") or payload.get("shop_id")
@@ -399,10 +454,15 @@ async def sync_orders_assign(request: Request) -> Dict[str, Any]:
     payload = await _parse_json_body(request)
     order_ids_raw = payload.get("orderIds")
     if not isinstance(order_ids_raw, list) or not order_ids_raw:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="orderIds must be a non-empty array")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="orderIds must be a non-empty array",
+        )
     assignee = str(payload.get("assignee") or "").strip()
     if not assignee:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="assignee is required")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="assignee is required"
+        )
 
     normalized_ids, id_lookup = _prepare_order_ids(order_ids_raw)
     async with SESSION() as session:
@@ -415,10 +475,12 @@ async def sync_orders_assign(request: Request) -> Dict[str, Any]:
             raw["assigned_to"] = assignee
             order.raw = raw
             order.updated_at = now
-            updated.append({
-                "id": id_lookup.get(order.id, order.id),
-                "assignedTo": assignee,
-            })
+            updated.append(
+                {
+                    "id": id_lookup.get(order.id, order.id),
+                    "assignedTo": assignee,
+                }
+            )
         await session.commit()
 
     message = (
@@ -434,7 +496,10 @@ async def sync_orders_fulfill(request: Request) -> Dict[str, Any]:
     payload = await _parse_json_body(request)
     order_ids_raw = payload.get("orderIds")
     if not isinstance(order_ids_raw, list) or not order_ids_raw:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="orderIds must be a non-empty array")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="orderIds must be a non-empty array",
+        )
 
     tracking_payload = payload.get("tracking")
     tracking: Optional[Dict[str, str]] = None
@@ -457,11 +522,13 @@ async def sync_orders_fulfill(request: Request) -> Dict[str, Any]:
             order.raw = raw
             order.fulfillment_status = "fulfilled"
             order.updated_at = now
-            updated.append({
-                "id": id_lookup.get(order.id, order.id),
-                "fulfillmentStatus": "fulfilled",
-                "tracking": tracking,
-            })
+            updated.append(
+                {
+                    "id": id_lookup.get(order.id, order.id),
+                    "fulfillmentStatus": "fulfilled",
+                    "tracking": tracking,
+                }
+            )
         await session.commit()
 
     message_base = (
@@ -480,10 +547,14 @@ async def sync_orders_support(request: Request) -> Dict[str, Any]:
     payload = await _parse_json_body(request)
     order_id_raw = payload.get("orderId")
     if not isinstance(order_id_raw, str) or not order_id_raw:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="orderId is required")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="orderId is required"
+        )
     normalized_id = _normalize_order_id(order_id_raw)
     if not normalized_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="orderId is invalid")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="orderId is invalid"
+        )
 
     conversation_id = str(payload.get("conversationId") or f"support-{uuid4().hex[:8]}")
     note = str(payload.get("note") or "").strip()
@@ -503,10 +574,12 @@ async def sync_orders_support(request: Request) -> Dict[str, Any]:
             thread_notes = []
         now = _utcnow()
         if note:
-            thread_notes.append({
-                "note": note,
-                "created_at": now.isoformat(),
-            })
+            thread_notes.append(
+                {
+                    "note": note,
+                    "created_at": now.isoformat(),
+                }
+            )
         raw["support_notes"] = thread_notes
         raw["support_thread"] = conversation_id
         order.raw = raw
@@ -526,15 +599,21 @@ async def sync_orders_returns(request: Request) -> Dict[str, Any]:
     payload = await _parse_json_body(request)
     order_id_raw = payload.get("orderId")
     if not isinstance(order_id_raw, str) or not order_id_raw:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="orderId is required")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="orderId is required"
+        )
     normalized_id = _normalize_order_id(order_id_raw)
     if not normalized_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="orderId is invalid")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="orderId is invalid"
+        )
 
     action = str(payload.get("action") or "").strip()
     allowed_actions = {"approve_refund", "deny", "request_inspection"}
     if action not in allowed_actions:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported return action")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported return action"
+        )
     note = str(payload.get("note") or "").strip()
 
     async with SESSION() as session:
@@ -550,11 +629,13 @@ async def sync_orders_returns(request: Request) -> Dict[str, Any]:
         if not isinstance(returns_log, list):
             returns_log = []
         now = _utcnow()
-        returns_log.append({
-            "action": action,
-            "note": note or None,
-            "recorded_at": now.isoformat(),
-        })
+        returns_log.append(
+            {
+                "action": action,
+                "note": note or None,
+                "recorded_at": now.isoformat(),
+            }
+        )
         raw["returns"] = returns_log
         order.raw = raw
         order.updated_at = now
@@ -600,17 +681,8 @@ async def sync_orders(
             ShopifyOrder.order_created_at.desc().nullslast(),
             ShopifyOrder.updated_at.desc(),
         )
-        page_stmt = (
-            select(ShopifyOrder)
-            .order_by(*ordering)
-            .offset(offset)
-            .limit(limit)
-        )
-        metrics_stmt = (
-            select(ShopifyOrder)
-            .order_by(*ordering)
-            .limit(200)
-        )
+        page_stmt = select(ShopifyOrder).order_by(*ordering).offset(offset).limit(limit)
+        metrics_stmt = select(ShopifyOrder).order_by(*ordering).limit(200)
 
         page_rows = (await session.execute(page_stmt)).scalars().all()
         metrics_rows = (await session.execute(metrics_stmt)).scalars().all()
@@ -621,7 +693,9 @@ async def sync_orders(
 
 
 @app.get("/sync/orders/alerts")
-async def sync_orders_alerts(request: Request, since: Optional[str] = Query(None)) -> Any:
+async def sync_orders_alerts(
+    request: Request, since: Optional[str] = Query(None)
+) -> Any:
     feed = build_orders_alerts_feed(since)
     if "text/event-stream" in (request.headers.get("accept") or ""):
 
@@ -668,7 +742,12 @@ def _extract_tags(raw: Dict[str, Any]) -> List[str]:
 
 
 def _extract_ship_by(raw: Dict[str, Any]) -> Optional[datetime]:
-    for key in ("ship_by", "expected_delivery_date", "delivery_date", "max_delivery_date"):
+    for key in (
+        "ship_by",
+        "expected_delivery_date",
+        "delivery_date",
+        "max_delivery_date",
+    ):
         dt = _parse_order_datetime(raw.get(key))
         if dt:
             return dt
@@ -722,9 +801,14 @@ def _to_float(value: Any) -> float:
 
 
 @app.get("/customer_summary")
-async def customer_summary(email: Optional[str] = None, customer_id: Optional[str] = None) -> Dict[str, Any]:
+async def customer_summary(
+    email: Optional[str] = None, customer_id: Optional[str] = None
+) -> Dict[str, Any]:
     if not email and not customer_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Provide email or customer_id")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Provide email or customer_id",
+        )
 
     async with SESSION() as session:
         customer = None
@@ -738,7 +822,9 @@ async def customer_summary(email: Optional[str] = None, customer_id: Optional[st
             )
             customer = result.scalars().first()
 
-        orders_query = select(ShopifyOrder).order_by(ShopifyOrder.order_created_at.desc())
+        orders_query = select(ShopifyOrder).order_by(
+            ShopifyOrder.order_created_at.desc()
+        )
         if customer is not None:
             orders_query = orders_query.where(ShopifyOrder.customer_id == customer.id)
         elif email:
@@ -760,7 +846,11 @@ async def customer_summary(email: Optional[str] = None, customer_id: Optional[st
                     "currency": order.currency,
                     "financial_status": order.financial_status,
                     "fulfillment_status": order.fulfillment_status,
-                    "created_at": order.order_created_at.isoformat() if order.order_created_at else None,
+                    "created_at": (
+                        order.order_created_at.isoformat()
+                        if order.order_created_at
+                        else None
+                    ),
                 }
             )
 
@@ -782,7 +872,9 @@ async def customer_summary(email: Optional[str] = None, customer_id: Optional[st
             "last_name": customer.last_name,
             "phone": customer.phone,
             "tags": customer.tags,
-            "updated_at": customer.updated_at.isoformat() if customer.updated_at else None,
+            "updated_at": (
+                customer.updated_at.isoformat() if customer.updated_at else None
+            ),
         }
 
     if orders:

@@ -37,9 +37,6 @@ import {
 } from "~/lib/mcp";
 import type { McpClientOverrides } from "~/lib/mcp/config.server";
 import { getMcpClientOverridesForShop } from "~/lib/mcp/config.server";
-import { fetchSalesAnalyticsWithCache } from "~/lib/sales/cache.server";
-import { mapAnalyticsResponse } from "~/lib/sales/analytics.server";
-import { analyticsSalesFixtures } from "~/mocks/fixtures/analytics.sales";
 import {
   DASHBOARD_RANGE_KEY_LIST,
   DASHBOARD_RANGE_PRESETS,
@@ -79,94 +76,6 @@ type LoaderData = {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 // Helper function to get dashboard data with real analytics
-const getDashboardDataWithAnalytics = async (
-  range: DashboardRangeKey,
-  scenario: MockScenario,
-  shopDomain: string,
-  toggles: any
-): Promise<DashboardOverview> => {
-  // Use mock data in test environments or when analytics service is not available
-  if (process.env.NODE_ENV === "test" || !process.env.ANALYTICS_SERVICE_URL) {
-    return await getDashboardOverview(range, scenario);
-  }
-  
-  try {
-    // Map dashboard range to analytics period
-    const periodMap: Record<DashboardRangeKey, string> = {
-      today: "7d",
-      "7d": "7d", 
-      "14d": "14d",
-      "28d": "28d",
-      "90d": "90d"
-    };
-    
-    const period = periodMap[range] || "28d";
-    
-    // Fetch real analytics data
-    const analyticsData = await fetchSalesAnalyticsWithCache({
-      baseUrl: process.env.ANALYTICS_SERVICE_URL,
-      shopDomain,
-      search: {
-        period,
-        compare: "previous",
-        granularity: "daily",
-        rangeStart: undefined,
-        rangeEnd: undefined,
-      },
-    });
-    
-    // Get base dashboard overview
-    const baseOverview = await getDashboardOverview(range, scenario);
-    
-    // Update sparkline with real analytics data
-    const realSparkline = analyticsData.trend.map((point) => 
-      Number.parseFloat(point.total.amount.toFixed(2))
-    );
-    
-    // Update metrics with real analytics data
-    const realMetrics = [
-      {
-        id: "gmv",
-        label: "GMV", 
-        value: analyticsData.totals.currentTotal.formatted,
-        delta: analyticsData.totals.deltaPercentage,
-        deltaPeriod: range === "90d" ? "YoY" : range === "28d" ? "MoM" : "WoW" as const,
-      },
-      {
-        id: "orders",
-        label: "Orders",
-        value: analyticsData.totals.currentTotal.amount > 0 ? 
-          Math.round(analyticsData.totals.currentTotal.amount / analyticsData.totals.averageOrderValue.amount).toLocaleString("en-US") : "0",
-        delta: analyticsData.totals.deltaPercentage * 0.75,
-        deltaPeriod: range === "90d" ? "YoY" : range === "28d" ? "MoM" : "WoW" as const,
-      },
-      {
-        id: "aov",
-        label: "AOV",
-        value: analyticsData.totals.averageOrderValue.formatted,
-        delta: analyticsData.totals.deltaPercentage * 0.35,
-        deltaPeriod: range === "90d" ? "YoY" : range === "28d" ? "MoM" : "WoW" as const,
-      },
-      {
-        id: "conversion",
-        label: "Conversion",
-        value: analyticsData.totals.conversionRate.toFixed(1) + "%",
-        delta: analyticsData.totals.deltaPercentage * 0.2,
-        deltaPeriod: range === "90d" ? "YoY" : range === "28d" ? "MoM" : "WoW" as const,
-      },
-    ];
-    
-    return {
-      ...baseOverview,
-      sparkline: realSparkline,
-      metrics: realMetrics,
-    };
-  } catch (error) {
-    console.warn("[dashboard] Failed to fetch real analytics, falling back to mocks:", error);
-    // Fall back to mock data if analytics fails
-    return await getDashboardOverview(range, scenario);
-  }
-};
 
   const url = new URL(request.url);
   const range = resolveDashboardRangeKey(url.searchParams.get("range"), DEFAULT_DASHBOARD_RANGE);

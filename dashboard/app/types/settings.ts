@@ -11,6 +11,10 @@ export type FeatureToggles = {
   enableExperimentalWidgets: boolean;
   enableBetaWorkflows: boolean;
   enableAssistantsProvider: boolean;
+  useMockData: boolean;
+  enableMcp: boolean;
+  enableSeo: boolean;
+  enableInventory: boolean;
 };
 
 export type SecretMetadata = {

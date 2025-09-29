@@ -462,6 +462,7 @@ export type InboxMetrics = {
   overdue: number;
   closedToday: number;
   approvalsPending: number;
+  escalated: number;
   ideaCandidates: number;
 };
 
@@ -772,4 +773,20 @@ export type ScenarioOptions = {
 
 export type ScenarioRequest = ScenarioOptions & {
   searchParams?: URLSearchParams;
+};
+
+// Missing types for inventory performance
+export type VelocityDecile = {
+  decile: number;
+  minVelocity: number;
+  maxVelocity: number;
+  skuCount: number;
+  averageVelocity: number;
+};
+
+export type VendorMapping = {
+  vendorId: string;
+  vendorName: string;
+  skuIds: string[];
+  priority: number;
 };

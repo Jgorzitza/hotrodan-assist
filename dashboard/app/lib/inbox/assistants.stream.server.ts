@@ -146,7 +146,7 @@ const deliverEvent = (rawData: string, state: AssistantsStreamState) => {
 
     const response: InboxActionResponse = {
       success: true,
-      message: envelope.message,
+      message: envelope.message || "Action completed",
       ticket: envelope.ticket,
       draft: envelope.draft,
       feedback: envelope.feedback,

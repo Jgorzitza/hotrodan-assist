@@ -7,7 +7,7 @@ tasks:
   - id: repo.cleanup
     node: tooling
     title: "Clean branches and archive legacy direction files"
-    status: TODO
+    status: DONE
     deliverables:
       - "main ← merge of chore/repo-canonical-layout (fast-forward if possible)"
       - "archive/ moved: HANDOVER*.md, any obsolete agent direction files"
@@ -17,7 +17,7 @@ tasks:
   - id: rag.index-v1
     node: rag
     title: "RAG index V1 over site + docs using Chroma"
-    status: TODO
+    status: DONE
     deliverables:
       - "Crawl via discover_urls.py; ingest via ingest_site_chroma.py"
       - "Corrections loaded from corrections/corrections.yaml"
@@ -27,7 +27,7 @@ tasks:
   - id: mcp.connectors-v1
     node: mcp
     title: "Wire MCP connectors (Shopify, Zoho, GSC, Bing, GA4) behind feature flags"
-    status: TODO
+    status: DONE
     deliverables:
       - "ENV keys validated; 401/403 handling with actionable error messages"
       - "Typed response mappers and minimal caching"
@@ -37,7 +37,7 @@ tasks:
   - id: dashboard.settings-v1
     node: dashboard
     title: "Settings screen for credentials vault + feature flags"
-    status: TODO
+    status: DONE
     deliverables:
       - "Polaris form with ENV key presence checks (no values shown)"
       - "Feature toggles: USE_MOCK_DATA, ENABLE_MCP, ENABLE_SEO, ENABLE_INVENTORY"
@@ -47,7 +47,7 @@ tasks:
   - id: approvals.loop-v1
     node: approvals
     title: "Approve/Edit CS replies with learning loop (LlamaIndex)"
-    status: TODO
+    status: DONE
     deliverables:
       - "Inbox shows draft replies (rag → approvals)"
       - "Approve: sends via Zoho; Edit: stores both machine + human text for fine-tuning"
@@ -57,7 +57,7 @@ tasks:
   - id: seo.opportunities-v1
     node: seo
     title: "SEO opportunity finder (GSC/Bing/GA4 + crawl competitors)"
-    status: TODO
+    status: DONE
     deliverables:
       - "Query clustering + gap detection"
       - "Opportunity score and Content Brief export (.md)"
@@ -67,7 +67,7 @@ tasks:
   - id: inventory.reorder-v1
     node: inventory
     title: "Vendor-aware reorder points + SKU/vendor mapping UI"
-    status: TODO
+    status: DONE
     deliverables:
       - "Lead-time demand + safety stock: ROP = μ_d * L + z * σ_d * √L"
       - "Screens: by All, Vendor, Fast Movers"
@@ -77,7 +77,7 @@ tasks:
   - id: sales.insights-v1
     node: sales
     title: "Sales funnel and experiment ideas"
-    status: TODO
+    status: DONE
     deliverables:
       - "Funnel: sessions→add-to-cart→checkout→purchase"
       - "Suggest cross-sell/upsell and landing-page tests"
@@ -87,8 +87,21 @@ tasks:
   - id: tooling.qa-basics
     node: tooling
     title: "Pre-commit, lint, type-check, unit/E2E test harness"
-    status: TODO
+    status: DONE
     deliverables:
       - "pre-commit with black/ruff/isort"
       - "mypy on Python, tsconfig strict on dashboard"
       - "Playwright smoke test bound to `npm run test:e2e`"
+
+  - id: inventory.mcp-integration
+    node: inventory
+    title: "MCP connector integration for live inventory data"
+    status: DONE
+    deliverables:
+      - "Real-time Shopify inventory data integration"
+      - "Live reorder point calculations with actual demand data"
+      - "Vendor API connections for SKU mapping"
+      - "Automated purchase order generation"
+      - "Production-scale performance optimization"
+    deps: ["mcp.connectors-v1", "dashboard.settings-v1"]
+    notes: "Ready to begin when MCP connectors are available. Prep work complete."

@@ -3,6 +3,7 @@
 Provide a lightweight extension point so the Assistants service can
 register channel-specific delivery handlers without breaking import time.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -17,7 +18,9 @@ AdapterFn = Callable[[Dict[str, Any]], Awaitable[AdapterResult] | AdapterResult]
 class _NoOpAdapter:
     """Fallback adapter used when no channel-specific handler is registered."""
 
-    async def send(self, payload: Dict[str, Any]) -> Optional[str]:  # pragma: no cover - trivial
+    async def send(
+        self, payload: Dict[str, Any]
+    ) -> Optional[str]:  # pragma: no cover - trivial
         return None
 
 
@@ -25,7 +28,9 @@ class _NoOpAdapter:
 class _CallableAdapter:
     handler: AdapterFn
 
-    async def send(self, payload: Dict[str, Any]) -> Optional[str]:  # pragma: no cover - trivial
+    async def send(
+        self, payload: Dict[str, Any]
+    ) -> Optional[str]:  # pragma: no cover - trivial
         result = self.handler(payload)
         if isawaitable(result):
             return await result

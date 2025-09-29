@@ -35,7 +35,11 @@ export class MockGa4Client implements Ga4Client {
     this.options = options;
   }
 
-  async fetchTrafficSummary(): Promise<Ga4TrafficSummary> {
+  async fetchTrafficSummary(params: {
+    propertyId: string;
+    startDate: string;
+    endDate: string;
+  }): Promise<Ga4TrafficSummary> {
     const scenario = this.options.scenario ?? "base";
 
     if (scenario === "empty" || scenario === "error") {

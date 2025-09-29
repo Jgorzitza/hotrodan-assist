@@ -22,7 +22,11 @@ export class MockBingClient implements BingClient {
     this.options = options;
   }
 
-  async fetchPageMetrics(): Promise<SeoPageRow[]> {
+  async fetchPageMetrics(params: {
+    siteUrl: string;
+    startDate: string;
+    endDate: string;
+  }): Promise<SeoPageRow[]> {
     const { pages } = getSeoCollections(this.options);
     return pages;
   }

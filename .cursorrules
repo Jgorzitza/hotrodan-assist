@@ -1,0 +1,21 @@
+# Cursor Auto-Acceptance Rules
+# This file configures Cursor to automatically accept all changes
+
+auto_accept_changes: true
+auto_accept_file_changes: true
+auto_accept_diff_changes: true
+auto_accept_merge_changes: true
+auto_accept_git_changes: true
+disable_confirmations: true
+auto_save: true
+auto_save_delay: 1000
+format_on_save: true
+auto_format: true
+confirm_sync: false
+confirm_delete: false
+confirm_drag_and_drop: false
+enable_preview: false
+auto_navigate_conflicts: true
+smart_commit: true
+auto_fetch: true
+auto_reveal: false

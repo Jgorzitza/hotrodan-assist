@@ -8,14 +8,18 @@ import unittest
 
 try:  # Guarded import for environments without FastAPI
     from fastapi.testclient import TestClient
+
     os.environ.setdefault("POSTGRES_URL", "sqlite+aiosqlite:///./test_sync.db")
     os.environ.setdefault("SHOPIFY_WEBHOOK_SECRET", "shpss_test")
 
     import app.sync.main as sync_main  # noqa: E402
+
     sync_main.SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
     SHOPIFY_WEBHOOK_SECRET = sync_main.SHOPIFY_WEBHOOK_SECRET
     app = sync_main.app
-except ModuleNotFoundError as exc:  # pragma: no cover - only triggered in constrained envs
+except (
+    ModuleNotFoundError
+) as exc:  # pragma: no cover - only triggered in constrained envs
     TestClient = None  # type: ignore[assignment]
     SHOPIFY_WEBHOOK_SECRET = ""  # type: ignore[assignment]
     app = None  # type: ignore[assignment]

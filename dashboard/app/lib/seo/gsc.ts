@@ -38,7 +38,11 @@ export class MockGscClient implements GscClient {
     this.options = options;
   }
 
-  async fetchCoverageIssues(): Promise<GscCoverageIssue[]> {
+  async fetchCoverageIssues(params: {
+    siteUrl: string;
+    startDate: string;
+    endDate: string;
+  }): Promise<GscCoverageIssue[]> {
     const scenario = this.options.scenario ?? "base";
 
     if (scenario === "empty") {

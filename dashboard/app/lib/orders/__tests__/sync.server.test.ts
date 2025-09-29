@@ -183,7 +183,7 @@ describe("postOrdersSyncAction", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await postOrdersSyncAction<SyncOrdersAssignResponse["updatedOrders"]>({
+    const result = await postOrdersSyncAction({
       baseUrl: "https://sync.test",
       path: "/sync/orders/assign",
       payload: { orderIds: ["gid://shopify/Order/1"], assignee: "assistant" },
@@ -223,7 +223,7 @@ describe("postOrdersSyncAction", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await postOrdersSyncAction<SyncOrdersSupportResponse["updatedOrders"]>({
+    await postOrdersSyncAction({
       baseUrl: "https://sync.test",
       path: "/sync/orders/support",
       payload: { orderId: "gid://shopify/Order/2" },
@@ -246,7 +246,7 @@ describe("postOrdersSyncAction", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await postOrdersSyncAction<SyncOrdersReturnsResponse["updatedOrders"]>({
+    const result = await postOrdersSyncAction({
       baseUrl: "https://sync.test",
       path: "/sync/orders/returns",
       payload: { orderId: "gid://shopify/Order/3", action: "approve_refund" },
@@ -266,7 +266,7 @@ describe("postOrdersSyncAction", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(
-      postOrdersSyncAction<SyncOrdersAssignResponse["updatedOrders"]>({
+      postOrdersSyncAction({
         baseUrl: "https://sync.test",
         path: "/sync/orders/assign",
         payload: { orderIds: [], assignee: "assistant" },

@@ -1,4 +1,5 @@
 """Assistants service: inbox API with persistent storage and delivery adapters."""
+
 from __future__ import annotations
 
 import asyncio
@@ -14,13 +15,25 @@ from fastapi import HTTPException, Request
 from fastapi.applications import FastAPI
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import JSON, Boolean, DateTime, Float, Integer, String, Text, create_engine, func, select
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    DateTime,
+    Float,
+    Integer,
+    String,
+    Text,
+    create_engine,
+    func,
+    select,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
 from .adapters import DeliveryAdapterRegistry
 
-
 # ---------------------------------------------------------------------------
+from .rag_integration import cleanup_rag_resources, generate_rag_draft
+
 # Database setup
 # ---------------------------------------------------------------------------
 
@@ -37,7 +50,9 @@ ENGINE = create_engine(
     echo=False,
     connect_args={"check_same_thread": False} if IS_SQLITE else {},
 )
-SessionLocal = sessionmaker(bind=ENGINE, autoflush=False, autocommit=False, expire_on_commit=False)
+SessionLocal = sessionmaker(
+    bind=ENGINE, autoflush=False, autocommit=False, expire_on_commit=False
+)
 
 
 class Base(DeclarativeBase):
@@ -47,7 +62,9 @@ class Base(DeclarativeBase):
 class DraftModel(Base):
     __tablename__ = "drafts"
 
-    id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: f"d{uuid4().hex}")
+    id: Mapped[str] = mapped_column(
+        String(64), primary_key=True, default=lambda: f"d{uuid4().hex}"
+    )
     channel: Mapped[str] = mapped_column(String(16), nullable=False)
     conversation_id: Mapped[str] = mapped_column(String(255), nullable=False)
     customer_display: Mapped[Optional[str]] = mapped_column(String(255))
@@ -62,7 +79,9 @@ class DraftModel(Base):
     estimated_tokens_in: Mapped[Optional[int]] = mapped_column(Integer)
     estimated_tokens_out: Mapped[Optional[int]] = mapped_column(Integer)
     usd_cost: Mapped[Optional[float]] = mapped_column(Float)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False, default=lambda: utc_now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False), nullable=False, default=lambda: utc_now()
+    )
     sla_deadline: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=False))
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending")
     tags: Mapped[List[str]] = mapped_column(JSON, default=list)
@@ -72,7 +91,9 @@ class DraftModel(Base):
     model_latency_ms: Mapped[Optional[int]] = mapped_column(Integer)
     auto_escalated: Mapped[bool] = mapped_column(Boolean, default=False)
     auto_escalation_reason: Mapped[Optional[str]] = mapped_column(String(255))
-    extra_metadata: Mapped[Dict[str, Any]] = mapped_column("metadata", JSON, default=dict)
+    extra_metadata: Mapped[Dict[str, Any]] = mapped_column(
+        "metadata", JSON, default=dict
+    )
     notes: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
     learning_notes: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
     assigned_to: Mapped[Optional[str]] = mapped_column(String(255))
@@ -280,7 +301,9 @@ def parse_statuses_param(value: Optional[str]) -> set[str]:
         statuses = {"pending"}
     unknown = statuses - VALID_STATUSES
     if unknown:
-        raise HTTPException(status_code=400, detail=f"Unsupported status filter: {sorted(unknown)}")
+        raise HTTPException(
+            status_code=400, detail=f"Unsupported status filter: {sorted(unknown)}"
+        )
     return statuses
 
 
@@ -290,7 +313,9 @@ def parse_channels_param(value: Optional[str]) -> Optional[set[str]]:
     channels = {tok.strip().lower() for tok in value.split(",") if tok.strip()}
     unknown = channels - DEFAULT_CHANNELS
     if unknown:
-        raise HTTPException(status_code=400, detail=f"Unsupported channel filter: {sorted(unknown)}")
+        raise HTTPException(
+            status_code=400, detail=f"Unsupported channel filter: {sorted(unknown)}"
+        )
     return channels
 
 
@@ -312,10 +337,22 @@ def _session() -> Session:
     return SessionLocal()
 
 
-def append_audit(record: DraftModel, actor: str, action: str, payload: Optional[Dict[str, Any]] = None) -> None:
+def append_audit(
+    record: DraftModel,
+    actor: str,
+    action: str,
+    payload: Optional[Dict[str, Any]] = None,
+) -> None:
     payload = payload or {}
     log = list(record.audit_log or [])
-    log.append({"timestamp": to_iso(utc_now()), "actor": actor, "action": action, "payload": payload})
+    log.append(
+        {
+            "timestamp": to_iso(utc_now()),
+            "actor": actor,
+            "action": action,
+            "payload": payload,
+        }
+    )
     record.audit_log = log
 
 
@@ -504,7 +541,9 @@ def safe_iso(value: Optional[Any]) -> str:
     return to_iso(utc_now())
 
 
-def parse_customer_display(display: Optional[str], fallback_id: Optional[str]) -> Dict[str, str]:
+def parse_customer_display(
+    display: Optional[str], fallback_id: Optional[str]
+) -> Dict[str, str]:
     if not display or not display.strip():
         return {
             "id": fallback_id or "customer",
@@ -531,7 +570,9 @@ def parse_customer_display(display: Optional[str], fallback_id: Optional[str]) -
     }
 
 
-def extract_attachments(snippets: Optional[List[Any]]) -> Optional[List[Dict[str, str]]]:
+def extract_attachments(
+    snippets: Optional[List[Any]],
+) -> Optional[List[Dict[str, str]]]:
     if not snippets:
         return None
 
@@ -596,7 +637,9 @@ def build_timeline(
                 "id": f"{draft_id}-draft",
                 "type": "agent_reply",
                 "actor": detail.get("assigned_to") or FALLBACK_ASSISTANT_ACTOR,
-                "timestamp": safe_iso(detail.get("sent_at") or detail.get("created_at")),
+                "timestamp": safe_iso(
+                    detail.get("sent_at") or detail.get("created_at")
+                ),
                 "body": draft_text,
             }
         )
@@ -710,7 +753,9 @@ def to_inbox_draft(detail: Dict[str, Any]) -> Dict[str, Any]:
     draft_id = detail.get("draft_id") or detail.get("id") or f"draft-{uuid4().hex}"
     updated_source = detail.get("sent_at") or detail.get("created_at")
     audit_log = detail.get("audit_log") or []
-    last_actor = audit_log[-1]["actor"] if audit_log and audit_log[-1].get("actor") else None
+    last_actor = (
+        audit_log[-1]["actor"] if audit_log and audit_log[-1].get("actor") else None
+    )
 
     content = (
         detail.get("draft_text")
@@ -726,7 +771,9 @@ def to_inbox_draft(detail: Dict[str, Any]) -> Dict[str, Any]:
         "content": content,
         "approved": map_status(detail.get("status")) == "resolved",
         "updatedAt": safe_iso(updated_source),
-        "updatedBy": detail.get("assigned_to") or last_actor or FALLBACK_ASSISTANT_ACTOR,
+        "updatedBy": detail.get("assigned_to")
+        or last_actor
+        or FALLBACK_ASSISTANT_ACTOR,
         "revision": compute_revision(detail),
         "feedback": extract_feedback(detail),
     }
@@ -738,7 +785,9 @@ def to_inbox_ticket(detail: Dict[str, Any]) -> Dict[str, Any]:
     status = map_status(detail.get("status"))
     priority = determine_priority(detail)
     sentiment = determine_sentiment(detail)
-    customer = parse_customer_display(detail.get("customer_display"), detail.get("conversation_id"))
+    customer = parse_customer_display(
+        detail.get("customer_display"), detail.get("conversation_id")
+    )
     attachments = extract_attachments(detail.get("source_snippets"))
     timeline = build_timeline(detail, customer["name"], attachments)
     ai_draft = to_inbox_draft(detail)
@@ -782,7 +831,9 @@ def to_inbox_ticket(detail: Dict[str, Any]) -> Dict[str, Any]:
     return ticket
 
 
-def note_to_feedback(detail: Dict[str, Any], note: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def note_to_feedback(
+    detail: Dict[str, Any], note: Dict[str, Any]
+) -> Optional[Dict[str, Any]]:
     parsed = parse_feedback_note(note)
     if not parsed:
         return None
@@ -851,7 +902,9 @@ async def events_stream(request: Request) -> StreamingResponse:
                 if await request.is_disconnected():
                     break
                 try:
-                    message = await asyncio.wait_for(queue.get(), timeout=EVENT_PING_SECONDS)
+                    message = await asyncio.wait_for(
+                        queue.get(), timeout=EVENT_PING_SECONDS
+                    )
                 except asyncio.TimeoutError:
                     yield "event: ping\ndata: {}\n\n"
                     continue
@@ -860,7 +913,9 @@ async def events_stream(request: Request) -> StreamingResponse:
             await events.unsubscribe(queue)
 
     headers = {"Cache-Control": "no-cache", "Connection": "keep-alive"}
-    return StreamingResponse(event_generator(), media_type="text/event-stream", headers=headers)
+    return StreamingResponse(
+        event_generator(), media_type="text/event-stream", headers=headers
+    )
 
 
 @app.post("/assistants/draft")
@@ -906,7 +961,12 @@ async def draft(body: DraftCreate) -> Dict[str, str]:
         assigned_to=body.assigned_to,
         extra_metadata=combined_metadata,
     )
-    append_audit(record, actor="assistant-service", action="draft.created", payload={"channel": body.channel})
+    append_audit(
+        record,
+        actor="assistant-service",
+        action="draft.created",
+        payload={"channel": body.channel},
+    )
     with _session() as session:
         session.add(record)
         session.commit()
@@ -916,7 +976,10 @@ async def draft(body: DraftCreate) -> Dict[str, str]:
             detail,
             message="Draft ready for review.",
             event_type="draft:updated",
-            event_payload={"ticketId": detail.get("draft_id") or record.id, "revision": revision},
+            event_payload={
+                "ticketId": detail.get("draft_id") or record.id,
+                "revision": revision,
+            },
         )
         draft_id = record.id
 
@@ -949,7 +1012,9 @@ async def list_drafts(
         "total": total,
         "refresh_after_seconds": DEFAULT_REFRESH_SECONDS,
     }
-    return JSONResponse(content=content, headers={"X-Refresh-After": str(DEFAULT_REFRESH_SECONDS)})
+    return JSONResponse(
+        content=content, headers={"X-Refresh-After": str(DEFAULT_REFRESH_SECONDS)}
+    )
 
 
 @app.get("/assistants/drafts/{draft_id}")
@@ -1057,7 +1122,13 @@ async def edit(body: Edit) -> Dict[str, Any]:
         record.usd_sent_copy = body.send_copy_to_customer
         if body.learning_notes:
             notes = list(record.learning_notes or [])
-            notes.append({"note": body.learning_notes, "author": body.editor_user_id, "timestamp": to_iso(utc_now())})
+            notes.append(
+                {
+                    "note": body.learning_notes,
+                    "author": body.editor_user_id,
+                    "timestamp": to_iso(utc_now()),
+                }
+            )
             record.learning_notes = notes
         append_audit(
             record,
@@ -1128,10 +1199,20 @@ async def add_note(body: NoteCreate) -> Dict[str, Any]:
             raise HTTPException(status_code=404, detail="Draft not found")
         notes = list(record.notes or [])
         note_id = f"n{len(notes) + 1}"
-        note = {"note_id": note_id, "author_user_id": body.author_user_id, "text": body.text, "created_at": to_iso(utc_now())}
+        note = {
+            "note_id": note_id,
+            "author_user_id": body.author_user_id,
+            "text": body.text,
+            "created_at": to_iso(utc_now()),
+        }
         notes.append(note)
         record.notes = notes
-        append_audit(record, actor=body.author_user_id, action="draft.note_added", payload={"note_id": note_id})
+        append_audit(
+            record,
+            actor=body.author_user_id,
+            action="draft.note_added",
+            payload={"note_id": note_id},
+        )
         session.add(record)
         session.commit()
         detail = serialize_detail(record)
@@ -1187,3 +1268,124 @@ __all__ = [
     "reset_state_for_tests",
     "registry",
 ]
+
+
+# Add RAG draft generation endpoint
+@app.post("/assistants/draft/rag")
+async def create_rag_draft(body: DraftCreate) -> Dict[str, str]:
+    """Create a draft using RAG system for CS reply generation."""
+    try:
+        # Generate draft using RAG
+        rag_data = await generate_rag_draft(
+            incoming_text=body.incoming_text, customer_display=body.customer_display
+        )
+
+        # Merge RAG data with the request body
+        rag_draft = DraftCreate(
+            channel=body.channel,
+            conversation_id=body.conversation_id,
+            incoming_text=body.incoming_text,
+            draft_text=rag_data["draft_text"],
+            customer_display=body.customer_display,
+            subject=body.subject,
+            chat_topic=body.chat_topic,
+            confidence=rag_data["confidence"],
+            llm_model=rag_data["llm_model"],
+            estimated_tokens_in=rag_data["estimated_tokens_in"],
+            estimated_tokens_out=rag_data["estimated_tokens_out"],
+            usd_cost=rag_data["usd_cost"],
+            sla_deadline=body.sla_deadline,
+            tags=body.tags + rag_data["tags"],
+            source_snippets=rag_data["source_snippets"],
+            conversation_summary=rag_data["conversation_summary"],
+            order_context=body.order_context,
+            model_latency_ms=rag_data["model_latency_ms"],
+            auto_escalated=body.auto_escalated,
+            auto_escalation_reason=body.auto_escalation_reason,
+            assigned_to=body.assigned_to,
+            metadata=body.metadata,
+        )
+
+        # Create the draft using the existing logic
+        extra_fields = dict(getattr(rag_draft, "model_extra", {}) or {})
+        combined_metadata: Dict[str, Any] = {**extra_fields}
+        if rag_draft.metadata:
+            combined_metadata.update(rag_draft.metadata)
+
+        resolved_customer_display = rag_draft.customer_display
+        if not resolved_customer_display:
+            candidate = combined_metadata.get("customer_display")
+            if isinstance(candidate, str) and candidate.strip():
+                resolved_customer_display = candidate.strip()
+            else:
+                email = combined_metadata.get("customer_email")
+                if isinstance(email, str) and email.strip():
+                    resolved_customer_display = email.strip()
+
+        record = DraftModel(
+            channel=rag_draft.channel,
+            conversation_id=rag_draft.conversation_id,
+            customer_display=resolved_customer_display,
+            subject=rag_draft.subject,
+            chat_topic=rag_draft.chat_topic,
+            incoming_text=rag_draft.incoming_text,
+            draft_text=rag_draft.draft_text,
+            incoming_excerpt=clean_excerpt(rag_draft.incoming_text),
+            draft_excerpt=clean_excerpt(rag_draft.draft_text or ""),
+            confidence=(
+                rag_draft.confidence if rag_draft.confidence is not None else 0.75
+            ),
+            llm_model=rag_draft.llm_model or "rag-system",
+            estimated_tokens_in=rag_draft.estimated_tokens_in,
+            estimated_tokens_out=rag_draft.estimated_tokens_out,
+            usd_cost=rag_draft.usd_cost,
+            sla_deadline=parse_iso8601(rag_draft.sla_deadline),
+            tags=rag_draft.tags,
+            source_snippets=[
+                snippet.model_dump() for snippet in rag_draft.source_snippets
+            ],
+            conversation_summary=rag_draft.conversation_summary,
+            order_context=rag_draft.order_context,
+            model_latency_ms=rag_draft.model_latency_ms,
+            auto_escalated=rag_draft.auto_escalated,
+            auto_escalation_reason=rag_draft.auto_escalation_reason,
+            assigned_to=rag_draft.assigned_to,
+            extra_metadata=combined_metadata,
+        )
+        append_audit(
+            record,
+            actor="rag-system",
+            action="draft.created",
+            payload={"channel": rag_draft.channel, "source": "rag"},
+        )
+        with _session() as session:
+            session.add(record)
+            session.commit()
+            detail = serialize_detail(record)
+            revision = compute_revision(detail)
+            envelope = build_event_envelope(
+                detail,
+                message="RAG-generated draft ready for review.",
+                event_type="draft:updated",
+                event_payload={
+                    "ticketId": detail.get("draft_id") or record.id,
+                    "revision": revision,
+                    "source": "rag",
+                },
+            )
+            draft_id = record.id
+
+        await events.publish(envelope)
+        return {"draft_id": draft_id}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"RAG draft generation failed: {str(e)}"
+        )
+
+
+# Add cleanup on shutdown
+@app.on_event("shutdown")
+async def shutdown_with_rag() -> None:
+    await cleanup_rag_resources()
+    await app.state.http.aclose()

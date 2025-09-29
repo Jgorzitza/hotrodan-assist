@@ -23,7 +23,7 @@ type WebhookRegistrationRecord = {
   description?: string;
   result?: unknown;
   recordedAt: Date;
-};
+}));
 
 export type WebhookEventRecord = {
   id: string;
@@ -35,7 +35,7 @@ export type WebhookEventRecord = {
   errorMessage?: string;
   createdAt: Date;
   updatedAt: Date;
-};
+}));
 
 type OrderFlagRecord = {
   id: string;
@@ -48,7 +48,7 @@ type OrderFlagRecord = {
   webhookEventId?: string;
   createdAt: Date;
   updatedAt: Date;
-};
+}));
 
 type ProductVelocityRecord = {
   id: string;
@@ -62,7 +62,7 @@ type ProductVelocityRecord = {
   webhookEventId?: string;
   createdAt: Date;
   updatedAt: Date;
-};
+}));
 
 const now = () => new Date();
 
@@ -85,7 +85,7 @@ const resolveStoreForDomain = async (shopDomain: string) => {
     console.warn("[webhooks:persistence] Failed to resolve store", { shopDomain, error });
     return null;
   }
-};
+}));
 
 export const recordWebhookRegistration = async (
   shopDomain: string,
@@ -113,7 +113,7 @@ export const recordWebhookRegistration = async (
           deliveryMethod,
           operation,
           success,
-          result,
+          result: result ? JSON.parse(JSON.stringify(result)) : null,
           description,
           callbackUrl,
           shopDomain: normalizedDomain,
@@ -127,7 +127,7 @@ export const recordWebhookRegistration = async (
           deliveryMethod,
           operation,
           success,
-          result,
+          result: result ? JSON.parse(JSON.stringify(result)) : null,
           description,
           callbackUrl,
           recordedAt,
@@ -150,11 +150,11 @@ export const recordWebhookRegistration = async (
     success,
     callbackUrl,
     description,
-    result,
+    result: result ? JSON.parse(JSON.stringify(result)) : null,
     recordedAt,
   });
   inMemoryRegistrations.set(normalizedDomain, shopMap);
-};
+}));
 
 export const snapshotWebhookRegistrations = async () => {
   if (hasModel("webhookRegistry")) {
@@ -192,7 +192,7 @@ export const snapshotWebhookRegistrations = async () => {
     shop,
     topics: Array.from(entries.values()),
   }));
-};
+}));
 
 export const createWebhookEvent = async (
   webhookId: string,
@@ -205,7 +205,7 @@ export const createWebhookEvent = async (
     try {
       const existing = await db.webhookEvent.findUnique({ where: { webhookId } });
       if (existing) {
-        return { id: existing.id, storeId: existing.storeId };
+        return { id: existing.id, storeId: existing.storeId }));
       }
       const store = await resolveStoreForDomain(shopDomain);
       const created = await db.webhookEvent.create({
@@ -213,13 +213,13 @@ export const createWebhookEvent = async (
           webhookId,
           topic,
           shopDomain,
-          payload,
+          payload: JSON.parse(JSON.stringify(payload)),
           status: "PENDING",
           receivedAt: timestamp,
           ...(store ? { storeId: store.id } : {}),
         },
       });
-      return { id: created.id, storeId: created.storeId };
+      return { id: created.id, storeId: created.storeId }));
     } catch (error) {
       console.warn("[webhooks:persistence] Failed to create webhookEvent", { webhookId, error });
     }
@@ -230,14 +230,14 @@ export const createWebhookEvent = async (
     webhookId,
     shopDomain,
     topic,
-    payload,
+    payload: JSON.parse(JSON.stringify(payload)),
     status: "PENDING",
     createdAt: timestamp,
     updatedAt: timestamp,
-  };
+  }));
   inMemoryWebhookEvents.set(webhookId, record);
-  return { id: record.id, storeId: undefined };
-};
+  return { id: record.id, storeId: undefined }));
+}));
 
 export const markWebhookEventStatus = async (
   webhookId: string,
@@ -268,12 +268,12 @@ export const markWebhookEventStatus = async (
   record.errorMessage = errorMessage;
   record.updatedAt = updatedAt;
   if (status === "SUCCEEDED") {
-    record.payload = {
+    record.payload = JSON.parse(JSON.stringify({
       ...record.payload,
       processedAt: updatedAt.toISOString(),
-    };
+    }));
   }
-};
+}));
 
 export const loadWebhookEvent = async (webhookId: string): Promise<WebhookEventRecord | null> => {
   if (!webhookId) return null;
@@ -287,7 +287,7 @@ export const loadWebhookEvent = async (webhookId: string): Promise<WebhookEventR
         webhookId: event.webhookId,
         shopDomain: event.shopDomain,
         topic: event.topic,
-        payload: event.payload,
+        payload: event.payload: JSON.parse(JSON.stringify(payload)),
         status: event.status as WebhookEventRecord["status"],
         errorMessage: event.errorMessage ?? undefined,
         createdAt: event.createdAt,
@@ -299,13 +299,13 @@ export const loadWebhookEvent = async (webhookId: string): Promise<WebhookEventR
   }
 
   return inMemoryWebhookEvents.get(webhookId) ?? null;
-};
+}));
 
 const normalizeGid = (value: unknown): string => {
   if (!value) return randomUUID();
   if (typeof value === "string") return value;
   return String(value);
-};
+}));
 
 export const persistOrderFlag = async (
   params: {
@@ -386,7 +386,7 @@ export const persistOrderFlag = async (
     createdAt: timestamp,
     updatedAt: timestamp,
   });
-};
+}));
 
 export const persistProductVelocity = async (
   params: {
@@ -466,7 +466,7 @@ export const persistProductVelocity = async (
     createdAt: timestamp,
     updatedAt: timestamp,
   });
-};
+}));
 
 export const cleanupStoreSessions = async (shopDomain: string): Promise<void> => {
   const normalizedDomain = shopDomain.toLowerCase();
@@ -491,7 +491,7 @@ export const cleanupStoreSessions = async (shopDomain: string): Promise<void> =>
   Array.from(inMemoryVelocity.keys())
     .filter((key) => key.startsWith(`${normalizedDomain}:`))
     .forEach((key) => inMemoryVelocity.delete(key));
-};
+}));
 
 export const snapshotOrderFlags = async () => {
   if (hasModel("orderFlag")) {
@@ -528,7 +528,7 @@ export const snapshotOrderFlags = async () => {
     }
   }
   return Array.from(inMemoryOrderFlags.values());
-};
+}));
 
 export const snapshotVelocity = async () => {
   if (hasModel("productVelocity")) {
@@ -566,4 +566,4 @@ export const snapshotVelocity = async () => {
     }
   }
   return Array.from(inMemoryVelocity.values());
-};
+}));

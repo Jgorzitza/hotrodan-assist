@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import unittest
 from datetime import datetime
 from typing import Any, Dict
@@ -15,7 +14,9 @@ try:  # Guard test import so suite can skip gracefully when FastAPI is unavailab
     from sqlalchemy import delete
 
     from app.sync.main import SESSION, ShopifyOrder, app
-except ModuleNotFoundError as exc:  # pragma: no cover - only triggered in constrained envs
+except (
+    ModuleNotFoundError
+) as exc:  # pragma: no cover - only triggered in constrained envs
     TestClient = None  # type: ignore[assignment]
     SESSION = None  # type: ignore[assignment]
     ShopifyOrder = None  # type: ignore[assignment]
@@ -167,7 +168,9 @@ class OrdersEndpointTests(unittest.TestCase):
         self.assertEqual(stored.fulfillment_status, "fulfilled")
         raw = stored.raw or {}
         self.assertEqual(raw.get("fulfillment_status"), "fulfilled")
-        self.assertEqual(raw.get("latest_tracking"), {"number": "1Z999", "carrier": "UPS"})
+        self.assertEqual(
+            raw.get("latest_tracking"), {"number": "1Z999", "carrier": "UPS"}
+        )
 
     def test_support_endpoint_records_thread(self) -> None:
         asyncio.run(_seed_order("3003"))
@@ -209,14 +212,19 @@ class OrdersEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertTrue(payload["success"])
-        self.assertEqual(payload["message"], "Return updated (approve_refund) for gid://shopify/Order/4004.")
+        self.assertEqual(
+            payload["message"],
+            "Return updated (approve_refund) for gid://shopify/Order/4004.",
+        )
         self.assertEqual(payload["updatedOrders"], [])
 
         stored = asyncio.run(_load_order("4004"))
         self.assertIsNotNone(stored)
         raw = stored.raw or {}
         returns_log = raw.get("returns") or []
-        self.assertTrue(any(entry.get("action") == "approve_refund" for entry in returns_log))
+        self.assertTrue(
+            any(entry.get("action") == "approve_refund" for entry in returns_log)
+        )
 
 
 if __name__ == "__main__":

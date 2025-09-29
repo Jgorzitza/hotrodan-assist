@@ -1,4 +1,5 @@
 """Approval App stub: lightweight operator UI backed by Assistants service."""
+
 from __future__ import annotations
 
 import os
@@ -44,18 +45,25 @@ async def shutdown() -> None:
 @app.get("/")
 async def index(request: Request):
     data = await _assistants_get("/assistants/drafts")
-    return templates.TemplateResponse("index.html", {"request": request, "drafts": data.get("drafts", [])})
+    return templates.TemplateResponse(
+        "index.html", {"request": request, "drafts": data.get("drafts", [])}
+    )
 
 
 @app.get("/drafts/{draft_id}")
 async def view_draft(request: Request, draft_id: str):
     draft = await _assistants_get(f"/assistants/drafts/{draft_id}")
-    return templates.TemplateResponse("draft.html", {"request": request, "draft": draft})
+    return templates.TemplateResponse(
+        "draft.html", {"request": request, "draft": draft}
+    )
 
 
 @app.post("/drafts/{draft_id}/approve")
 async def approve_draft(draft_id: str, approver_user_id: str = Form(...)):
-    await _assistants_post("/assistants/approve", {"draft_id": draft_id, "approver_user_id": approver_user_id})
+    await _assistants_post(
+        "/assistants/approve",
+        {"draft_id": draft_id, "approver_user_id": approver_user_id},
+    )
     return RedirectResponse(f"/drafts/{draft_id}", status_code=303)
 
 
@@ -67,6 +75,10 @@ async def edit_draft(
 ):
     await _assistants_post(
         "/assistants/edit",
-        {"draft_id": draft_id, "editor_user_id": editor_user_id, "final_text": final_text},
+        {
+            "draft_id": draft_id,
+            "editor_user_id": editor_user_id,
+            "final_text": final_text,
+        },
     )
     return RedirectResponse(f"/drafts/{draft_id}", status_code=303)

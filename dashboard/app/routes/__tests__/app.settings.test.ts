@@ -22,6 +22,10 @@ const createSettingsPayload = (): SettingsPayload => ({
     enableBetaWorkflows: false,
     enableAssistantsProvider: false,
   },
+    useMockData: false,
+    enableMcp: false,
+    enableSeo: false,
+    enableInventory: false,
   secrets: {
     ga4: {
       provider: "ga4",

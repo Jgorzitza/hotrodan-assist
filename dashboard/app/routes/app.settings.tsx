@@ -26,6 +26,7 @@ import {
   Page,
   Text,
   TextField,
+  DataTable,
 } from "@shopify/polaris";
 import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { z } from "zod";
@@ -34,6 +35,7 @@ import { authenticate } from "../shopify.server";
 import { runConnectionTest } from "../lib/settings/connection-tests.server";
 import { storeSettingsRepository } from "../lib/settings/repository.server";
 import type { McpIntegrationOverrides } from "../lib/settings/repository.server";
+import { checkAllServicesHealth, getEnvironmentStatus, type HealthCheckResult } from "../lib/settings/health-checks.server";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
 import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
 import type {
@@ -78,6 +80,10 @@ const togglesSchema = z.object({
   enableAssistantsProvider: z.boolean(),
   enableExperimentalWidgets: z.boolean(),
   enableBetaWorkflows: z.boolean(),
+  useMockData: z.boolean(),
+  enableMcp: z.boolean(),
+  enableSeo: z.boolean(),
+  enableInventory: z.boolean(),
 });
 
 type SecretActionPayload = {
@@ -90,6 +96,8 @@ type ActionData = {
   ok: boolean;
   settings?: SettingsPayload;
   mcpOverrides?: McpIntegrationOverrides;
+  healthChecks?: HealthCheckResult[];
+  envStatus?: Record<string, { present: boolean; value?: string }>;
   fieldErrors?: Record<string, string>;
   formErrors?: string[];
   toast?: {
@@ -110,15 +118,19 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     shopDomain = session.shop;
   }
 
-  const [settings, mcpOverrides] = await Promise.all([
+  const [settings, mcpOverrides, healthChecks, envStatus] = await Promise.all([
     storeSettingsRepository.getSettings(shopDomain),
     storeSettingsRepository.getMcpIntegrationOverrides(shopDomain),
+    checkAllServicesHealth(),
+    Promise.resolve(getEnvironmentStatus()),
   ]);
 
   return json({
     settings,
     useMockData: USE_MOCK_DATA ? (true as const) : (false as const),
     mcpOverrides,
+    healthChecks,
+    envStatus,
   });
 };
 
@@ -150,6 +162,17 @@ const providerStatusToBadge = (status: ConnectionStatusState) => {
       return { tone: "warning" as const, label: "Warning" };
     default:
       return { tone: "critical" as const, label: "Error" };
+  }
+};
+
+const healthStatusToBadge = (status: HealthCheckResult["status"]) => {
+  switch (status) {
+    case "healthy":
+      return { tone: "success" as const, label: "Healthy" };
+    case "unhealthy":
+      return { tone: "critical" as const, label: "Unhealthy" };
+    default:
+      return { tone: "warning" as const, label: "Unknown" };
   }
 };
 
@@ -295,6 +318,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         enableAssistantsProvider: formData.has("enableAssistantsProvider"),
         enableExperimentalWidgets: formData.has("enableExperimentalWidgets"),
         enableBetaWorkflows: formData.has("enableBetaWorkflows"),
+        useMockData: formData.has("useMockData"),
+        enableMcp: formData.has("enableMcp"),
+        enableSeo: formData.has("enableSeo"),
+        enableInventory: formData.has("enableInventory"),
       };
 
       const parseResult = togglesSchema.safeParse(togglesInput);
@@ -524,6 +551,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         meta: { intent, provider },
       });
     }
+    case "refresh-health": {
+      const healthChecks = await checkAllServicesHealth();
+      const envStatus = getEnvironmentStatus();
+      
+      return json({
+        ok: true,
+        healthChecks,
+        envStatus,
+        toast: {
+          status: "success",
+          message: "Health status refreshed",
+        },
+        meta: { intent },
+      });
+    }
     default:
       return badRequest({
         ok: false,
@@ -537,7 +579,7 @@ const isoToDateInput = (iso?: string | null) =>
   iso ? iso.slice(0, 10) : "";
 
 export default function SettingsRoute() {
-  const { settings, useMockData, mcpOverrides: initialMcpOverrides } =
+  const { settings, useMockData, mcpOverrides: initialMcpOverrides, healthChecks: initialHealthChecks, envStatus: initialEnvStatus } =
     useLoaderData<typeof loader>();
   const actionData = useActionData<ActionData>();
   const navigation = useNavigation();
@@ -569,6 +611,8 @@ export default function SettingsRoute() {
       ? String(initialMcpOverrides.maxRetries)
       : "",
   });
+  const [healthChecks, setHealthChecks] = useState(initialHealthChecks);
+  const [envStatus, setEnvStatus] = useState(initialEnvStatus);
 
   useEffect(() => {
     setThresholds(settings.thresholds);
@@ -593,6 +637,15 @@ export default function SettingsRoute() {
         : "",
     });
   }, [initialMcpOverrides]);
+
+  useEffect(() => {
+    if (actionData?.healthChecks) {
+      setHealthChecks(actionData.healthChecks);
+    }
+    if (actionData?.envStatus) {
+      setEnvStatus(actionData.envStatus);
+    }
+  }, [actionData]);
 
   useEffect(() => {
     if (actionData?.toast) {
@@ -633,6 +686,24 @@ export default function SettingsRoute() {
     navigation.state === "submitting" &&
     navigation.formData?.get("intent") === targetIntent;
 
+  const healthTableRows = healthChecks.map((check) => [
+    check.service,
+    <Badge key={`${check.service}-status`} tone={healthStatusToBadge(check.status).tone}>
+      {healthStatusToBadge(check.status).label}
+    </Badge>,
+    `${check.responseTime}ms`,
+    check.message,
+    new Date(check.lastChecked).toLocaleString(),
+  ]);
+
+  const envTableRows = Object.entries(envStatus).map(([key, status]) => [
+    key,
+    <Badge key={`${key}-status`} tone={status.present ? "success" : "critical"}>
+      {status.present ? "Set" : "Missing"}
+    </Badge>,
+    status.value || "Not configured",
+  ]);
+
   return (
     <Page
       title="Settings"
@@ -650,6 +721,56 @@ export default function SettingsRoute() {
         </Box>
       )}
       <Layout>
+        <Layout.Section>
+          <Card>
+            <Card.Header title="System Health" />
+            <Card.Section>
+              <BlockStack gap="400">
+                <InlineStack align="space-between" blockAlign="center">
+                  <Text as="h3" variant="headingMd">
+                    Backend Services
+                  </Text>
+                  <Form method="post">
+                    <input type="hidden" name="intent" value="refresh-health" />
+                    <Button
+                      submit
+                      loading={isSubmitting("refresh-health")}
+                      size="slim"
+                    >
+                      Refresh
+                    </Button>
+                  </Form>
+                </InlineStack>
+                
+                <DataTable
+                  columnContentTypes={["text", "text", "text", "text", "text"]}
+                  headings={["Service", "Status", "Response Time", "Message", "Last Checked"]}
+                  rows={healthTableRows}
+                />
+              </BlockStack>
+            </Card.Section>
+          </Card>
+        </Layout.Section>
+
+        <Layout.Section>
+          <Card>
+            <Card.Header title="Environment Variables" />
+            <Card.Section>
+              <BlockStack gap="400">
+                <Text as="h3" variant="headingMd">
+                  Configuration Status
+                </Text>
+                
+                <DataTable
+                  columnContentTypes={["text", "text", "text"]}
+                  headings={["Variable", "Status", "Value"]}
+                  rows={envTableRows}
+                />
+              </BlockStack>
+            </Card.Section>
+          </Card>
+        </Layout.Section>
+
         <Layout.Section>
           <Card>
             <Card.Header title="Operational thresholds" />
@@ -1040,6 +1161,18 @@ export default function SettingsRoute() {
                 <input type="hidden" name="intent" value="update-toggles" />
                 <BlockStack gap="300">
                   <Checkbox
+                    label="Use mock data"
+                    name="useMockData"
+                    checked={toggles.useMockData}
+                    onChange={(value) =>
+                      setToggles((prev) => ({
+                        ...prev,
+                        useMockData: value,
+                      }))
+                    }
+                    helpText="Enable mock data mode for development and testing."
+                  />
+                  <Checkbox
                     label="Enable MCP integration"
                     name="enableMcpIntegration"
                     checked={toggles.enableMcpIntegration}
@@ -1050,6 +1183,42 @@ export default function SettingsRoute() {
                       }))
                     }
                     helpText="Controls access to storefront MCP widgets."
+                  />
+                  <Checkbox
+                    label="Enable MCP connectors"
+                    name="enableMcp"
+                    checked={toggles.enableMcp}
+                    onChange={(value) =>
+                      setToggles((prev) => ({
+                        ...prev,
+                        enableMcp: value,
+                      }))
+                    }
+                    helpText="Enable MCP connector functionality for external integrations."
+                  />
+                  <Checkbox
+                    label="Enable SEO features"
+                    name="enableSeo"
+                    checked={toggles.enableSeo}
+                    onChange={(value) =>
+                      setToggles((prev) => ({
+                        ...prev,
+                        enableSeo: value,
+                      }))
+                    }
+                    helpText="Enable SEO analysis and optimization features."
+                  />
+                  <Checkbox
+                    label="Enable inventory features"
+                    name="enableInventory"
+                    checked={toggles.enableInventory}
+                    onChange={(value) =>
+                      setToggles((prev) => ({
+                        ...prev,
+                        enableInventory: value,
+                      }))
+                    }
+                    helpText="Enable inventory management and reorder point features."
                   />
                   <Checkbox
                     label="Enable Assistants provider"

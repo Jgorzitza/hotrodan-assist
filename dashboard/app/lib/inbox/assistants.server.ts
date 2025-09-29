@@ -1,3 +1,4 @@
+import { generateDraftForTicket } from "./rag-draft-generator.server";
 import type {
   InboxAttachment,
   InboxDataset,
@@ -822,5 +823,88 @@ export const buildAssistantsMetrics = (dataset: InboxDataset): InboxMetrics => {
   ).length;
   const escalated = dataset.tickets.filter((ticket) => ticket.status === "escalated").length;
 
-  return { outstanding, overdue, approvalsPending, escalated };
+  return { outstanding, overdue, closedToday: 0, approvalsPending, ideaCandidates: 0, escalated };
+};
+
+/**
+ * Generates or enhances a draft using the RAG system
+ */
+export const generateRAGEnhancedDraft = async (
+  ticket: InboxTicket,
+  options: {
+    baseUrl?: string;
+    signal?: AbortSignal;
+  } = {}
+): Promise<InboxDraft> => {
+  try {
+    // Generate draft content using RAG system
+    const ragContent = await generateDraftForTicket(ticket);
+    
+    // Create enhanced draft with RAG content
+    const enhancedDraft: InboxDraft = {
+      id: ticket.aiDraft?.id || `rag-${ticket.id}`,
+      ticketId: ticket.id,
+      content: ragContent,
+      approved: false,
+      updatedAt: new Date().toISOString(),
+      updatedBy: "RAG System",
+      revision: (ticket.aiDraft?.revision || 0) + 1,
+      feedback: ticket.aiDraft?.feedback || [],
+    };
+    
+    return enhancedDraft;
+  } catch (error) {
+    console.error("RAG draft generation failed:", error);
+    
+    // Fallback to existing draft or create basic draft
+    if (ticket.aiDraft) {
+      return ticket.aiDraft;
+    }
+    
+    return {
+      id: `fallback-${ticket.id}`,
+      ticketId: ticket.id,
+      content: "Draft generation failed. Please review and edit manually.",
+      approved: false,
+      updatedAt: new Date().toISOString(),
+      updatedBy: "System",
+      revision: 1,
+      feedback: [],
+    };
+  }
+};
+
+/**
+ * Checks if a ticket should use RAG for draft generation
+ */
+export const shouldUseRAGForTicket = (ticket: InboxTicket): boolean => {
+  // Use RAG for tickets that:
+  // 1. Don't already have a good draft
+  // 2. Are related to technical/product questions
+  // 3. Have customer messages that could benefit from knowledge base
+  
+  const hasGoodDraft = ticket.aiDraft?.content && 
+    ticket.aiDraft.content.length > 50 && 
+    !ticket.aiDraft.content.includes("Draft generation failed");
+  
+  if (hasGoodDraft) {
+    return false;
+  }
+  
+  // Check if the customer message contains technical keywords
+  const customerMessage = ticket.timeline?.find(
+    event => event.type === "customer_message"
+  )?.body?.toLowerCase() || "";
+  
+  const technicalKeywords = [
+    "fuel", "pump", "line", "fitting", "an-", "hp", "horsepower",
+    "efi", "injector", "regulator", "filter", "tank", "pressure",
+    "boost", "turbo", "supercharger", "e85", "ethanol", "gasoline"
+  ];
+  
+  const hasTechnicalContent = technicalKeywords.some(keyword => 
+    customerMessage.includes(keyword)
+  );
+  
+  return hasTechnicalContent;
 };

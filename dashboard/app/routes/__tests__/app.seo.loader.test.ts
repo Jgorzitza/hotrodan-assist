@@ -305,6 +305,10 @@ const buildSettingsPayload = (): SettingsPayload => ({
     enableAssistantsProvider: false,
     enableBetaWorkflows: false,
     enableExperimentalWidgets: false,
+    useMockData: false,
+    enableMcp: false,
+    enableSeo: false,
+    enableInventory: false,
   },
   secrets: {
     ga4: null,

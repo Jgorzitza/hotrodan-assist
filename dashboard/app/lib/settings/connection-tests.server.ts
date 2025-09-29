@@ -57,7 +57,7 @@ export const runConnectionTest = async (
 
   switch (input.provider) {
     case "ga4": {
-      const client = createGa4Client();
+      const client = createGa4Client({});
       const summary = await client.fetchTrafficSummary({
         propertyId: input.credential,
         startDate: "2024-01-01",
@@ -94,7 +94,7 @@ export const runConnectionTest = async (
       );
     }
     case "gsc": {
-      const client = createGscClient();
+      const client = createGscClient({});
       const issues = await client.fetchCoverageIssues({
         siteUrl: input.credential,
         startDate: "2024-01-01",
@@ -150,7 +150,7 @@ export const runConnectionTest = async (
       );
     }
     case "bing": {
-      const client = createBingClient();
+      const client = createBingClient({});
       const metrics = await client.fetchPageMetrics({
         siteUrl: input.credential,
         startDate: "2024-01-01",

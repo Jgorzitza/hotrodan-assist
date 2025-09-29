@@ -1,0 +1,196 @@
+{
+  "mcp": {
+    "approvals": {
+      "enabled": true,
+      "version": "1.0.0",
+      "endpoint": "http://localhost:3001/mcp/approvals",
+      "timeout": 30000,
+      "maxRetries": 3,
+      "resources": {
+        "customerInquiries": {
+          "path": "/api/approvals/customer-inquiries",
+          "methods": ["GET", "POST"],
+          "rateLimit": {
+            "requests": 100,
+            "window": "1m"
+          }
+        },
+        "draftReplies": {
+          "path": "/api/approvals/draft-replies",
+          "methods": ["GET", "POST", "PUT"],
+          "rateLimit": {
+            "requests": 50,
+            "window": "1m"
+          }
+        },
+        "approvalWorkflow": {
+          "path": "/api/approvals/workflow",
+          "methods": ["GET", "POST", "PUT", "DELETE"],
+          "rateLimit": {
+            "requests": 30,
+            "window": "1m"
+          }
+        },
+        "customerHistory": {
+          "path": "/api/approvals/customer-history",
+          "methods": ["GET"],
+          "rateLimit": {
+            "requests": 200,
+            "window": "1m"
+          }
+        }
+      },
+      "authentication": {
+        "type": "api_key",
+        "header": "X-MCP-API-Key",
+        "required": true
+      },
+      "features": {
+        "ragIntegration": {
+          "enabled": true,
+          "ragEndpoint": "http://localhost:8000/rag/query",
+          "maxContextLength": 4000,
+          "temperature": 0.7
+        },
+        "autoApproval": {
+          "enabled": false,
+          "confidenceThreshold": 0.9,
+          "riskCategories": ["low", "medium"]
+        },
+        "escalation": {
+          "enabled": true,
+          "maxWaitTime": 3600000,
+          "escalationLevels": ["supervisor", "manager", "director"]
+        }
+      },
+      "workflow": {
+        "stages": [
+          {
+            "name": "inquiry_received",
+            "status": "pending",
+            "autoActions": ["categorize", "extract_intent"]
+          },
+          {
+            "name": "draft_generated",
+            "status": "pending",
+            "autoActions": ["rag_context", "tone_check"]
+          },
+          {
+            "name": "awaiting_approval",
+            "status": "pending",
+            "autoActions": ["risk_assessment", "priority_set"]
+          },
+          {
+            "name": "approved",
+            "status": "completed",
+            "autoActions": ["send_reply", "log_interaction"]
+          },
+          {
+            "name": "rejected",
+            "status": "pending",
+            "autoActions": ["flag_review", "notify_agent"]
+          }
+        ],
+        "rules": {
+          "autoApproval": {
+            "conditions": [
+              {
+                "field": "confidence",
+                "operator": ">=",
+                "value": 0.9
+              },
+              {
+                "field": "riskLevel",
+                "operator": "==",
+                "value": "low"
+              },
+              {
+                "field": "category",
+                "operator": "in",
+                "value": ["general_inquiry", "order_status", "shipping_info"]
+              }
+            ]
+          },
+          "escalation": {
+            "conditions": [
+              {
+                "field": "waitTime",
+                "operator": ">",
+                "value": 3600000
+              },
+              {
+                "field": "priority",
+                "operator": "==",
+                "value": "high"
+              }
+            ]
+          }
+        }
+      },
+      "integrations": {
+        "rag": {
+          "endpoint": "http://localhost:8000",
+          "model": "llama3.1",
+          "contextWindow": 4000,
+          "temperature": 0.7,
+          "maxTokens": 512
+        },
+        "shopify": {
+          "endpoint": "https://api.shopify.com",
+          "version": "2023-10",
+          "rateLimit": {
+            "requests": 40,
+            "window": "1s"
+          }
+        },
+        "analytics": {
+          "endpoint": "http://localhost:3002/analytics",
+          "metrics": ["response_time", "approval_rate", "customer_satisfaction"]
+        }
+      },
+      "monitoring": {
+        "enabled": true,
+        "metrics": {
+          "responseTime": {
+            "threshold": 5000,
+            "alert": true
+          },
+          "errorRate": {
+            "threshold": 0.05,
+            "alert": true
+          },
+          "approvalRate": {
+            "threshold": 0.8,
+            "alert": false
+          }
+        },
+        "logging": {
+          "level": "info",
+          "retention": "30d",
+          "includeSensitiveData": false
+        }
+      },
+      "security": {
+        "encryption": {
+          "enabled": true,
+          "algorithm": "AES-256-GCM"
+        },
+        "audit": {
+          "enabled": true,
+          "logActions": true,
+          "retention": "90d"
+        },
+        "accessControl": {
+          "enabled": true,
+          "roles": ["agent", "supervisor", "manager", "admin"],
+          "permissions": {
+            "agent": ["read", "create"],
+            "supervisor": ["read", "create", "update", "approve"],
+            "manager": ["read", "create", "update", "approve", "escalate"],
+            "admin": ["read", "create", "update", "approve", "escalate", "delete", "configure"]
+          }
+        }
+      }
+    }
+  }
+}

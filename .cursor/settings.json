@@ -1,0 +1,124 @@
+{
+    "terminal.integrated.automationProfile.windows": {
+    // ==========================================
+    // AUTO-ACCEPTANCE CONFIGURATION
+    // ==========================================
+    
+    // Auto-save settings - automatically save files
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    
+    // Format on save - automatically format code when saving
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    
+    // ==========================================
+    // DISABLE ALL CONFIRMATIONS
+    // ==========================================
+    
+    // Disable file operation confirmations
+    "files.confirmDelete": false,
+    "files.confirmDragAndDrop": false,
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "workbench.editor.confirmDelete": false,
+    "workbench.editor.confirmDragAndDrop": false,
+    
+    // Disable git confirmations
+    "git.confirmSync": false,
+    "git.autofetch": true,
+    "git.enableSmartCommit": true,
+    
+    // ==========================================
+    // EDITOR BEHAVIOR
+    // ==========================================
+    
+    // Disable preview mode - files open directly
+    "workbench.editor.enablePreview": false,
+    "workbench.editor.enablePreviewFromQuickOpen": false,
+    
+    // Auto-navigate merge conflicts
+    "merge-conflict.autoNavigateNextConflict.enabled": true,
+    
+    // Disable source control auto-reveal
+    "scm.autoReveal": false,
+    
+    // ==========================================
+    // SUGGESTIONS AND AUTO-COMPLETION
+    // ==========================================
+    
+    // Auto-accept suggestions
+    "editor.acceptSuggestionOnCommitCharacter": true,
+    "editor.acceptSuggestionOnEnter": "on",
+    "editor.tabCompletion": "on",
+    
+    // Enable quick suggestions
+    "editor.quickSuggestions": {
+        "other": true,
+        "comments": false,
+        "strings": false
+    },
+    
+    // Enable helpful features
+    "editor.parameterHints.enabled": true,
+    "editor.hover.enabled": true,
+    "editor.lightbulb.enabled": true,
+    "editor.codeLens": true,
+    
+    // ==========================================
+    // VISUAL ENHANCEMENTS
+    // ==========================================
+    
+    // Bracket pair colorization
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": true,
+    
+    // Whitespace and formatting
+    "editor.renderWhitespace": "selection",
+    "editor.renderControlCharacters": false,
+    "editor.wordWrap": "on",
+    "editor.wordWrapColumn": 80,
+    "editor.wrappingIndent": "same",
+    
+    // ==========================================
+    // CURSOR AND SCROLLING
+    // ==========================================
+    
+    // Cursor behavior
+    "editor.cursorBlinking": "blink",
+    "editor.cursorSmoothCaretAnimation": "on",
+    "editor.cursorStyle": "line",
+    
+    // Scrolling behavior
+    "editor.mouseWheelZoom": false,
+    "editor.smoothScrolling": true,
+    
+    // ==========================================
+    // FONT SETTINGS
+    // ==========================================
+    
+    "editor.fontFamily": "Consolas, 'Courier New', monospace",
+    "editor.fontSize": 14,
+    "editor.fontWeight": "normal",
+    
+    // ==========================================
+    // SEARCH AND FIND
+    // ==========================================
+    
+    "editor.find.seedSearchStringFromSelection": "always",
+    "editor.find.autoFindInSelection": "multiline",
+    "editor.find.addExtraSpaceOnTop": true,
+    "editor.find.loop": true,
+    "editor.find.globalFindClipboard": false,
+    "editor.find.actionsPosition": "right",
+    
+    // ==========================================
+    // DIFF EDITOR SETTINGS
+    // ==========================================
+    
+    "diffEditor.ignoreTrimWhitespace": false
+ 
+    }
+}

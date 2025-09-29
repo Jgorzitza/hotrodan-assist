@@ -1,0 +1,79 @@
+{
+  "version": "1.0",
+  "auto_approval_rules": {
+    "by_action_type": {
+      "read": {
+        "enabled": true,
+        "description": "Auto-approve all read operations"
+      },
+      "query": {
+        "enabled": true,
+        "description": "Auto-approve data queries and reports"
+      },
+      "write": {
+        "enabled": false,
+        "description": "Manual approval required for write operations"
+      },
+      "delete": {
+        "enabled": false,
+        "description": "Manual approval required for delete operations"
+      }
+    },
+    "by_agent_trust_level": {
+      "high": {
+        "enabled": true,
+        "agents": ["program_manager", "rag_ingest"],
+        "description": "Auto-approve all actions from high-trust agents"
+      },
+      "medium": {
+        "enabled": true,
+        "agents": ["dashboard_orders", "dashboard_sales"],
+        "auto_approve_actions": ["read", "query"],
+        "description": "Auto-approve low-risk actions from medium-trust agents"
+      },
+      "low": {
+        "enabled": false,
+        "agents": [],
+        "description": "Manual approval required for all actions"
+      }
+    },
+    "by_risk_score": {
+      "low_risk_threshold": 0.3,
+      "medium_risk_threshold": 0.7,
+      "auto_approve_below": 0.3,
+      "description": "Auto-approve actions with risk score below 0.3"
+    },
+    "by_time_window": {
+      "business_hours": {
+        "enabled": true,
+        "start": "09:00",
+        "end": "17:00",
+        "timezone": "UTC",
+        "description": "Auto-approve during business hours"
+      },
+      "weekend_override": {
+        "enabled": false,
+        "description": "Manual approval required on weekends"
+      }
+    },
+    "batch_approval": {
+      "enabled": true,
+      "max_batch_size": 10,
+      "similarity_threshold": 0.8,
+      "description": "Auto-approve similar actions in batches"
+    }
+  },
+  "escalation_rules": {
+    "high_risk_actions": [
+      "database_migration",
+      "production_deployment",
+      "external_api_integration",
+      "user_data_modification"
+    ],
+    "always_manual_approval": [
+      "delete_user_data",
+      "modify_security_settings",
+      "change_payment_configuration"
+    ]
+  }
+}

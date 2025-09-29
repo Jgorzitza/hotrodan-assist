@@ -14,6 +14,7 @@ import {
 } from "../../mocks/settings";
 import type {
   ConnectionAttempt,
+  ConnectionHealth,
   ConnectionStatusState,
   FeatureToggles,
   SecretMetadata,
@@ -281,6 +282,10 @@ const DEFAULT_TOGGLES: FeatureToggles = {
   enableExperimentalWidgets: false,
   enableBetaWorkflows: false,
   enableAssistantsProvider: false,
+  useMockData: true,
+  enableMcp: false,
+  enableSeo: false,
+  enableInventory: false,
 };
 
 const createDefaultConnections = (): SettingsConnections => ({
@@ -949,6 +954,22 @@ class PrismaStoreSettingsRepository implements SettingsRepositoryContract {
         enableBetaWorkflows: parseBoolean(
           record.enableBetaWorkflows,
           DEFAULT_TOGGLES.enableBetaWorkflows,
+        ),
+        useMockData: parseBoolean(
+          record.useMockData,
+          DEFAULT_TOGGLES.useMockData,
+        ),
+        enableMcp: parseBoolean(
+          record.enableMcp,
+          DEFAULT_TOGGLES.enableMcp,
+        ),
+        enableSeo: parseBoolean(
+          record.enableSeo,
+          DEFAULT_TOGGLES.enableSeo,
+        ),
+        enableInventory: parseBoolean(
+          record.enableInventory,
+          DEFAULT_TOGGLES.enableInventory,
         ),
       } satisfies FeatureToggles;
     }

@@ -10,7 +10,7 @@ const MAX_ATTEMPTS = Number(process.env.SHOPIFY_GRAPHQL_MAX_ATTEMPTS ?? 3);
 const BASE_DELAY_MS = Number(process.env.SHOPIFY_GRAPHQL_BACKOFF_MS ?? 250);
 const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
 
-export type AdminClient = AdminApiContext["admin"];
+export type AdminClient = AdminApiContext;
 
 export type StoreSession = {
   storeId: string;

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+MANAGED_PATHS='^(docs/agents\.md|handover/|coordination/agent-feedback-guidelines\.md|agent/.*/INSTRUCTIONS\.md|coordination/registry/|coordination/templates/|coordination/digests/)'
+
+# Allow manager override
+if [[ "${MANAGER_OVERRIDE:-0}" == "1" ]] && git config user.name | grep -qi "manager"; then
+  exit 0
+fi
+
+changed=$(git diff --cached --name-only)
+if echo "$changed" | grep -E "$MANAGED_PATHS" >/dev/null 2>&1; then
+  echo "Blocked: managed instruction files can only be changed by the manager."
+  echo "Submit notes in coordination/inbox/<agent>/<date>-notes.md"
+  exit 1
+fi

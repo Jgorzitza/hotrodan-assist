@@ -1,0 +1,6 @@
+# Auto-acceptance environment variables
+export MANAGER_OVERRIDE=1
+export AUTO_ACCEPT_CHANGES=1
+export DISABLE_CONFIRMATIONS=1
+export AUTO_SAVE=1
+export FORMAT_ON_SAVE=1

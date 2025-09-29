@@ -24,6 +24,10 @@ const baseToggles: FeatureToggles = {
   enableExperimentalWidgets: false,
   enableBetaWorkflows: false,
   enableAssistantsProvider: false,
+  useMockData: true,
+  enableMcp: false,
+  enableSeo: false,
+  enableInventory: false,
 };
 
 const baseSecretMetadata: Record<SettingsProvider, SecretMetadata | null> = {

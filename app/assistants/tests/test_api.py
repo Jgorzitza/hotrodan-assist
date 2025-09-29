@@ -22,7 +22,9 @@ pytestmark = pytest.mark.anyio("asyncio")
 @pytest.fixture()
 async def client() -> httpx.AsyncClient:
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as http_client:
+    async with httpx.AsyncClient(
+        transport=transport, base_url="http://testserver"
+    ) as http_client:
         registry.clear()
         reset_state_for_tests()
         yield http_client
@@ -101,7 +103,9 @@ async def test_list_drafts_supports_pagination(client: httpx.AsyncClient) -> Non
     assert payload["next_cursor"] == "2"
     assert len(payload["drafts"]) == 2
 
-    second_page = await client.get("/assistants/drafts", params={"limit": 2, "cursor": 2})
+    second_page = await client.get(
+        "/assistants/drafts", params={"limit": 2, "cursor": 2}
+    )
     assert second_page.status_code == 200
     payload2 = second_page.json()
     assert payload2["total"] == 3
@@ -115,7 +119,11 @@ async def test_get_draft_detail_includes_sources(client: httpx.AsyncClient) -> N
         json=_draft_payload(
             draft_text="We have it available in blue and green.",
             source_snippets=[
-                {"title": "Inventory", "url": "https://example.com/inventory", "relevance_score": 0.95}
+                {
+                    "title": "Inventory",
+                    "url": "https://example.com/inventory",
+                    "relevance_score": 0.95,
+                }
             ],
         ),
     )
@@ -228,7 +236,9 @@ async def test_approve_records_send_copy_flag(client: httpx.AsyncClient) -> None
     assert payload["usd_sent_copy"] is True
 
 
-async def test_edit_records_learning_notes_and_send_copy(client: httpx.AsyncClient) -> None:
+async def test_edit_records_learning_notes_and_send_copy(
+    client: httpx.AsyncClient,
+) -> None:
     registry.register("email", lambda payload: None)
 
     create = await client.post("/assistants/draft", json=_draft_payload())
@@ -280,7 +290,6 @@ async def test_draft_persists_extra_metadata_and_customer_fallback(
     assert body["metadata"]["customer_email"] == "casey@example.com"
     assert body["customer_display"] == "casey@example.com"
     assert body["assigned_to"] == "Operator B"
-
 
 
 async def test_list_drafts_filters_by_assigned(client: httpx.AsyncClient) -> None:
@@ -346,7 +355,9 @@ async def test_draft_creation_emits_event_payload(client: httpx.AsyncClient) -> 
     assert payload["ticket"]["aiDraft"]["content"].startswith("Thanks for reaching out")
 
 
-async def test_approve_emits_event_with_adapter_payload(client: httpx.AsyncClient) -> None:
+async def test_approve_emits_event_with_adapter_payload(
+    client: httpx.AsyncClient,
+) -> None:
     create = await client.post("/assistants/draft", json=_draft_payload())
     draft_id = create.json()["draft_id"]
 
@@ -373,13 +384,19 @@ async def test_feedback_note_emits_feedback_event(client: httpx.AsyncClient) -> 
     create = await client.post("/assistants/draft", json=_draft_payload())
     draft_id = create.json()["draft_id"]
 
-    feedback_body = json.dumps({"type": "feedback", "vote": "up", "comment": "Great draft"})
+    feedback_body = json.dumps(
+        {"type": "feedback", "vote": "up", "comment": "Great draft"}
+    )
 
     queue = await events.subscribe()
     try:
         response = await client.post(
             "/assistants/notes",
-            json={"draft_id": draft_id, "author_user_id": "agent", "text": feedback_body},
+            json={
+                "draft_id": draft_id,
+                "author_user_id": "agent",
+                "text": feedback_body,
+            },
         )
         assert response.status_code == 200
         raw = await asyncio.wait_for(queue.get(), timeout=2)
