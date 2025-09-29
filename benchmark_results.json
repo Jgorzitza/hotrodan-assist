@@ -1,0 +1,54 @@
+{
+  "benchmarks": {
+    "health_endpoint": {
+      "endpoint": "health",
+      "total_requests": 1000,
+      "successful_requests": 1000,
+      "errors": 0,
+      "success_rate": 100.0,
+      "total_time": 0.8133547306060791,
+      "rps": 1229.4758515203328,
+      "avg_response_time": 0.0008128869533538818,
+      "min_response_time": 0.0005979537963867188,
+      "max_response_time": 0.003507375717163086,
+      "p95_response_time": 0.0010414004325866699
+    },
+    "stock_sync_endpoint": {
+      "endpoint": "stock_sync",
+      "total_requests": 100,
+      "successful_requests": 0,
+      "errors": 100,
+      "success_rate": 0.0,
+      "total_time": 0.08115720748901367,
+      "rps": 0,
+      "avg_response_time": 0,
+      "min_response_time": 0,
+      "max_response_time": 0,
+      "p95_response_time": 0
+    },
+    "concurrent_load": {
+      "test_type": "concurrent_load",
+      "concurrent_users": 10,
+      "requests_per_user": 50,
+      "total_requests": 500,
+      "successful_requests": 500,
+      "errors": 0,
+      "success_rate": 100.0,
+      "total_time": 0.3372166156768799,
+      "rps": 1482.726463511806,
+      "avg_response_time": 0.006297779083251953,
+      "min_response_time": 0.0007104873657226562,
+      "max_response_time": 0.03289079666137695,
+      "p95_response_time": 0.01604982614517212
+    },
+    "memory_usage": {
+      "test_type": "memory_usage",
+      "initial_memory_mb": 27.75,
+      "peak_memory_mb": 28.5,
+      "memory_increase_mb": 0.75,
+      "memory_efficient": true
+    }
+  },
+  "performance_score": 100,
+  "timestamp": "2025-09-29T12:08:03.990727"
+}
