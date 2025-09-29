@@ -1,0 +1,238 @@
+{
+  "start_time": "2025-09-29T14:48:13.029827",
+  "api_availability": {
+    "tests": [
+      {
+        "test": "root_endpoint",
+        "passed": true,
+        "status_code": 200,
+        "response_time": 0.001895
+      },
+      {
+        "test": "health_endpoint",
+        "passed": true,
+        "status_code": 200,
+        "response_time": 0.001463
+      }
+    ],
+    "uptime_tests": [
+      {
+        "request": 1,
+        "success": true,
+        "response_time": 0.0015628337860107422
+      },
+      {
+        "request": 2,
+        "success": true,
+        "response_time": 0.0025205612182617188
+      },
+      {
+        "request": 3,
+        "success": true,
+        "response_time": 0.002310514450073242
+      },
+      {
+        "request": 4,
+        "success": true,
+        "response_time": 0.0021347999572753906
+      },
+      {
+        "request": 5,
+        "success": true,
+        "response_time": 0.0020749568939208984
+      }
+    ],
+    "uptime_success_rate": 100.0,
+    "overall_status": "PASS"
+  },
+  "endpoint_functionality": {
+    "endpoint_tests": [
+      {
+        "endpoint": "channel_campaign_metrics",
+        "passed": true,
+        "status_code": 200,
+        "response_time": 0.0019609928131103516,
+        "has_success_field": true
+      },
+      {
+        "endpoint": "attribution_models",
+        "passed": true,
+        "status_code": 200,
+        "response_time": 0.0013616085052490234,
+        "has_success_field": true
+      },
+      {
+        "endpoint": "funnel_dropoff",
+        "passed": true,
+        "status_code": 200,
+        "response_time": 0.0013442039489746094,
+        "has_success_field": true
+      },
+      {
+        "endpoint": "forecast_rollup",
+        "passed": true,
+        "status_code": 200,
+        "response_time": 0.0014379024505615234,
+        "has_success_field": true
+      },
+      {
+        "endpoint": "pricing_elasticity",
+        "passed": true,
+        "status_code": 200,
+        "response_time": 0.0011069774627685547,
+        "has_success_field": true
+      }
+    ],
+    "success_count": 5,
+    "total_endpoints": 5,
+    "success_rate": 100.0,
+    "overall_status": "PASS"
+  },
+  "performance_requirements": {
+    "avg_response_time": 0.0011982917785644531,
+    "max_response_time": 0.00142669677734375,
+    "avg_response_requirement_met": true,
+    "max_response_requirement_met": true,
+    "overall_status": "PASS"
+  },
+  "error_handling": {
+    "error_tests": [
+      {
+        "test": "invalid_json",
+        "passed": false,
+        "status_code": 200
+      },
+      {
+        "test": "missing_fields",
+        "passed": true,
+        "status_code": 200
+      },
+      {
+        "test": "malformed_data",
+        "passed": true,
+        "status_code": 200
+      }
+    ],
+    "success_count": 2,
+    "total_tests": 3,
+    "success_rate": 66.66666666666666,
+    "overall_status": "FAIL"
+  },
+  "security_considerations": {
+    "security_tests": [
+      {
+        "test": "cors_headers",
+        "passed": false,
+        "cors_header": null
+      },
+      {
+        "test": "https_readiness",
+        "passed": true,
+        "note": "HTTPS setup required for production"
+      },
+      {
+        "test": "input_validation",
+        "passed": true,
+        "status_code": 200
+      }
+    ],
+    "success_count": 2,
+    "total_tests": 3,
+    "success_rate": 66.66666666666666,
+    "overall_status": "FAIL"
+  },
+  "monitoring_capabilities": {
+    "monitoring_tests": [
+      {
+        "test": "health_endpoint",
+        "passed": true,
+        "response_time": 0.000651
+      },
+      {
+        "test": "response_time_monitoring",
+        "passed": true,
+        "response_time": 0.00086212158203125
+      }
+    ],
+    "file_checks": [
+      {
+        "file": "monitoring/sales_analytics_monitor.py",
+        "exists": true
+      },
+      {
+        "file": "test_e2e_sales_analytics.py",
+        "exists": true
+      },
+      {
+        "file": "test_performance_benchmarks.py",
+        "exists": true
+      }
+    ],
+    "success_count": 2,
+    "file_count": 3,
+    "overall_status": "PASS"
+  },
+  "deployment_readiness": {
+    "deployment_tests": [
+      {
+        "test": "api_server_running",
+        "passed": true,
+        "note": "API server is currently running"
+      },
+      {
+        "test": "logs_directory",
+        "passed": true,
+        "note": "Logs directory exists"
+      }
+    ],
+    "file_checks": [
+      {
+        "file": "app/sales_analytics_platform/complete_working_api.py",
+        "exists": true
+      },
+      {
+        "file": "monitoring/sales_analytics_monitor.py",
+        "exists": true
+      },
+      {
+        "file": "test_e2e_sales_analytics.py",
+        "exists": true
+      },
+      {
+        "file": "test_performance_benchmarks.py",
+        "exists": true
+      }
+    ],
+    "success_count": 2,
+    "file_count": 4,
+    "overall_status": "PASS"
+  },
+  "documentation_completeness": {
+    "documentation_tests": [
+      {
+        "test": "api_documentation",
+        "passed": false,
+        "note": "API provides endpoint documentation"
+      }
+    ],
+    "file_checks": [
+      {
+        "file": "app/sales_analytics_platform/core/REPORTING.md",
+        "exists": false
+      }
+    ],
+    "success_count": 0,
+    "file_count": 0,
+    "overall_status": "FAIL"
+  },
+  "end_time": "2025-09-29T14:48:18.075570",
+  "overall": {
+    "readiness_score": 75,
+    "status": "NEEDS_IMPROVEMENT",
+    "recommendations": [
+      "Improve error handling capabilities",
+      "Address security considerations",
+      "Complete documentation"
+    ]
+  }
+}

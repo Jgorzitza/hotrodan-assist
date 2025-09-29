@@ -1,0 +1,353 @@
+{
+  "start_time": "2025-09-29T14:47:24.247293",
+  "api_health": {
+    "tests": [
+      {
+        "name": "root_endpoint",
+        "passed": true,
+        "response_time": 0.0026443004608154297,
+        "status_code": 200,
+        "details": {
+          "message": "Sales Analytics API is running",
+          "status": "healthy"
+        }
+      },
+      {
+        "name": "health_endpoint",
+        "passed": true,
+        "response_time": 0.0015189647674560547,
+        "status_code": 200,
+        "details": {
+          "status": "healthy",
+          "service": "sales-analytics-api"
+        }
+      }
+    ],
+    "summary": "2/2 health tests passed"
+  },
+  "endpoint_functionality": {
+    "tests": [
+      {
+        "name": "channel_campaign_metrics",
+        "passed": true,
+        "response_time": 0.0012404918670654297,
+        "status_code": 200,
+        "response_size": 254,
+        "details": {
+          "success": true,
+          "metrics": {
+            "channels": {
+              "email": {
+                "revenue": 100,
+                "count": 1,
+                "aov": 100.0
+              },
+              "social": {
+                "revenue": 200,
+                "count": 1,
+                "aov": 200.0
+              },
+              "paid": {
+                "revenue": 150,
+                "count": 1,
+                "aov": 150.0
+              }
+            },
+            "overall": {
+              "total_revenue": 450,
+              "total_transactions": 3,
+              "overall_aov": 150.0
+            }
+          }
+        }
+      },
+      {
+        "name": "attribution_models",
+        "passed": true,
+        "response_time": 0.00113677978515625,
+        "status_code": 200,
+        "response_size": 192,
+        "details": {
+          "success": true,
+          "attribution_models": {
+            "first_touch": {
+              "revenue": 50000,
+              "transactions": 250
+            },
+            "last_touch": {
+              "revenue": 75000,
+              "transactions": 375
+            },
+            "multi_touch": {
+              "revenue": 100000,
+              "transactions": 500
+            }
+          }
+        }
+      },
+      {
+        "name": "funnel_dropoff",
+        "passed": true,
+        "response_time": 0.0010495185852050781,
+        "status_code": 200,
+        "response_size": 208,
+        "details": {
+          "success": true,
+          "funnel_analysis": {
+            "steps": [
+              {
+                "name": "landing",
+                "conversion_rate": 100
+              },
+              {
+                "name": "signup",
+                "conversion_rate": 75
+              },
+              {
+                "name": "checkout",
+                "conversion_rate": 50
+              },
+              {
+                "name": "purchase",
+                "conversion_rate": 25
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "forecast_rollup",
+        "passed": true,
+        "response_time": 0.001178741455078125,
+        "status_code": 200,
+        "response_size": 87,
+        "details": {
+          "success": true,
+          "forecast": {
+            "next_month": 120000,
+            "confidence_interval": [
+              100000,
+              140000
+            ]
+          }
+        }
+      },
+      {
+        "name": "pricing_elasticity",
+        "passed": true,
+        "response_time": 0.001249074935913086,
+        "status_code": 200,
+        "response_size": 112,
+        "details": {
+          "success": true,
+          "elasticity": {
+            "coefficient": -1.5,
+            "interpretation": "Elastic - quantity changes more than price"
+          }
+        }
+      }
+    ],
+    "summary": "5/5 endpoint tests passed"
+  },
+  "data_processing": {
+    "tests": [
+      {
+        "name": "small_dataset",
+        "passed": true,
+        "response_time": 0.0012500286102294922,
+        "data_size": 1,
+        "details": {
+          "success": true,
+          "metrics": {
+            "channels": {
+              "email": {
+                "revenue": 100,
+                "count": 1,
+                "aov": 100.0
+              }
+            },
+            "overall": {
+              "total_revenue": 100,
+              "total_transactions": 1,
+              "overall_aov": 100.0
+            }
+          }
+        }
+      },
+      {
+        "name": "medium_dataset",
+        "passed": true,
+        "response_time": 0.001285552978515625,
+        "data_size": 100,
+        "details": {
+          "success": true,
+          "metrics": {
+            "channels": {
+              "channel_0": {
+                "revenue": 16830,
+                "count": 34,
+                "aov": 495.0
+              },
+              "channel_1": {
+                "revenue": 16170,
+                "count": 33,
+                "aov": 490.0
+              },
+              "channel_2": {
+                "revenue": 16500,
+                "count": 33,
+                "aov": 500.0
+              }
+            },
+            "overall": {
+              "total_revenue": 49500,
+              "total_transactions": 100,
+              "overall_aov": 495.0
+            }
+          }
+        }
+      },
+      {
+        "name": "large_dataset",
+        "passed": true,
+        "response_time": 0.0024819374084472656,
+        "data_size": 1000,
+        "details": {
+          "success": true,
+          "metrics": {
+            "channels": {
+              "channel_0": {
+                "revenue": 995000,
+                "count": 200,
+                "aov": 4975.0
+              },
+              "channel_1": {
+                "revenue": 997000,
+                "count": 200,
+                "aov": 4985.0
+              },
+              "channel_2": {
+                "revenue": 999000,
+                "count": 200,
+                "aov": 4995.0
+              },
+              "channel_3": {
+                "revenue": 1001000,
+                "count": 200,
+                "aov": 5005.0
+              },
+              "channel_4": {
+                "revenue": 1003000,
+                "count": 200,
+                "aov": 5015.0
+              }
+            },
+            "overall": {
+              "total_revenue": 4995000,
+              "total_transactions": 1000,
+              "overall_aov": 4995.0
+            }
+          }
+        }
+      },
+      {
+        "name": "empty_dataset",
+        "passed": false,
+        "response_time": 0.001443624496459961,
+        "data_size": 0,
+        "details": {
+          "error": "No transaction data provided",
+          "metrics": {}
+        }
+      },
+      {
+        "name": "malformed_data",
+        "passed": false,
+        "response_time": 0.0012140274047851562,
+        "data_size": 1,
+        "details": {
+          "error": "Channel campaign metrics failed: unsupported operand type(s) for +: 'int' and 'str'"
+        }
+      }
+    ],
+    "summary": "3/5 data processing tests passed"
+  },
+  "performance_validation": {
+    "tests": [
+      {
+        "name": "response_time_consistency",
+        "passed": true,
+        "avg_response_time": 0.0010983467102050782,
+        "max_response_time": 0.0013895034790039062,
+        "min_response_time": 0.0009424686431884766,
+        "details": "Average: 0.001s, Max: 0.001s"
+      }
+    ],
+    "summary": "1/1 performance tests passed"
+  },
+  "concurrent_requests": {
+    "tests": [
+      {
+        "name": "concurrent_requests",
+        "passed": true,
+        "successful_requests": 10,
+        "total_requests": 10,
+        "avg_response_time": 0.005457496643066407,
+        "details": "10/10 concurrent requests succeeded"
+      }
+    ],
+    "summary": "1/1 concurrent request tests passed"
+  },
+  "error_handling": {
+    "tests": [
+      {
+        "name": "invalid_json",
+        "passed": false,
+        "status_code": 200,
+        "expected_status": 422,
+        "details": "{\"error\":\"No transaction data provided\",\"metrics\":{}}"
+      },
+      {
+        "name": "missing_required_field",
+        "passed": true,
+        "status_code": 200,
+        "expected_status": 200,
+        "details": "{\"error\":\"No transaction data provided\",\"metrics\":{}}"
+      },
+      {
+        "name": "null_data",
+        "passed": false,
+        "status_code": 200,
+        "expected_status": 422,
+        "details": "{\"error\":\"No transaction data provided\",\"metrics\":{}}"
+      },
+      {
+        "name": "very_large_payload",
+        "passed": true,
+        "status_code": 200,
+        "expected_status": 200,
+        "details": "{\"success\":true,\"metrics\":{\"channels\":{\"email\":{\"revenue\":1000000,\"count\":10000,\"aov\":100.0}},\"overall\":{\"total_revenue\":1000000,\"total_transactions\":10000,\"overall_aov\":100.0}}}"
+      }
+    ],
+    "summary": "2/4 error handling tests passed"
+  },
+  "integration_validation": {
+    "tests": [
+      {
+        "name": "data_flow_integration",
+        "passed": true,
+        "channel_status": 200,
+        "attribution_status": 200,
+        "details": "Data flows correctly between endpoints"
+      }
+    ],
+    "summary": "1/1 integration tests passed"
+  },
+  "end_time": "2025-09-29T14:47:24.314128",
+  "overall": {
+    "total_tests": 19,
+    "passed_tests": 15,
+    "success_rate": 78.94736842105263,
+    "validation_status": "FAILED"
+  }
+}

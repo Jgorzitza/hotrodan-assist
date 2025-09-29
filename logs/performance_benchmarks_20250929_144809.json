@@ -1,0 +1,121 @@
+{
+  "start_time": "2025-09-29T14:47:28.228785",
+  "baseline_performance": {
+    "avg_response_time": 0.0013671398162841796,
+    "min_response_time": 0.00093841552734375,
+    "max_response_time": 0.0025560855865478516,
+    "p95_response_time": 0.0025560855865478516,
+    "success_rate": 100.0,
+    "requests_per_second": 731.4540825224094
+  },
+  "load_testing": {
+    "total_requests": 50,
+    "successful_requests": 50,
+    "success_rate": 100.0,
+    "avg_response_time": 0.010875372886657715,
+    "max_response_time": 0.0189211368560791,
+    "throughput_rps": 2642.5473469336325
+  },
+  "stress_testing": {
+    "total_requests": 100,
+    "successful_requests": 100,
+    "success_rate": 100.0,
+    "avg_response_time": 0.019309892654418945,
+    "max_response_time": 0.04458451271057129,
+    "stress_test_status": "PASSED"
+  },
+  "concurrent_processing": {
+    "level_10": {
+      "total_requests": 10,
+      "successful_requests": 10,
+      "success_rate": 100.0,
+      "total_time": 0.012996435165405273,
+      "throughput": 769.4417640476235
+    },
+    "level_25": {
+      "total_requests": 25,
+      "successful_requests": 25,
+      "success_rate": 100.0,
+      "total_time": 0.03014659881591797,
+      "throughput": 829.2809465059631
+    },
+    "level_50": {
+      "total_requests": 50,
+      "successful_requests": 50,
+      "success_rate": 100.0,
+      "total_time": 0.05984807014465332,
+      "throughput": 835.4488269905705
+    },
+    "level_75": {
+      "total_requests": 75,
+      "successful_requests": 75,
+      "success_rate": 100.0,
+      "total_time": 0.0879814624786377,
+      "throughput": 852.4522994626323
+    },
+    "level_100": {
+      "total_requests": 100,
+      "successful_requests": 100,
+      "success_rate": 100.0,
+      "total_time": 0.11702275276184082,
+      "throughput": 854.5346750090154
+    }
+  },
+  "memory_usage": {
+    "initial_memory_mb": 3465.01171875,
+    "final_memory_mb": 3464.75390625,
+    "memory_increase_mb": -0.2578125,
+    "memory_efficiency": "GOOD"
+  },
+  "response_time_consistency": {
+    "total_requests": 100,
+    "mean_response_time": 0.002363321781158447,
+    "std_deviation": 0.0003215461198307127,
+    "coefficient_of_variation": 0.13605685116357621,
+    "consistency_rating": "GOOD"
+  },
+  "throughput_analysis": {
+    "total_requests": 4840,
+    "successful_requests": 4840,
+    "total_time": 30.07451868057251,
+    "requests_per_second": 160.93358139515416,
+    "success_rate": 100.0
+  },
+  "scalability_validation": {
+    "size_10": {
+      "data_size": 10,
+      "response_time": 0.0019440650939941406,
+      "success": true,
+      "throughput": 5143.860681873927
+    },
+    "size_50": {
+      "data_size": 50,
+      "response_time": 0.0018794536590576172,
+      "success": true,
+      "throughput": 26603.47583407332
+    },
+    "size_100": {
+      "data_size": 100,
+      "response_time": 0.002159595489501953,
+      "success": true,
+      "throughput": 46304.96798410245
+    },
+    "size_500": {
+      "data_size": 500,
+      "response_time": 0.002489805221557617,
+      "success": true,
+      "throughput": 200818.92176577612
+    },
+    "size_1000": {
+      "data_size": 1000,
+      "response_time": 0.002805948257446289,
+      "success": true,
+      "throughput": 356385.7591978928
+    }
+  },
+  "end_time": "2025-09-29T14:48:09.158012",
+  "overall": {
+    "performance_score": 100,
+    "status": "EXCELLENT"
+  }
+}
