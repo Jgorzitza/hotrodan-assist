@@ -623,7 +623,7 @@ docker-compose up -d inventory-api
 - [x] Safety stock rules per SKU/location
 - [x] Demand forecasting (daily/weekly) with seasonality
 - [x] Purchase order recommendations generator
-- [ ] Backorder policy rules + ETA surfacing
+- [x] Backorder policy rules + ETA surfacing
 - [ ] Webhooks for low-stock → Slack/Email
 - [ ] Cycle counts workflow integration
 - [ ] BOM/kitting support in availability calcs
