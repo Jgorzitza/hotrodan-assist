@@ -378,7 +378,7 @@ Successfully tested all components with realistic data:
 - [x] Rank tracking (daily) and volatility index
 - [x] Content briefs generator (entities, headers, FAQs)
 - [x] Internal link opportunities graph
-- [ ] Schema markup validator + templates
+- [x] Schema markup validator + templates
 - [ ] Core Web Vitals ingestion and regression alerts
 - [ ] Sitemap diff and redirect hygiene audits
 - [ ] On-page crawler for technical issues
