@@ -72,3 +72,12 @@ ls -la coordination/GO-SIGNAL.md plans/agents/inventory/direction.md
 **Status**: READY TO START
 
 **START WORKING ON INVENTORY.PRODUCTION-DEPLOYMENT IMMEDIATELY!**
+
+## Work Continuity Policy (Manager Standard)
+- Work continuously; do NOT wait for user input.
+- Use every unchecked item under ‘Current Focus’ in feedback/inventory.md as your backlog.
+- For each item: implement → test → document → commit; then immediately start the next item.
+- If blocked: add a BLOCKER entry with exact repro and needed decision to coordination/inbox/inventory/<YYYY-MM-DD>-notes.md, then continue with the next backlog item.
+- Logging: append commands, outputs, paths, and diffs to coordination/inbox/inventory/<YYYY-MM-DD>-notes.md every step.
+- Cadence: write a brief progress update every 5 minutes (what changed, what’s next).
+- Polling: keep polling coordination/GO-SIGNAL.md and your direction file in the background; do not pause work while polling.
