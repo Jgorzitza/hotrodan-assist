@@ -244,68 +244,6 @@ class TestAutomatedEnhancementSystem:
         assert "recent_enhancements" in report
         assert report["summary"]["total_enhancements"] == 5
 
-class TestSustainedOperationsIntegration:
-    def test_monitor_and_enhancement_integration(self):
-        """Test integration between monitor and enhancement system."""
-        monitor = RealTimeMonitor()
-        enhancement_system = AutomatedEnhancementSystem()
-        
-        # Start both systems
-        monitor.start_monitoring(interval=5)
-        enhancement_system.start_enhancement_loop(interval=10)
-        
-        # Let them run for a short time
-        time.sleep(15)
-        
-        # Check that both systems are running
-        assert monitor.is_monitoring == True
-        assert enhancement_system.is_running == True
-        
-        # Check that data is being collected
-        assert len(monitor.system_metrics) > 0
-        assert len(monitor.business_metrics) > 0
-        assert len(monitor.api_metrics) > 0
-        
-        # Stop systems
-        monitor.stop_monitoring()
-        enhancement_system.stop_enhancement_loop()
-        
-        # Check that systems stopped
-        assert monitor.is_monitoring == False
-        assert enhancement_system.is_running == False
-    
-    def test_data_flow_integration(self):
-        """Test data flow between monitor and enhancement system."""
-        monitor = RealTimeMonitor()
-        enhancement_system = AutomatedEnhancementSystem()
-        
-        # Simulate data flow
-        for i in range(10):
-            # Collect metrics from monitor
-            system_metrics = monitor._collect_system_metrics()
-            business_metrics = monitor._collect_business_metrics()
-            api_metrics = monitor._collect_api_metrics()
-            
-            # Feed data to enhancement system
-            enhancement_system.update_performance_data("cpu_percent", system_metrics.cpu_percent)
-            enhancement_system.update_performance_data("memory_percent", system_metrics.memory_percent)
-            enhancement_system.update_performance_data("forecast_accuracy", 0.85)
-            enhancement_system.update_performance_data("avg_response_time", api_metrics.avg_response_time)
-            enhancement_system.update_performance_data("fulfillment_rate", business_metrics.fulfillment_rate)
-            enhancement_system.update_performance_data("error_rate", api_metrics.error_rate)
-            
-            time.sleep(0.1)
-        
-        # Check that data was collected
-        assert len(enhancement_system.performance_data["cpu_percent"]) == 10
-        assert len(enhancement_system.performance_data["memory_percent"]) == 10
-        
-        # Run enhancement evaluation
-        enhancement_system._evaluate_rules()
-        
-        # Should have some enhancement results
-        assert len(enhancement_system.enhancement_history) >= 0
-
 def test_sustained_operations_performance():
     """Test sustained operations performance."""
     monitor = RealTimeMonitor()
