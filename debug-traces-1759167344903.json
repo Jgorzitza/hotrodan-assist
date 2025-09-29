@@ -1,0 +1,148 @@
+{
+  "summary": {
+    "totalTraces": 6,
+    "completedOperations": 1,
+    "totalDuration": 0.27447500000000247,
+    "averageDuration": 0.27447500000000247,
+    "slowestOperation": {
+      "id": "trace-1759167344901-lg2dyx6ld",
+      "operation": "API Request: GET https://api.example.com/users",
+      "metadata": {
+        "url": "https://api.example.com/users",
+        "method": "GET",
+        "headers": {
+          "Authorization": "Bearer token"
+        }
+      },
+      "startTime": 23.842432,
+      "endTime": 24.116907,
+      "duration": 0.27447500000000247,
+      "depth": 1,
+      "timestamp": "2025-09-29T17:35:44.901Z",
+      "type": "end",
+      "result": {
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "data": {
+          "users": []
+        }
+      },
+      "error": null
+    },
+    "performanceMarks": [
+      [
+        "Test Operation-start",
+        {
+          "timestamp": 25.419546,
+          "metadata": {},
+          "timeSinceStart": 3.208884000000001
+        }
+      ]
+    ]
+  },
+  "traces": [
+    {
+      "id": "trace-1759167344901-lg2dyx6ld",
+      "operation": "API Request: GET https://api.example.com/users",
+      "metadata": {
+        "url": "https://api.example.com/users",
+        "method": "GET",
+        "headers": {
+          "Authorization": "Bearer token"
+        }
+      },
+      "startTime": 23.842432,
+      "depth": 1,
+      "timestamp": "2025-09-29T17:35:44.901Z",
+      "type": "start"
+    },
+    {
+      "id": "trace-1759167344901-lg2dyx6ld",
+      "operation": "API Request: GET https://api.example.com/users",
+      "metadata": {
+        "url": "https://api.example.com/users",
+        "method": "GET",
+        "headers": {
+          "Authorization": "Bearer token"
+        }
+      },
+      "startTime": 23.842432,
+      "endTime": 24.116907,
+      "duration": 0.27447500000000247,
+      "depth": 1,
+      "timestamp": "2025-09-29T17:35:44.901Z",
+      "type": "end",
+      "result": {
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "data": {
+          "users": []
+        }
+      },
+      "error": null
+    },
+    {
+      "type": "debug",
+      "message": "API Request Success",
+      "data": {
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "timestamp": "2025-09-29T17:35:44.902Z",
+      "depth": 0
+    },
+    {
+      "id": "trace-1759167344902-cizvnfm3b",
+      "operation": "Function: add",
+      "metadata": {
+        "argCount": 2,
+        "args": [
+          "5",
+          "3"
+        ]
+      },
+      "startTime": 24.700978,
+      "depth": 1,
+      "timestamp": "2025-09-29T17:35:44.902Z",
+      "type": "start"
+    },
+    {
+      "type": "debug",
+      "message": "Initial Memory",
+      "data": {
+        "rss": "46 MB",
+        "heapTotal": "6 MB",
+        "heapUsed": "5 MB",
+        "external": "2 MB",
+        "arrayBuffers": "0 MB"
+      },
+      "timestamp": "2025-09-29T17:35:44.902Z",
+      "depth": 1
+    },
+    {
+      "type": "mark",
+      "name": "Test Operation-start",
+      "timestamp": 25.419546,
+      "metadata": {},
+      "timeSinceStart": 3.208884000000001
+    }
+  ],
+  "options": {
+    "enableConsole": true,
+    "enableFile": true,
+    "logFile": "debug-session.log",
+    "enablePerformance": true,
+    "enableStackTrace": true,
+    "maxTraceDepth": 10
+  },
+  "sessionStart": "1970-01-01T00:00:00.022Z"
+}

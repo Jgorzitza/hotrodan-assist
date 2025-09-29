@@ -12,6 +12,7 @@
     "@llama-rag/core": "workspace:^"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.0",
     "typescript": "^5.4.4",
     "vitest": "^1.4.0",
     "@faker-js/faker": "^8.4.1"

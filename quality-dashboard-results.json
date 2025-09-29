@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-09-29T17:34:43.048Z",
+  "e2eTests": null,
+  "securityScans": {
+    "totalFindings": 50,
+    "critical": 1,
+    "high": 5,
+    "medium": 0,
+    "low": 44
+  },
+  "accessibilityTests": {
+    "status": "configured",
+    "note": "Accessibility tests configured with axe-core"
+  },
+  "loadTests": {
+    "totalRequests": 0,
+    "errorRate": 0,
+    "averageResponseTime": 0,
+    "requestsPerSecond": 0,
+    "violations": 1
+  },
+  "flakyTests": null,
+  "overallScore": 65
+}
