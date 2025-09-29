@@ -1,0 +1,64 @@
+{
+  "timestamp": "2025-09-29T07:57:49.842520",
+  "audit_duration": "7:17:21.481272",
+  "python_quality": {
+    "black": {
+      "status": "PASS",
+      "details": "Code formatting is correct"
+    },
+    "ruff": {
+      "status": "PASS",
+      "details": "No linting issues found"
+    },
+    "mypy": {
+      "status": "WARN",
+      "details": "Type checking warnings: app/assistants/main.py: error: Duplicate module named \"main\" (also at \"app/approval-app/main.py\")\napp/assistants/main.py: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules for more info\napp/assistants/main.py: note: Common resolutions include: a) using `--exclude` to avoid checking one of them, b) adding `__init__.py` somewhere, c) using `--explicit-package-bases` or adjusting MYPYPATH\nFound 1 error in 1 file (errors prevented further checking)\n"
+    }
+  },
+  "node_quality": {
+    "tests": {
+      "status": "PASS",
+      "details": "All tests passed"
+    },
+    "lint": {
+      "status": "PASS",
+      "details": "Linting passed"
+    },
+    "build": {
+      "status": "PASS",
+      "details": "Build successful"
+    }
+  },
+  "system_health": {
+    "disk_space": {
+      "status": "OK",
+      "details": "Disk usage: 15%"
+    },
+    "memory": {
+      "status": "OK",
+      "details": "Memory: 2.9Gi/12Gi used"
+    },
+    "processes": {
+      "status": "OK",
+      "details": "Critical processes running: python, node"
+    }
+  },
+  "security": {
+    "dependencies": {
+      "status": "UNKNOWN",
+      "details": ""
+    },
+    "secrets": {
+      "status": "CRITICAL",
+      "details": "Potential hardcoded secrets found: 76 instances"
+    },
+    "permissions": {
+      "status": "OK",
+      "details": "File permissions look secure"
+    }
+  },
+  "critical_issues": [
+    "Potential hardcoded secrets detected"
+  ],
+  "overall_status": "WARNING"
+}

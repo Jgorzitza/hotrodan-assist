@@ -1,0 +1,317 @@
+{
+  "test_summary": {
+    "total_tests": 12,
+    "successful_tests": 6,
+    "failed_tests": 6,
+    "dataset_sizes_tested": [
+      100,
+      500,
+      1000
+    ]
+  },
+  "performance_by_dataset": {
+    "100": {
+      "total_time": 0.9546256065368652,
+      "total_memory": 1.5,
+      "component_times": {
+        "query_router": 0.5534722805023193,
+        "analytics_engine": 0.10039925575256348,
+        "mcp_integration": 0.008753538131713867,
+        "end_to_end": 0.29200053215026855
+      },
+      "component_memory": {
+        "query_router": 0,
+        "analytics_engine": 1.375,
+        "mcp_integration": 0.125,
+        "end_to_end": 0
+      },
+      "success_rate": 50.0,
+      "total_tests": 4
+    },
+    "500": {
+      "total_time": 0.9620554447174072,
+      "total_memory": 2.75,
+      "component_times": {
+        "query_router": 0.19135093688964844,
+        "analytics_engine": 0.5160613059997559,
+        "mcp_integration": 0.0047762393951416016,
+        "end_to_end": 0.24986696243286133
+      },
+      "component_memory": {
+        "query_router": 0,
+        "analytics_engine": 2.75,
+        "mcp_integration": 0.0,
+        "end_to_end": 0
+      },
+      "success_rate": 50.0,
+      "total_tests": 4
+    },
+    "1000": {
+      "total_time": 1.6228036880493164,
+      "total_memory": 3.25,
+      "component_times": {
+        "query_router": 0.2333981990814209,
+        "analytics_engine": 1.1247620582580566,
+        "mcp_integration": 0.008203268051147461,
+        "end_to_end": 0.2564401626586914
+      },
+      "component_memory": {
+        "query_router": 0,
+        "analytics_engine": 3.25,
+        "mcp_integration": 0.0,
+        "end_to_end": 0
+      },
+      "success_rate": 50.0,
+      "total_tests": 4
+    }
+  },
+  "performance_by_component": {
+    "query_router": {
+      "avg_time": 0.3260738054911296,
+      "avg_memory": 0.0,
+      "success_rate": 0.0,
+      "total_tests": 3,
+      "times_by_dataset": {
+        "100": [
+          0.5534722805023193
+        ],
+        "500": [
+          0.19135093688964844
+        ],
+        "1000": [
+          0.2333981990814209
+        ]
+      }
+    },
+    "analytics_engine": {
+      "avg_time": 0.5804075400034586,
+      "avg_memory": 2.4583333333333335,
+      "success_rate": 100.0,
+      "total_tests": 3,
+      "times_by_dataset": {
+        "100": [
+          0.10039925575256348
+        ],
+        "500": [
+          0.5160613059997559
+        ],
+        "1000": [
+          1.1247620582580566
+        ]
+      }
+    },
+    "mcp_integration": {
+      "avg_time": 0.0072443485260009766,
+      "avg_memory": 0.041666666666666664,
+      "success_rate": 100.0,
+      "total_tests": 3,
+      "times_by_dataset": {
+        "100": [
+          0.008753538131713867
+        ],
+        "500": [
+          0.0047762393951416016
+        ],
+        "1000": [
+          0.008203268051147461
+        ]
+      }
+    },
+    "end_to_end": {
+      "avg_time": 0.26610255241394043,
+      "avg_memory": 0.0,
+      "success_rate": 0.0,
+      "total_tests": 3,
+      "times_by_dataset": {
+        "100": [
+          0.29200053215026855
+        ],
+        "500": [
+          0.24986696243286133
+        ],
+        "1000": [
+          0.2564401626586914
+        ]
+      }
+    }
+  },
+  "recommendations": [
+    "Success rate is 50.0%. Investigate and fix failing tests."
+  ],
+  "detailed_results": [
+    {
+      "test_name": "query_router",
+      "dataset_size": 100,
+      "processing_time": 0.5534722805023193,
+      "memory_usage": 0,
+      "success": false,
+      "error": "Failed to load index with ID hotrodan",
+      "metrics": null
+    },
+    {
+      "test_name": "analytics_engine",
+      "dataset_size": 100,
+      "processing_time": 0.10039925575256348,
+      "memory_usage": 1.375,
+      "success": true,
+      "error": null,
+      "metrics": {
+        "total_calculations": 4,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "parallel_calculations": 200,
+        "avg_processing_time": 0.04957026243209839,
+        "total_processing_time": 0.19828104972839355,
+        "cache_hit_rate": 0.0,
+        "cache_size": 0,
+        "max_workers": 1,
+        "parallel_efficiency": 5000.0
+      }
+    },
+    {
+      "test_name": "mcp_integration",
+      "dataset_size": 100,
+      "processing_time": 0.008753538131713867,
+      "memory_usage": 0.125,
+      "success": true,
+      "error": null,
+      "metrics": {
+        "total_requests": 4,
+        "successful_requests": 4,
+        "failed_requests": 0,
+        "cache_hits": 2,
+        "cache_misses": 4,
+        "avg_response_time": 0.002067267894744873,
+        "total_processing_time": 0.008269071578979492,
+        "success_rate": 100.0,
+        "cache_hit_rate": 50.0,
+        "cache_size": 4
+      }
+    },
+    {
+      "test_name": "end_to_end",
+      "dataset_size": 100,
+      "processing_time": 0.29200053215026855,
+      "memory_usage": 0,
+      "success": false,
+      "error": "Failed to load index with ID hotrodan",
+      "metrics": null
+    },
+    {
+      "test_name": "query_router",
+      "dataset_size": 500,
+      "processing_time": 0.19135093688964844,
+      "memory_usage": 0,
+      "success": false,
+      "error": "Failed to load index with ID hotrodan",
+      "metrics": null
+    },
+    {
+      "test_name": "analytics_engine",
+      "dataset_size": 500,
+      "processing_time": 0.5160613059997559,
+      "memory_usage": 2.75,
+      "success": true,
+      "error": null,
+      "metrics": {
+        "total_calculations": 4,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "parallel_calculations": 1000,
+        "avg_processing_time": 0.3816068172454834,
+        "total_processing_time": 1.5264272689819336,
+        "cache_hit_rate": 0.0,
+        "cache_size": 0,
+        "max_workers": 5,
+        "parallel_efficiency": 25000.0
+      }
+    },
+    {
+      "test_name": "mcp_integration",
+      "dataset_size": 500,
+      "processing_time": 0.0047762393951416016,
+      "memory_usage": 0.0,
+      "success": true,
+      "error": null,
+      "metrics": {
+        "total_requests": 4,
+        "successful_requests": 4,
+        "failed_requests": 0,
+        "cache_hits": 2,
+        "cache_misses": 4,
+        "avg_response_time": 0.001089334487915039,
+        "total_processing_time": 0.004357337951660156,
+        "success_rate": 100.0,
+        "cache_hit_rate": 50.0,
+        "cache_size": 4
+      }
+    },
+    {
+      "test_name": "end_to_end",
+      "dataset_size": 500,
+      "processing_time": 0.24986696243286133,
+      "memory_usage": 0,
+      "success": false,
+      "error": "Failed to load index with ID hotrodan",
+      "metrics": null
+    },
+    {
+      "test_name": "query_router",
+      "dataset_size": 1000,
+      "processing_time": 0.2333981990814209,
+      "memory_usage": 0,
+      "success": false,
+      "error": "Failed to load index with ID hotrodan",
+      "metrics": null
+    },
+    {
+      "test_name": "analytics_engine",
+      "dataset_size": 1000,
+      "processing_time": 1.1247620582580566,
+      "memory_usage": 3.25,
+      "success": true,
+      "error": null,
+      "metrics": {
+        "total_calculations": 4,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "parallel_calculations": 2000,
+        "avg_processing_time": 0.8357903957366943,
+        "total_processing_time": 3.3431615829467773,
+        "cache_hit_rate": 0.0,
+        "cache_size": 0,
+        "max_workers": 8,
+        "parallel_efficiency": 50000.0
+      }
+    },
+    {
+      "test_name": "mcp_integration",
+      "dataset_size": 1000,
+      "processing_time": 0.008203268051147461,
+      "memory_usage": 0.0,
+      "success": true,
+      "error": null,
+      "metrics": {
+        "total_requests": 4,
+        "successful_requests": 4,
+        "failed_requests": 0,
+        "cache_hits": 2,
+        "cache_misses": 4,
+        "avg_response_time": 0.0019194483757019043,
+        "total_processing_time": 0.007677793502807617,
+        "success_rate": 100.0,
+        "cache_hit_rate": 50.0,
+        "cache_size": 4
+      }
+    },
+    {
+      "test_name": "end_to_end",
+      "dataset_size": 1000,
+      "processing_time": 0.2564401626586914,
+      "memory_usage": 0,
+      "success": false,
+      "error": "Failed to load index with ID hotrodan",
+      "metrics": null
+    }
+  ]
+}

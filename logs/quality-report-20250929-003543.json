@@ -1,0 +1,67 @@
+{
+  "timestamp": "2025-09-29T00:35:35.309352",
+  "audit_duration": "0:00:00.000772",
+  "python_quality": {
+    "black": {
+      "status": "FAIL",
+      "details": "Formatting issues found: "
+    },
+    "ruff": {
+      "status": "FAIL",
+      "details": "Linting issues: "
+    },
+    "mypy": {
+      "status": "WARN",
+      "details": "Type checking warnings: "
+    }
+  },
+  "node_quality": {
+    "tests": {
+      "status": "FAIL",
+      "details": "Tests failed: \u001b[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.\u001b[39m\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  app/tests/unit/inventory-analytics.test.ts > VendorPerformanceAnalyzer > should analyze vendor performance\nAssertionError: expected 0 to be greater than 0\n \u276f app/tests/unit/inventory-analytics.test.ts:101:39\n     99|     expect(performance).toHaveLength(2);\n    100|     expect(performance[0]?.vendorId).toBe(\"vendor-1\");\n    101|     expect(performance[0]?.totalSkus).toBeGreaterThan(0);\n       |                                       ^\n    102|     expect(performance[0]?.overallScore).toBeGreaterThan(0);\n    103|     expect(performance[0]?.overallScore).toBeLessThanOrEqual(1);\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+    },
+    "lint": {
+      "status": "PASS",
+      "details": "Linting passed"
+    },
+    "build": {
+      "status": "PASS",
+      "details": "Build successful"
+    }
+  },
+  "system_health": {
+    "disk_space": {
+      "status": "OK",
+      "details": "Disk usage: 15%"
+    },
+    "memory": {
+      "status": "OK",
+      "details": "Memory: 2.9Gi/12Gi used"
+    },
+    "processes": {
+      "status": "OK",
+      "details": "Critical processes running: python, node"
+    }
+  },
+  "security": {
+    "dependencies": {
+      "status": "UNKNOWN",
+      "details": ""
+    },
+    "secrets": {
+      "status": "CRITICAL",
+      "details": "Potential hardcoded secrets found: 76 instances"
+    },
+    "permissions": {
+      "status": "OK",
+      "details": "File permissions look secure"
+    }
+  },
+  "critical_issues": [
+    "Python code formatting issues detected",
+    "Python linting issues detected",
+    "Node.js tests failed",
+    "Potential hardcoded secrets detected"
+  ],
+  "overall_status": "CRITICAL"
+}

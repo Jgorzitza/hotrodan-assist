@@ -14,7 +14,7 @@ import os
 import json
 import asyncio
 import aiohttp
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 from dataclasses import dataclass, asdict
 import logging
@@ -24,6 +24,7 @@ from enum import Enum
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class ContentType(Enum):
     BLOG_POST = "blog_post"
     PRODUCT_PAGE = "product_page"
@@ -32,6 +33,7 @@ class ContentType(Enum):
     FAQ = "faq"
     NEWS_ARTICLE = "news_article"
 
+
 class ContentStatus(Enum):
     DRAFT = "draft"
     REVIEW = "review"
@@ -39,9 +41,11 @@ class ContentStatus(Enum):
     PUBLISHED = "published"
     ARCHIVED = "archived"
 
+
 @dataclass
 class ContentBrief:
     """AI-generated content brief."""
+
     id: str
     title: str
     content_type: ContentType
@@ -62,9 +66,11 @@ class ContentBrief:
     created_at: str
     updated_at: str
 
+
 @dataclass
 class GeneratedContent:
     """AI-generated content."""
+
     id: str
     brief_id: str
     title: str
@@ -82,9 +88,11 @@ class GeneratedContent:
     created_at: str
     updated_at: str
 
+
 @dataclass
 class ContentCalendar:
     """Content calendar entry."""
+
     id: str
     title: str
     content_type: ContentType
@@ -98,53 +106,60 @@ class ContentCalendar:
     notes: str
     created_at: str
 
+
 class AIContentGenerator:
     """AI-powered content generation system."""
-    
+
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         self.base_url = "https://api.openai.com/v1"
         self.model = "gpt-4"
         self.session: Optional[aiohttp.ClientSession] = None
-    
+
     async def __aenter__(self):
         self.session = aiohttp.ClientSession(
             timeout=aiohttp.ClientTimeout(total=60),
             headers={
                 "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json"
-            }
+                "Content-Type": "application/json",
+            },
         )
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self.session:
             await self.session.close()
-    
-    async def generate_content_brief(self, 
-                                   topic: str,
-                                   content_type: ContentType,
-                                   target_keywords: List[str],
-                                   competitor_analysis: Optional[Dict] = None,
-                                   seo_opportunity: Optional[Dict] = None) -> ContentBrief:
+
+    async def generate_content_brief(
+        self,
+        topic: str,
+        content_type: ContentType,
+        target_keywords: List[str],
+        competitor_analysis: Optional[Dict] = None,
+        seo_opportunity: Optional[Dict] = None,
+    ) -> ContentBrief:
         """Generate AI-powered content brief."""
-        
-        prompt = self._build_brief_prompt(topic, content_type, target_keywords, competitor_analysis, seo_opportunity)
-        
+
+        prompt = self._build_brief_prompt(
+            topic, content_type, target_keywords, competitor_analysis, seo_opportunity
+        )
+
         try:
             response = await self._call_openai_api(prompt)
-            brief_data = self._parse_brief_response(response, topic, content_type, target_keywords)
+            brief_data = self._parse_brief_response(
+                response, topic, content_type, target_keywords
+            )
             return brief_data
         except Exception as e:
             logger.error(f"Error generating content brief: {str(e)}")
             # Return fallback brief
             return self._create_fallback_brief(topic, content_type, target_keywords)
-    
+
     async def generate_content(self, brief: ContentBrief) -> GeneratedContent:
         """Generate full content from brief."""
-        
+
         prompt = self._build_content_prompt(brief)
-        
+
         try:
             response = await self._call_openai_api(prompt)
             content_data = self._parse_content_response(response, brief)
@@ -153,12 +168,14 @@ class AIContentGenerator:
             logger.error(f"Error generating content: {str(e)}")
             # Return fallback content
             return self._create_fallback_content(brief)
-    
-    async def optimize_content(self, content: GeneratedContent, target_metrics: Dict[str, Any]) -> GeneratedContent:
+
+    async def optimize_content(
+        self, content: GeneratedContent, target_metrics: Dict[str, Any]
+    ) -> GeneratedContent:
         """Optimize content for better SEO and readability."""
-        
+
         prompt = self._build_optimization_prompt(content, target_metrics)
-        
+
         try:
             response = await self._call_openai_api(prompt)
             optimized_content = self._parse_optimization_response(response, content)
@@ -166,12 +183,17 @@ class AIContentGenerator:
         except Exception as e:
             logger.error(f"Error optimizing content: {str(e)}")
             return content
-    
-    def _build_brief_prompt(self, topic: str, content_type: ContentType, 
-                          target_keywords: List[str], competitor_analysis: Optional[Dict],
-                          seo_opportunity: Optional[Dict]) -> str:
+
+    def _build_brief_prompt(
+        self,
+        topic: str,
+        content_type: ContentType,
+        target_keywords: List[str],
+        competitor_analysis: Optional[Dict],
+        seo_opportunity: Optional[Dict],
+    ) -> str:
         """Build prompt for content brief generation."""
-        
+
         prompt = f"""Generate a comprehensive content brief for the following:
 
 Topic: {topic}
@@ -215,18 +237,20 @@ Requirements:
 - Include clear call-to-action
 
 """
-        
+
         if competitor_analysis:
-            prompt += f"\nCompetitor Analysis:\n{json.dumps(competitor_analysis, indent=2)}\n"
-        
+            prompt += (
+                f"\nCompetitor Analysis:\n{json.dumps(competitor_analysis, indent=2)}\n"
+            )
+
         if seo_opportunity:
             prompt += f"\nSEO Opportunity:\n{json.dumps(seo_opportunity, indent=2)}\n"
-        
+
         return prompt
-    
+
     def _build_content_prompt(self, brief: ContentBrief) -> str:
         """Build prompt for full content generation."""
-        
+
         prompt = f"""Write a comprehensive {brief.content_type.value} based on this content brief:
 
 Title: {brief.title}
@@ -258,12 +282,14 @@ Requirements:
 
 Please provide the content in HTML format with proper heading tags, paragraphs, and formatting.
 """
-        
+
         return prompt
-    
-    def _build_optimization_prompt(self, content: GeneratedContent, target_metrics: Dict[str, Any]) -> str:
+
+    def _build_optimization_prompt(
+        self, content: GeneratedContent, target_metrics: Dict[str, Any]
+    ) -> str:
         """Build prompt for content optimization."""
-        
+
         prompt = f"""Optimize this content for better SEO and readability:
 
 Current Content:
@@ -289,43 +315,54 @@ Please optimize the content to meet the target metrics while maintaining quality
 
 Return the optimized content in the same HTML format.
 """
-        
+
         return prompt
-    
+
     async def _call_openai_api(self, prompt: str) -> str:
         """Call OpenAI API for content generation."""
-        
+
         if not self.session:
             raise Exception("Session not initialized")
-        
+
         payload = {
             "model": self.model,
             "messages": [
-                {"role": "system", "content": "You are an expert SEO content writer and strategist. Generate high-quality, SEO-optimized content that ranks well and provides value to readers."},
-                {"role": "user", "content": prompt}
+                {
+                    "role": "system",
+                    "content": "You are an expert SEO content writer and strategist. Generate high-quality, SEO-optimized content that ranks well and provides value to readers.",
+                },
+                {"role": "user", "content": prompt},
             ],
             "max_tokens": 4000,
-            "temperature": 0.7
+            "temperature": 0.7,
         }
-        
-        async with self.session.post(f"{self.base_url}/chat/completions", json=payload) as response:
+
+        async with self.session.post(
+            f"{self.base_url}/chat/completions", json=payload
+        ) as response:
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(f"OpenAI API error: {response.status} - {error_text}")
-            
+
             data = await response.json()
             return data["choices"][0]["message"]["content"]
-    
-    def _parse_brief_response(self, response: str, topic: str, content_type: ContentType, target_keywords: List[str]) -> ContentBrief:
+
+    def _parse_brief_response(
+        self,
+        response: str,
+        topic: str,
+        content_type: ContentType,
+        target_keywords: List[str],
+    ) -> ContentBrief:
         """Parse AI response into ContentBrief object."""
-        
+
         try:
             # Extract JSON from response
-            json_start = response.find('{')
-            json_end = response.rfind('}') + 1
+            json_start = response.find("{")
+            json_end = response.rfind("}") + 1
             json_str = response[json_start:json_end]
             brief_data = json.loads(json_str)
-            
+
             return ContentBrief(
                 id=f"brief_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
                 title=brief_data.get("title", f"Content about {topic}"),
@@ -345,24 +382,28 @@ Return the optimized content in the same HTML format.
                 target_audience=brief_data.get("target_audience", "General audience"),
                 call_to_action=brief_data.get("call_to_action", "Learn more"),
                 created_at=datetime.now().isoformat(),
-                updated_at=datetime.now().isoformat()
+                updated_at=datetime.now().isoformat(),
             )
         except Exception as e:
             logger.error(f"Error parsing brief response: {str(e)}")
             return self._create_fallback_brief(topic, content_type, target_keywords)
-    
-    def _parse_content_response(self, response: str, brief: ContentBrief) -> GeneratedContent:
+
+    def _parse_content_response(
+        self, response: str, brief: ContentBrief
+    ) -> GeneratedContent:
         """Parse AI response into GeneratedContent object."""
-        
+
         # Extract content from HTML response
         content = response.strip()
-        
+
         # Calculate basic metrics
         word_count = len(content.split())
         readability_score = self._calculate_readability_score(content)
         seo_score = self._calculate_seo_score(content, brief)
-        keyword_density = self._calculate_keyword_density(content, brief.target_keywords)
-        
+        keyword_density = self._calculate_keyword_density(
+            content, brief.target_keywords
+        )
+
         return GeneratedContent(
             id=f"content_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             brief_id=brief.id,
@@ -379,25 +420,31 @@ Return the optimized content in the same HTML format.
             external_links=brief.external_links,
             status=ContentStatus.DRAFT,
             created_at=datetime.now().isoformat(),
-            updated_at=datetime.now().isoformat()
+            updated_at=datetime.now().isoformat(),
         )
-    
-    def _parse_optimization_response(self, response: str, original_content: GeneratedContent) -> GeneratedContent:
+
+    def _parse_optimization_response(
+        self, response: str, original_content: GeneratedContent
+    ) -> GeneratedContent:
         """Parse optimization response into GeneratedContent object."""
-        
+
         # Update content with optimized version
         optimized_content = original_content
         optimized_content.content = response.strip()
         optimized_content.word_count = len(response.split())
-        optimized_content.readability_score = self._calculate_readability_score(response)
+        optimized_content.readability_score = self._calculate_readability_score(
+            response
+        )
         optimized_content.seo_score = self._calculate_seo_score(response, None)
         optimized_content.updated_at = datetime.now().isoformat()
-        
+
         return optimized_content
-    
-    def _create_fallback_brief(self, topic: str, content_type: ContentType, target_keywords: List[str]) -> ContentBrief:
+
+    def _create_fallback_brief(
+        self, topic: str, content_type: ContentType, target_keywords: List[str]
+    ) -> ContentBrief:
         """Create fallback brief when AI generation fails."""
-        
+
         return ContentBrief(
             id=f"brief_fallback_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             title=f"Complete Guide to {topic}",
@@ -406,13 +453,18 @@ Return the optimized content in the same HTML format.
             primary_keyword=target_keywords[0] if target_keywords else topic,
             meta_description=f"Learn everything about {topic} with our comprehensive guide",
             h1=f"Complete Guide to {topic}",
-            h2s=[f"What is {topic}?", f"Benefits of {topic}", f"How to Use {topic}", f"Best Practices"],
+            h2s=[
+                f"What is {topic}?",
+                f"Benefits of {topic}",
+                f"How to Use {topic}",
+                "Best Practices",
+            ],
             content_outline=[
                 f"Introduction to {topic}",
-                f"Key concepts and benefits",
-                f"Step-by-step implementation",
-                f"Common challenges and solutions",
-                f"Conclusion and next steps"
+                "Key concepts and benefits",
+                "Step-by-step implementation",
+                "Common challenges and solutions",
+                "Conclusion and next steps",
             ],
             internal_links=["/related-guide", "/contact"],
             external_links=["https://authority-site.com"],
@@ -423,22 +475,22 @@ Return the optimized content in the same HTML format.
             target_audience="General audience",
             call_to_action="Get started today",
             created_at=datetime.now().isoformat(),
-            updated_at=datetime.now().isoformat()
+            updated_at=datetime.now().isoformat(),
         )
-    
+
     def _create_fallback_content(self, brief: ContentBrief) -> GeneratedContent:
         """Create fallback content when AI generation fails."""
-        
+
         content = f"""
         <h1>{brief.h1}</h1>
         <p>This is a comprehensive guide about {brief.primary_keyword}.</p>
         """
-        
+
         for h2 in brief.h2s:
             content += f"<h2>{h2}</h2><p>Detailed information about {h2.lower()}.</p>"
-        
+
         content += f"<p>{brief.call_to_action}</p>"
-        
+
         return GeneratedContent(
             id=f"content_fallback_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             brief_id=brief.id,
@@ -455,76 +507,83 @@ Return the optimized content in the same HTML format.
             external_links=brief.external_links,
             status=ContentStatus.DRAFT,
             created_at=datetime.now().isoformat(),
-            updated_at=datetime.now().isoformat()
+            updated_at=datetime.now().isoformat(),
         )
-    
+
     def _calculate_readability_score(self, content: str) -> float:
         """Calculate Flesch Reading Ease score."""
         # Simplified readability calculation
-        sentences = content.count('.') + content.count('!') + content.count('?')
+        sentences = content.count(".") + content.count("!") + content.count("?")
         words = len(content.split())
-        
+
         if sentences == 0 or words == 0:
             return 50.0
-        
+
         avg_sentence_length = words / sentences
         avg_syllables = sum(len(word) for word in content.split()) / words
-        
+
         score = 206.835 - (1.015 * avg_sentence_length) - (84.6 * avg_syllables)
         return max(0, min(100, score))
-    
-    def _calculate_seo_score(self, content: str, brief: Optional[ContentBrief]) -> float:
+
+    def _calculate_seo_score(
+        self, content: str, brief: Optional[ContentBrief]
+    ) -> float:
         """Calculate SEO score."""
         score = 0.0
-        
+
         # Basic SEO factors
-        if '<h1>' in content:
+        if "<h1>" in content:
             score += 20
-        if '<h2>' in content:
+        if "<h2>" in content:
             score += 15
         if len(content) > 500:
             score += 20
         if len(content) > 1000:
             score += 15
-        if 'meta' in content.lower():
+        if "meta" in content.lower():
             score += 10
-        if 'alt=' in content:
+        if "alt=" in content:
             score += 10
-        if '<a href=' in content:
+        if "<a href=" in content:
             score += 10
-        
+
         return min(100, score)
-    
-    def _calculate_keyword_density(self, content: str, keywords: List[str]) -> Dict[str, float]:
+
+    def _calculate_keyword_density(
+        self, content: str, keywords: List[str]
+    ) -> Dict[str, float]:
         """Calculate keyword density."""
         word_count = len(content.split())
         if word_count == 0:
             return {}
-        
+
         density = {}
         for keyword in keywords:
             count = content.lower().count(keyword.lower())
             density[keyword] = (count / word_count) * 100
-        
+
         return density
+
 
 class ContentCalendarManager:
     """Manages content calendar and publishing workflow."""
-    
+
     def __init__(self):
         self.calendar_entries: List[ContentCalendar] = []
-    
-    def add_content_to_calendar(self, 
-                               title: str,
-                               content_type: ContentType,
-                               scheduled_date: str,
-                               brief_id: Optional[str] = None,
-                               content_id: Optional[str] = None,
-                               priority: str = "medium",
-                               assigned_to: Optional[str] = None,
-                               notes: str = "") -> ContentCalendar:
+
+    def add_content_to_calendar(
+        self,
+        title: str,
+        content_type: ContentType,
+        scheduled_date: str,
+        brief_id: Optional[str] = None,
+        content_id: Optional[str] = None,
+        priority: str = "medium",
+        assigned_to: Optional[str] = None,
+        notes: str = "",
+    ) -> ContentCalendar:
         """Add content to calendar."""
-        
+
         entry = ContentCalendar(
             id=f"calendar_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             title=title,
@@ -537,72 +596,81 @@ class ContentCalendarManager:
             priority=priority,
             assigned_to=assigned_to,
             notes=notes,
-            created_at=datetime.now().isoformat()
+            created_at=datetime.now().isoformat(),
         )
-        
+
         self.calendar_entries.append(entry)
         return entry
-    
+
     def get_upcoming_content(self, days: int = 30) -> List[ContentCalendar]:
         """Get upcoming content for the next N days."""
-        
+
         cutoff_date = datetime.now() + timedelta(days=days)
-        
+
         return [
-            entry for entry in self.calendar_entries
+            entry
+            for entry in self.calendar_entries
             if datetime.fromisoformat(entry.scheduled_date) <= cutoff_date
         ]
-    
+
     def update_content_status(self, content_id: str, status: ContentStatus) -> bool:
         """Update content status."""
-        
+
         for entry in self.calendar_entries:
             if entry.content_id == content_id:
                 entry.status = status
                 if status == ContentStatus.PUBLISHED:
                     entry.publish_date = datetime.now().isoformat()
                 return True
-        
+
         return False
+
 
 async def main():
     """Main function to demonstrate AI content generation."""
-    
+
     # Sample data
     topic = "SEO Best Practices for E-commerce"
     content_type = ContentType.BLOG_POST
-    target_keywords = ["seo best practices", "e-commerce seo", "online store optimization"]
-    
+    target_keywords = [
+        "seo best practices",
+        "e-commerce seo",
+        "online store optimization",
+    ]
+
     # Initialize AI content generator
     async with AIContentGenerator() as generator:
         # Generate content brief
         print("Generating content brief...")
-        brief = await generator.generate_content_brief(topic, content_type, target_keywords)
-        
-        print(f"✅ Content brief generated!")
+        brief = await generator.generate_content_brief(
+            topic, content_type, target_keywords
+        )
+
+        print("✅ Content brief generated!")
         print(f"Title: {brief.title}")
         print(f"Target Keywords: {brief.target_keywords}")
         print(f"Word Count Target: {brief.word_count_target}")
-        
+
         # Generate full content
         print("\nGenerating full content...")
         content = await generator.generate_content(brief)
-        
-        print(f"✅ Content generated!")
+
+        print("✅ Content generated!")
         print(f"Word Count: {content.word_count}")
         print(f"Readability Score: {content.readability_score:.1f}")
         print(f"SEO Score: {content.seo_score:.1f}")
-        
+
         # Save results
         with open("ai_generated_brief.json", "w") as f:
             f.write(json.dumps(asdict(brief), indent=2))
-        
+
         with open("ai_generated_content.json", "w") as f:
             f.write(json.dumps(asdict(content), indent=2))
-        
+
         print("\nFiles created:")
         print("- ai_generated_brief.json")
         print("- ai_generated_content.json")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

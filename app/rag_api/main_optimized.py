@@ -31,8 +31,7 @@ from monitor import track_performance, get_metrics, save_metrics
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -58,27 +57,32 @@ app = FastAPI(
     version="2.0.0",
 )
 
+
 class QueryIn(BaseModel):
     """Input model for query requests."""
+
     question: str = Field(..., min_length=1, max_length=1000)
     top_k: int = Field(default=10, ge=1, le=50)
 
+
 class QueryResponse(BaseModel):
     """Response model for query requests."""
+
     answer: str
     sources: List[str]
     mode: str
     response_time_ms: Optional[float] = None
+
 
 @app.post("/query", response_model=QueryResponse)
 @track_performance
 def query(q: QueryIn):
     """Query the RAG system with a question."""
     start_time = datetime.now().timestamp()
-    
+
     try:
         logger.info(f"Processing query: {q.question[:50]}...")
-        
+
         # Use absolute paths to ensure we find the storage files
         chroma_path = "/home/justin/llama_rag/chroma"
         persist_dir = "/home/justin/llama_rag/storage"
@@ -101,22 +105,20 @@ def query(q: QueryIn):
                 qe = index.as_query_engine(
                     response_mode="compact", similarity_top_k=q.top_k
                 )
-                resp = qe.query(_SYSTEM_HINT + "
-
-Question: " + q.question)
+                resp = qe.query(_SYSTEM_HINT + "\n\nQuestion: " + q.question)
                 sources = [
                     n.metadata.get("source_url", "unknown")
                     for n in getattr(resp, "source_nodes", [])
                 ]
-                
+
                 response_time = (datetime.now().timestamp() - start_time) * 1000
                 logger.info(f"OpenAI query completed in {response_time:.2f}ms")
-                
+
                 return QueryResponse(
                     answer=str(resp),
                     sources=sources,
                     mode="openai",
-                    response_time_ms=response_time
+                    response_time_ms=response_time,
                 )
             except Exception as e:
                 logger.error(f"OpenAI query failed: {str(e)}")
@@ -134,20 +136,17 @@ Question: " + q.question)
                     text = node.get_content()
                 if not text:
                     continue
-                    
+
                 # Clean and shorten text
-                cleaned_text = text.replace("
-", " ").strip()
+                cleaned_text = text.replace("\n", " ").strip()
                 if cleaned_text:
-                    summaries.append(
-                        shorten(cleaned_text, width=400, placeholder="…")
-                    )
-                    
+                    summaries.append(shorten(cleaned_text, width=400, placeholder="…"))
+
                 # Extract source URL
                 source = node.metadata.get("source_url", "unknown")
                 if source not in source_urls:
                     source_urls.append(source)
-                    
+
             except Exception as e:
                 logger.warning(f"Error processing node: {str(e)}")
                 continue
@@ -158,26 +157,22 @@ Question: " + q.question)
                 answer="No relevant documents retrieved. Configure OPENAI_API_KEY for full responses.",
                 sources=[],
                 mode="retrieval-only",
-                response_time_ms=(datetime.now().timestamp() - start_time) * 1000
+                response_time_ms=(datetime.now().timestamp() - start_time) * 1000,
             )
 
         # Format answer
-        answer = "
-
-".join(f"• {snippet}" for snippet in summaries[:3])
+        answer = "\n".join(f"• {snippet}" for snippet in summaries[:3])
         if GENERATION_MODE == "retrieval-only":
-            answer += "
+            answer += "\n\n[LLM disabled: configure OPENAI_API_KEY for full narratives]"
 
-[LLM disabled: configure OPENAI_API_KEY for full narratives]"
-        
         response_time = (datetime.now().timestamp() - start_time) * 1000
         logger.info(f"Retrieval-only query completed in {response_time:.2f}ms")
-        
+
         return QueryResponse(
             answer=answer,
             sources=source_urls[:10],
             mode="retrieval-only",
-            response_time_ms=response_time
+            response_time_ms=response_time,
         )
 
     except HTTPException:
@@ -187,6 +182,7 @@ Question: " + q.question)
         logger.error(f"RAG query failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"RAG query failed: {str(e)}")
 
+
 @app.get("/health")
 def health():
     """Health check endpoint with comprehensive status."""
@@ -194,7 +190,7 @@ def health():
         # Test index availability
         chroma_path = "/home/justin/llama_rag/chroma"
         persist_dir = "/home/justin/llama_rag/storage"
-        
+
         client = chromadb.PersistentClient(path=chroma_path)
         collection = client.get_or_create_collection(
             COLLECTION, metadata={"hnsw:space": "cosine"}
@@ -203,18 +199,19 @@ def health():
         storage = StorageContext.from_defaults(
             vector_store=vector_store, persist_dir=persist_dir
         )
-        index = load_index_from_storage(storage, index_id=INDEX_ID)
+        load_index_from_storage(storage, index_id=INDEX_ID)
         index_status = "loaded"
     except Exception as e:
         logger.warning(f"Index health check failed: {str(e)}")
         index_status = "error"
-    
+
     return {
         "status": "healthy" if index_status == "loaded" else "degraded",
         "mode": GENERATION_MODE,
         "openai_available": bool(OPENAI_API_KEY),
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
+
 
 @app.get("/metrics")
 def metrics():
@@ -224,6 +221,7 @@ def metrics():
     except Exception as e:
         logger.error(f"Failed to get metrics: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve metrics")
+
 
 @app.post("/metrics/save")
 def save_metrics_endpoint():
@@ -236,17 +234,12 @@ def save_metrics_endpoint():
         logger.error(f"Failed to save metrics: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to save metrics")
 
+
 if __name__ == "__main__":
     import uvicorn
-    
+
     logger.info("Starting RAG API in optimized mode...")
     logger.info(f"Generation mode: {GENERATION_MODE}")
     logger.info(f"OpenAI available: {bool(OPENAI_API_KEY)}")
-    
-    uvicorn.run(
-        app, 
-        host="0.0.0.0", 
-        port=8000,
-        log_level="info",
-        access_log=True
-    )
+
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info", access_log=True)

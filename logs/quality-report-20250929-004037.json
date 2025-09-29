@@ -1,0 +1,65 @@
+{
+  "timestamp": "2025-09-29T00:40:28.361931",
+  "audit_duration": "0:00:00.000684",
+  "python_quality": {
+    "black": {
+      "status": "PASS",
+      "details": "Code formatting is correct"
+    },
+    "ruff": {
+      "status": "PASS",
+      "details": "No linting issues found"
+    },
+    "mypy": {
+      "status": "WARN",
+      "details": "Type checking warnings: app/assistants/main.py: error: Duplicate module named \"main\" (also at \"app/approval-app/main.py\")\napp/assistants/main.py: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules for more info\napp/assistants/main.py: note: Common resolutions include: a) using `--exclude` to avoid checking one of them, b) adding `__init__.py` somewhere, c) using `--explicit-package-bases` or adjusting MYPYPATH\nFound 1 error in 1 file (errors prevented further checking)\n"
+    }
+  },
+  "node_quality": {
+    "tests": {
+      "status": "FAIL",
+      "details": "Tests failed: \u001b[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.\u001b[39m\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  app/tests/unit/inventory-analytics.test.ts > VendorPerformanceAnalyzer > should analyze vendor performance\nAssertionError: expected 0 to be greater than 0\n \u276f app/tests/unit/inventory-analytics.test.ts:101:39\n     99|     expect(performance).toHaveLength(2);\n    100|     expect(performance[0]?.vendorId).toBe(\"vendor-1\");\n    101|     expect(performance[0]?.totalSkus).toBeGreaterThan(0);\n       |                                       ^\n    102|     expect(performance[0]?.overallScore).toBeGreaterThan(0);\n    103|     expect(performance[0]?.overallScore).toBeLessThanOrEqual(1);\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+    },
+    "lint": {
+      "status": "PASS",
+      "details": "Linting passed"
+    },
+    "build": {
+      "status": "PASS",
+      "details": "Build successful"
+    }
+  },
+  "system_health": {
+    "disk_space": {
+      "status": "OK",
+      "details": "Disk usage: 15%"
+    },
+    "memory": {
+      "status": "OK",
+      "details": "Memory: 2.8Gi/12Gi used"
+    },
+    "processes": {
+      "status": "OK",
+      "details": "Critical processes running: python, node"
+    }
+  },
+  "security": {
+    "dependencies": {
+      "status": "UNKNOWN",
+      "details": ""
+    },
+    "secrets": {
+      "status": "CRITICAL",
+      "details": "Potential hardcoded secrets found: 76 instances"
+    },
+    "permissions": {
+      "status": "OK",
+      "details": "File permissions look secure"
+    }
+  },
+  "critical_issues": [
+    "Node.js tests failed",
+    "Potential hardcoded secrets detected"
+  ],
+  "overall_status": "WARNING"
+}

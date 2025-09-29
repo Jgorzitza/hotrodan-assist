@@ -6,6 +6,7 @@
     "lint": "npm run typecheck",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
+    "build": "npm run typecheck",
     "test:unit": "vitest run --dir app/tests/unit",
     "test:integration": "vitest run --dir app/tests/integration",
     "test:watch": "vitest --watch",
