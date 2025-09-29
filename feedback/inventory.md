@@ -627,7 +627,7 @@ docker-compose up -d inventory-api
 - [x] Webhooks for low-stock → Slack/Email
 - [x] Cycle counts workflow integration
 - [x] BOM/kitting support in availability calcs
-- [ ] Audit ledger for adjustments
+- [x] Audit ledger for adjustments
 - [ ] Replenishment lead time variability model
 
 ## Next Sprint (Inventory) - 2025-09-29T10:22:15-06:00
