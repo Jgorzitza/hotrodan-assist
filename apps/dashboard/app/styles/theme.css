@@ -1,0 +1,275 @@
+/* Theme CSS Variables */
+:root {
+  /* Light theme (default) */
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f6f6f7;
+  --color-background-tertiary: #e1e3e5;
+  --color-background-elevated: #ffffff;
+  
+  --color-text-primary: #202223;
+  --color-text-secondary: #6d7175;
+  --color-text-tertiary: #8c9196;
+  --color-text-inverse: #ffffff;
+  
+  --color-border-primary: #d1d3d4;
+  --color-border-secondary: #e1e3e5;
+  --color-border-focus: #008060;
+  
+  --color-status-success: #008060;
+  --color-status-warning: #b98900;
+  --color-status-error: #d72c0d;
+  --color-status-info: #0969da;
+  
+  --color-interactive-primary: #008060;
+  --color-interactive-secondary: #6d7175;
+  --color-interactive-hover: #004c3f;
+  --color-interactive-active: #002e26;
+  --color-interactive-disabled: #8c9196;
+  
+  --color-chart-primary: #008060;
+  --color-chart-secondary: #0969da;
+  --color-chart-tertiary: #b98900;
+  --color-chart-quaternary: #d72c0d;
+  --color-chart-quinary: #6d7175;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --color-background-primary: #1a1a1a;
+  --color-background-secondary: #2d2d2d;
+  --color-background-tertiary: #404040;
+  --color-background-elevated: #333333;
+  
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b3b3b3;
+  --color-text-tertiary: #8c9196;
+  --color-text-inverse: #1a1a1a;
+  
+  --color-border-primary: #404040;
+  --color-border-secondary: #2d2d2d;
+  --color-border-focus: #00d4aa;
+  
+  --color-status-success: #00d4aa;
+  --color-status-warning: #ffb800;
+  --color-status-error: #ff6b6b;
+  --color-status-info: #4dabf7;
+  
+  --color-interactive-primary: #00d4aa;
+  --color-interactive-secondary: #b3b3b3;
+  --color-interactive-hover: #00b894;
+  --color-interactive-active: #00a085;
+  --color-interactive-disabled: #8c9196;
+  
+  --color-chart-primary: #00d4aa;
+  --color-chart-secondary: #4dabf7;
+  --color-chart-tertiary: #ffb800;
+  --color-chart-quaternary: #ff6b6b;
+  --color-chart-quinary: #b3b3b3;
+}
+
+/* Auto theme (follows system preference) */
+[data-theme="auto"] {
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f6f6f7;
+  --color-background-tertiary: #e1e3e5;
+  --color-background-elevated: #ffffff;
+  
+  --color-text-primary: #202223;
+  --color-text-secondary: #6d7175;
+  --color-text-tertiary: #8c9196;
+  --color-text-inverse: #ffffff;
+  
+  --color-border-primary: #d1d3d4;
+  --color-border-secondary: #e1e3e5;
+  --color-border-focus: #008060;
+  
+  --color-status-success: #008060;
+  --color-status-warning: #b98900;
+  --color-status-error: #d72c0d;
+  --color-status-info: #0969da;
+  
+  --color-interactive-primary: #008060;
+  --color-interactive-secondary: #6d7175;
+  --color-interactive-hover: #004c3f;
+  --color-interactive-active: #002e26;
+  --color-interactive-disabled: #8c9196;
+  
+  --color-chart-primary: #008060;
+  --color-chart-secondary: #0969da;
+  --color-chart-tertiary: #b98900;
+  --color-chart-quaternary: #d72c0d;
+  --color-chart-quinary: #6d7175;
+}
+
+/* Dark mode media query for auto theme */
+@media (prefers-color-scheme: dark) {
+  [data-theme="auto"] {
+    --color-background-primary: #1a1a1a;
+    --color-background-secondary: #2d2d2d;
+    --color-background-tertiary: #404040;
+    --color-background-elevated: #333333;
+    
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #b3b3b3;
+    --color-text-tertiary: #8c9196;
+    --color-text-inverse: #1a1a1a;
+    
+    --color-border-primary: #404040;
+    --color-border-secondary: #2d2d2d;
+    --color-border-focus: #00d4aa;
+    
+    --color-status-success: #00d4aa;
+    --color-status-warning: #ffb800;
+    --color-status-error: #ff6b6b;
+    --color-status-info: #4dabf7;
+    
+    --color-interactive-primary: #00d4aa;
+    --color-interactive-secondary: #b3b3b3;
+    --color-interactive-hover: #00b894;
+    --color-interactive-active: #00a085;
+    --color-interactive-disabled: #8c9196;
+    
+    --color-chart-primary: #00d4aa;
+    --color-chart-secondary: #4dabf7;
+    --color-chart-tertiary: #ffb800;
+    --color-chart-quaternary: #ff6b6b;
+    --color-chart-quinary: #b3b3b3;
+  }
+}
+
+/* Theme-aware component styles */
+.theme-aware {
+  background-color: var(--color-background-primary);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-primary);
+}
+
+.theme-aware-card {
+  background-color: var(--color-background-elevated);
+  border: 1px solid var(--color-border-primary);
+  color: var(--color-text-primary);
+}
+
+.theme-aware-button {
+  background-color: var(--color-interactive-primary);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-interactive-primary);
+}
+
+.theme-aware-button:hover {
+  background-color: var(--color-interactive-hover);
+  border-color: var(--color-interactive-hover);
+}
+
+.theme-aware-button:active {
+  background-color: var(--color-interactive-active);
+  border-color: var(--color-interactive-active);
+}
+
+.theme-aware-button:disabled {
+  background-color: var(--color-interactive-disabled);
+  border-color: var(--color-interactive-disabled);
+  color: var(--color-text-tertiary);
+}
+
+.theme-aware-text-primary {
+  color: var(--color-text-primary);
+}
+
+.theme-aware-text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.theme-aware-text-tertiary {
+  color: var(--color-text-tertiary);
+}
+
+.theme-aware-border {
+  border-color: var(--color-border-primary);
+}
+
+.theme-aware-border-secondary {
+  border-color: var(--color-border-secondary);
+}
+
+.theme-aware-focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 2px var(--color-border-focus);
+}
+
+/* Status colors */
+.theme-aware-success {
+  color: var(--color-status-success);
+}
+
+.theme-aware-warning {
+  color: var(--color-status-warning);
+}
+
+.theme-aware-error {
+  color: var(--color-status-error);
+}
+
+.theme-aware-info {
+  color: var(--color-status-info);
+}
+
+/* Chart colors */
+.theme-aware-chart-primary {
+  color: var(--color-chart-primary);
+}
+
+.theme-aware-chart-secondary {
+  color: var(--color-chart-secondary);
+}
+
+.theme-aware-chart-tertiary {
+  color: var(--color-chart-tertiary);
+}
+
+.theme-aware-chart-quaternary {
+  color: var(--color-chart-quaternary);
+}
+
+.theme-aware-chart-quinary {
+  color: var(--color-chart-quinary);
+}
+
+/* Accessibility improvements */
+.theme-aware:focus {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.theme-aware-button:focus {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border-primary: #000000;
+    --color-border-secondary: #000000;
+    --color-text-primary: #000000;
+    --color-text-secondary: #000000;
+  }
+  
+  [data-theme="dark"] {
+    --color-border-primary: #ffffff;
+    --color-border-secondary: #ffffff;
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #ffffff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .theme-aware-button {
+    transition: none;
+  }
+  
+  .theme-aware {
+    transition: none;
+  }
+}
