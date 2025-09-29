@@ -46,3 +46,20 @@
 
 **Next Update**: Report progress in 30 minutes
 **Manager Notes**: Critical for project completion - prioritize this task
+
+## Next Sprint (Sales) - 2025-09-29T09:01:44-06:00
+- Status: Planned
+- Owner: Sales Insights Engineer
+- Kickoff: Attribution + funnel insights
+
+### Backlog (Top Priority)
+1) Revenue/AOV/conv by channel and campaign
+2) Attribution model comparison (first/last/multi-touch)
+3) Funnel drop-off analysis with step annotations
+4) Forecast rollup with confidence intervals
+5) Pricing elasticity estimator
+6) Margin analysis after fees/discounts/returns
+7) Churn indicator + save-offer playbooks
+8) Nudge system: next-best action per segment
+9) QBR/MBR pack generator (PDF)
+10) Rep performance dashboard + coaching insights

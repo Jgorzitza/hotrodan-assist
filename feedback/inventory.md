@@ -512,3 +512,20 @@ docker-compose up -d inventory-api
 ---
 **Inventory Production Deployment Complete** ✅  
 **Ready for Production Use** 🚀
+
+## Next Sprint (Inventory) - 2025-09-29T09:01:44-06:00
+- Status: Planned
+- Owner: Inventory Engineer
+- Kickoff: Multi-location sync + forecasting
+
+### Backlog (Top Priority)
+1) Multi-location stock sync strategy with conflict resolution
+2) Safety stock rules per SKU/location
+3) Demand forecasting (daily/weekly) with seasonality
+4) Purchase order recommendations generator
+5) Backorder policy rules + ETA surfacing
+6) Webhooks for low-stock → Slack/Email
+7) Cycle counts workflow integration
+8) BOM/kitting support in availability calcs
+9) Audit ledger for adjustments
+10) Replenishment lead time variability model

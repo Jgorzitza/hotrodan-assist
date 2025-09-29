@@ -202,3 +202,20 @@ Successfully tested all components with realistic data:
 
 ---
 *SEO Advanced Analytics Platform - Complete and Ready for Production!*
+
+## Next Sprint (SEO) - 2025-09-29T09:01:44-06:00
+- Status: Planned
+- Owner: SEO Engineer
+- Kickoff: Advanced analytics + content ops
+
+### Backlog (Top Priority)
+1) Keyword universe import + grouping by intent
+2) Rank tracking (daily) and volatility index
+3) Content briefs generator (entities, headers, FAQs)
+4) Internal link opportunities graph
+5) Schema markup validator + templates
+6) Core Web Vitals ingestion and regression alerts
+7) Sitemap diff and redirect hygiene audits
+8) On-page crawler for technical issues
+9) Topic cluster coverage vs competitor gap
+10) Automated monthly/weekly PDF reporting

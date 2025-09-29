@@ -52,3 +52,20 @@
 
 **Next Update**: Report progress in 15 minutes - URGENT
 **Manager Notes**: CRITICAL - Agent was stale, needs immediate activation
+
+## Next Sprint (RAG) - 2025-09-29T09:01:44-06:00
+- Status: Planned
+- Owner: RAG Engineer
+- Kickoff: Hybrid retrieval + eval harness
+
+### Backlog (Top Priority)
+1) Document pipeline: dedupe, semantic chunking, TOC-aware splits
+2) Hybrid retrieval (BM25 + dense) with re-ranking
+3) Freshness and recency decay strategies
+4) Safe responses: policy filters + citation enforcement
+5) Vector store compaction + orphan cleanup
+6) Query telemetry and feedback loop (thumbs up/down)
+7) Evaluation harness with golden sets and KPIs
+8) Multi-tenant index isolation and quotas
+9) Metadata governance (PII redaction)
+10) Cost dashboard for embedding/LLM spend

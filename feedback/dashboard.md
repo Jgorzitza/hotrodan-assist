@@ -153,3 +153,20 @@ The dashboard.advanced-features implementation is COMPLETE and ready for product
 - **User Experience**: Intuitive tabbed interface with rich widgets
 
 **Status**: ✅ COMPLETE - Advanced dashboard features are live and ready!
+
+## Next Sprint (Dashboard) - 2025-09-29T09:01:44-06:00
+- Status: Planned
+- Owner: Dashboard Engineer
+- Kickoff: Implement core analytics UX and exports
+
+### Backlog (Top Priority)
+1) Add dashboard-wide date range and compare period selectors
+2) Implement cross-widget drill-down navigation
+3) Build revenue, AOV, conversion, CAC, LTV cards with sparklines
+4) Add cohort analysis (signup month) with retention heatmap
+5) Create dashboard layout presets and “save view” feature
+6) CSV/PNG/PDF export for widgets and full view
+7) Role-based visibility rules for widgets
+8) Dark mode + accessible color tokens (WCAG AA)
+9) Client-side caching + revalidation strategy
+10) E2E visual regression baseline for top widgets

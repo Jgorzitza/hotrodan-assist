@@ -47,3 +47,21 @@
 
 **Next Update**: Report progress in 30 minutes
 **Manager Notes**: Essential for project quality - prioritize this task
+
+## Next Sprint (Quality) - 2025-09-29T09:01:44-06:00
+- Status: Planned
+- Owner: Quality Engineer
+- Note: Non-feedback edits require staging feedback/QUALITY_ALLOW_CODE_CHANGES in the same commit.
+- Kickoff: Reliability guardrails + SLOs
+
+### Backlog (Top Priority)
+1) Contract/e2e suites for top flows
+2) Synthetic monitoring for critical paths
+3) Accessibility audits and fixes (axe)
+4) Security checks (SAST/DAST) integrated
+5) Load and soak tests with thresholds
+6) Flaky test auto-retry classification
+7) Error budget policy + SLO dashboards
+8) Incident playbooks and simulations
+9) Cross-browser/device matrix in CI
+10) Test result triage dashboard

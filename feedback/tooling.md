@@ -52,3 +52,20 @@
 
 **Next Update**: Report progress in 15 minutes - URGENT
 **Manager Notes**: CRITICAL - Agent was stale, needs immediate activation
+
+## Next Sprint (Tooling) - 2025-09-29T09:01:44-06:00
+- Status: Planned
+- Owner: Tooling Engineer
+- Kickoff: DX automation + CI gates
+
+### Backlog (Top Priority)
+1) Monorepo/multi-repo strategy doc and implementation
+2) Codegen for clients/SDKs (OpenAPI/GraphQL)
+3) Pre-commit format/lint/type-check; CI gates
+4) “Create new feature” scaffolder (plop/nx)
+5) Release notes and version bump automation
+6) Secret scanning and license checks
+7) Local dev: one-command bootstrap + seeded data
+8) Test data factories and snapshot stabilizers
+9) Makefiles/NPM scripts for common ops
+10) Trace-first debugging templates

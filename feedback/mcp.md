@@ -47,3 +47,20 @@
 
 **Next Update**: Report progress in 30 minutes
 **Manager Notes**: Critical for system connectivity - prioritize this task
+
+## Next Sprint (MCP) - 2025-09-29T09:01:44-06:00
+- Status: Planned
+- Owner: MCP Engineer
+- Kickoff: Contracts + observability
+
+### Backlog (Top Priority)
+1) Service registry with health and versions
+2) Typed contracts + schema registry
+3) Retry/backoff and DLQ for failed events
+4) Idempotent handlers; exactly-once where feasible
+5) OAuth secrets rotation and vault integration
+6) Rate limiting and circuit breakers
+7) Traces/metrics/logs correlation (OTel)
+8) Contract tests against mocks
+9) Backfill/replay tooling with guardrails
+10) Canary deploy and traffic shifting
