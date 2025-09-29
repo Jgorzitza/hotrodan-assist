@@ -377,7 +377,7 @@ Successfully tested all components with realistic data:
 - [ ] Keyword universe import + grouping by intent
 - [x] Rank tracking (daily) and volatility index
 - [x] Content briefs generator (entities, headers, FAQs)
-- [ ] Internal link opportunities graph
+- [x] Internal link opportunities graph
 - [ ] Schema markup validator + templates
 - [ ] Core Web Vitals ingestion and regression alerts
 - [ ] Sitemap diff and redirect hygiene audits
