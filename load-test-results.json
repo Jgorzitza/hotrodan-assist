@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-09-29T17:32:22.729Z",
+  "configuration": {
+    "baseUrl": "http://localhost:3000",
+    "concurrentUsers": 2,
+    "duration": 5,
+    "rampUpTime": 5
+  },
+  "results": {
+    "totalRequests": 0,
+    "successfulRequests": 0,
+    "failedRequests": 0,
+    "averageResponseTime": 0,
+    "minResponseTime": null,
+    "maxResponseTime": 0,
+    "p95ResponseTime": 0,
+    "p99ResponseTime": 0,
+    "requestsPerSecond": 0,
+    "errorRate": 0
+  },
+  "thresholds": {
+    "maxResponseTime": 1000,
+    "maxErrorRate": 1,
+    "minRequestsPerSecond": 10
+  },
+  "violations": [
+    "Requests per second 0.00 below threshold 10"
+  ],
+  "recommendations": []
+}

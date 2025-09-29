@@ -37,7 +37,10 @@
     "security:all": "npm run security:audit && npm run security:sast && npm run security:dast",
     "test:accessibility": "npx playwright test e2e/accessibility.spec.ts",
     "lint:accessibility": "eslint . --ext .ts,.tsx,.js,.jsx --plugin jsx-a11y",
-    "accessibility:all": "npm run lint:accessibility && npm run test:accessibility"
+    "accessibility:all": "npm run lint:accessibility && npm run test:accessibility",
+    "test:load": "node scripts/load-testing/load-test.js",
+    "test:soak": "node scripts/load-testing/soak-test.js",
+    "test:performance": "npm run test:load && npm run test:soak"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

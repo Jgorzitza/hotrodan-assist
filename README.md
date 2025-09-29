@@ -58,3 +58,12 @@ shopify app dev --store=afafsaf.myshopify.com
 - All Remix routes currently render Polaris UIs backed by mock data (`USE_MOCK_DATA=true`). Swap to live data by wiring the modules in `dashboard/app/lib/`.
 - Set `ENABLE_MCP=true` after wiring real Storefront MCP credentials (`MCP_API_URL`, `MCP_API_KEY`) and validate via upcoming settings toggle.
 - Service registry: app/service_registry polls health and versions across services.
+
+### Additional Modules
+- Idempotency: `app/idempotency` provides file-based idempotency keys and handlers.
+- Security: `app/security` manages OAuth secret rotation and lifecycle.
+- Resilience: `app/resilience` implements rate limiting and circuit breakers.
+- Observability: `app/observability` provides simple OpenTelemetry-style correlation.
+- Contract Tests: `app/contract_tests` validates mocks against registered contracts.
+- Replay: `app/replay` enables backfill and event replay with guardrails.
+- Deployment: `app/deployment` supports canary deploys and traffic shifting.
