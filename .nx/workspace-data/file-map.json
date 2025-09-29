@@ -84,7 +84,7 @@
       },
       {
         "file": "README.md",
-        "hash": "5338081203830308834"
+        "hash": "16528107671413682112"
       },
       {
         "file": "SESSION_SUMMARY_2025-09-26_1052.md",
@@ -283,6 +283,14 @@
         "hash": "11204228058532146401"
       },
       {
+        "file": "app/sales_analytics_platform/core/__init__.py",
+        "hash": "10512960956938558864"
+      },
+      {
+        "file": "app/sales_analytics_platform/core/channel_campaign_metrics.py",
+        "hash": "4854428366607822643"
+      },
+      {
         "file": "app/seo-api/README.md",
         "hash": "15822808780148579284"
       },
@@ -371,6 +379,18 @@
         "hash": "16567467907370285749"
       },
       {
+        "file": "app/service_registry/__init__.py",
+        "hash": "14818799028382746968"
+      },
+      {
+        "file": "app/service_registry/cli.py",
+        "hash": "13687863147364724838"
+      },
+      {
+        "file": "app/service_registry/registry.py",
+        "hash": "11113192011881313000"
+      },
+      {
         "file": "app/sync/Dockerfile",
         "hash": "6679902315987234970"
       },
@@ -401,6 +421,10 @@
       {
         "file": "app/tests/integration/setup.ts",
         "hash": "14135029081934947046"
+      },
+      {
+        "file": "app/tests/test_service_registry.py",
+        "hash": "13608832337396385037"
       },
       {
         "file": "app/tests/unit/inventory-analytics.test.ts",
@@ -540,6 +564,10 @@
       },
       {
         "file": "apps/dashboard/app/lib/date-range.ts",
+        "hash": "10323006851280806847"
+      },
+      {
+        "file": "apps/dashboard/app/lib/date-range.ts.backup",
         "hash": "10323006851280806847"
       },
       {
@@ -1488,7 +1516,7 @@
       },
       {
         "file": "coordination/inbox/dashboard/2025-09-29-notes.md",
-        "hash": "3408964345336392441"
+        "hash": "8227220269841595712"
       },
       {
         "file": "coordination/inbox/data/2025-01-06-notes.md",
@@ -1520,7 +1548,7 @@
       },
       {
         "file": "coordination/inbox/inventory/2025-09-29-notes.md",
-        "hash": "11959771558456344144"
+        "hash": "10137177181328523593"
       },
       {
         "file": "coordination/inbox/manager/2025-09-28-notes.md",
@@ -1536,7 +1564,7 @@
       },
       {
         "file": "coordination/inbox/mcp/2025-09-29-notes.md",
-        "hash": "6922741793934315990"
+        "hash": "15348907816848187096"
       },
       {
         "file": "coordination/inbox/orders/2025-09-27-notes.md",
@@ -1544,7 +1572,7 @@
       },
       {
         "file": "coordination/inbox/quality/2025-09-29-notes.md",
-        "hash": "15895833154646759661"
+        "hash": "9140852037313312966"
       },
       {
         "file": "coordination/inbox/rag/2025-09-27-notes.md",
@@ -1560,7 +1588,7 @@
       },
       {
         "file": "coordination/inbox/sales/2025-09-29-notes.md",
-        "hash": "2510533763548413718"
+        "hash": "17496227736487580892"
       },
       {
         "file": "coordination/inbox/sales/2025-10-09-notes.md",
@@ -1681,6 +1709,10 @@
       {
         "file": "coordination/seo-task-completion-report.md",
         "hash": "7094326002768916879"
+      },
+      {
+        "file": "coordination/service_snapshot.json",
+        "hash": "12222392230053427961"
       },
       {
         "file": "coordination/status-dashboard.md",
