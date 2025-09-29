@@ -1,16 +1,23 @@
-"""FastAPI shim over the shared RAG index with simple config endpoint."""
+"""FastAPI shim over the shared RAG index with enhanced validation and config.
+
+Supports two modes:
+- ``openai`` (default): uses OpenAI for embeddings + generation.
+- ``retrieval-only``: FastEmbed embeddings paired with a simple
+  retrieval response when no OpenAI key is present.
+"""
 
 import os
 import sys
 from dotenv import load_dotenv
 from textwrap import shorten
+from typing import Optional, List, Dict, Any
 
 # Add the parent directory to the path to import rag_config
 sys.path.append("/home/justin/llama_rag")
 
 import chromadb
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Query
+from pydantic import BaseModel, Field, validator
 
 from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.vector_stores.chroma import ChromaVectorStore
@@ -51,8 +58,20 @@ app = FastAPI(
 
 
 class QueryIn(BaseModel):
-    question: str
-    top_k: int = 10
+    question: str = Field(..., min_length=1, max_length=1000, description="Question to ask the RAG system")
+    top_k: int = Field(default=10, ge=1, le=50, description="Number of top results to retrieve")
+    
+    @validator('question')
+    def validate_question(cls, v):
+        if not v or not v.strip():
+            raise ValueError('Question cannot be empty or whitespace only')
+        return v.strip()
+    
+    @validator('top_k')
+    def validate_top_k(cls, v):
+        if v < 1 or v > 50:
+            raise ValueError('top_k must be between 1 and 50')
+        return v
 
 
 class ConfigResponse(BaseModel):
