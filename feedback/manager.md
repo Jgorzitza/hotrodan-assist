@@ -2287,3 +2287,9 @@ Restart Prep: 2025-09-29T09:04:28-06:00 — RAG advanced platform complete, file
 - Agents: Post only to your canonical feedback file (see feedback/README.md).
 - Quality: For any non-feedback edits, stage feedback/QUALITY_ALLOW_CODE_CHANGES with your commit.
 - Launch cadence: Use one-shot status/launch commands (no background scripts).
+
+## [2025-09-29T11:38:06-0600] MCP Agent Update
+- Completed all MCP Current Focus backlog items (10/10).
+- Key modules: service_registry, contracts, reliability (retry/DLQ), idempotency, security (OAuth rotation), resilience (rate limiting, circuit breaker), observability (OTel correlation), contract_tests, replay, deployment (canary).
+- Tests: focused unit tests added and passing for new modules; notes logged in coordination/inbox/mcp/2025-09-29-notes.md.
+- Docs: README updated with new modules and usage.
