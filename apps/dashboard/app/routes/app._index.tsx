@@ -58,6 +58,8 @@ import { CohortAnalysis } from "~/components/CohortAnalysis";
 import { DashboardPresetManager } from "~/components/DashboardPresetManager";
 import { ExportManager } from "~/components/ExportManager";
 import { PermissionManager, PermissionGuard } from "~/components/PermissionManager";
+import { ThemeToggle, ThemeProvider, useTheme } from "~/components/ThemeToggle";
+import "~/styles/theme.css";
 import { createMockUser, type UserRole } from "~/lib/permissions";
 import { generateCohortData, calculateCohortInsights } from "~/lib/cohort-analysis";
 import { DrillDownNavigation, DrillDownButton } from "~/components/DrillDownNavigation";
@@ -340,7 +342,7 @@ export default function DashboardRoute() {
 
 function MetricTile({ label, value }: { label: string; value: number }) {
   return (
-    <DashboardProvider>
+    <ThemeProvider><DashboardProvider>
     <BlockStack gap="050">
       <Text as="span" variant="bodySm" tone="subdued">
         {label}
@@ -354,7 +356,7 @@ function MetricTile({ label, value }: { label: string; value: number }) {
 
 function MetricTileSkeleton() {
   return (
-    <DashboardProvider>
+    <ThemeProvider><DashboardProvider>
     <BlockStack gap="050">
       <SkeletonBodyText lines={1} />
       <SkeletonDisplayText size="small" />
@@ -364,7 +366,7 @@ function MetricTileSkeleton() {
 
 function OrderBucketSkeleton() {
   return (
-    <DashboardProvider>
+    <ThemeProvider><DashboardProvider>
     <InlineStack align="space-between" blockAlign="center" gap="200">
       <div style={{ flex: 1 }}>
         <BlockStack gap="050">
@@ -382,7 +384,7 @@ function OrderBucketSkeleton() {
 
 function InlineStatSkeleton() {
   return (
-    <DashboardProvider>
+    <ThemeProvider><DashboardProvider>
     <InlineStack align="space-between" blockAlign="center" gap="200">
       <div style={{ flex: 1 }}>
         <SkeletonBodyText lines={1} />
@@ -394,7 +396,7 @@ function InlineStatSkeleton() {
 
 function InboxSnapshotSkeleton() {
   return (
-    <DashboardProvider>
+    <ThemeProvider><DashboardProvider>
     <BlockStack gap="200">
       <InlineStatSkeleton />
       <InlineStatSkeleton />
@@ -406,7 +408,7 @@ function InboxSnapshotSkeleton() {
 
 function SeoHighlightsSkeleton() {
   return (
-    <DashboardProvider>
+    <ThemeProvider><DashboardProvider>
     <BlockStack gap="200">
       <SkeletonBodyText lines={1} />
       <SkeletonDisplayText size="small" />
@@ -421,7 +423,7 @@ function SeoHighlightsSkeleton() {
 
 function McpInsightSkeleton() {
   return (
-    <DashboardProvider>
+    <ThemeProvider><DashboardProvider>
     <BlockStack gap="200">
       <SkeletonBodyText lines={2} />
       <SkeletonBodyText lines={1} />
@@ -443,7 +445,7 @@ function SalesSparkline({
 }) {
   if (!points.length) {
     return (
-    <DashboardProvider>
+    <ThemeProvider><DashboardProvider>
       <Text as="p" variant="bodySm" tone="subdued">
         Sales trend data unavailable.
       </Text>
@@ -456,7 +458,7 @@ function SalesSparkline({
   }];
 
   return (
-    <DashboardProvider>
+    <ThemeProvider><DashboardProvider>
     <div style={{ width: "100%", height: 160 }}>
       <SparkLineChart
         accessibilityLabel={`Sales trend for the selected range ${rangeLabel}`}
@@ -470,7 +472,7 @@ function SalesSparkline({
 
 function SalesSparklineSkeleton() {
   return (
-    <DashboardProvider>
+    <ThemeProvider><DashboardProvider>
     <div
       style={{
         width: "100%",
