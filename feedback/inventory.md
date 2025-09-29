@@ -625,7 +625,7 @@ docker-compose up -d inventory-api
 - [x] Purchase order recommendations generator
 - [x] Backorder policy rules + ETA surfacing
 - [x] Webhooks for low-stock → Slack/Email
-- [ ] Cycle counts workflow integration
+- [x] Cycle counts workflow integration
 - [ ] BOM/kitting support in availability calcs
 - [ ] Audit ledger for adjustments
 - [ ] Replenishment lead time variability model
