@@ -57,6 +57,8 @@ import { generateEnhancedMetrics, calculateMetricInsights } from "~/lib/enhanced
 import { CohortAnalysis } from "~/components/CohortAnalysis";
 import { DashboardPresetManager } from "~/components/DashboardPresetManager";
 import { ExportManager } from "~/components/ExportManager";
+import { PermissionManager, PermissionGuard } from "~/components/PermissionManager";
+import { createMockUser, type UserRole } from "~/lib/permissions";
 import { generateCohortData, calculateCohortInsights } from "~/lib/cohort-analysis";
 import { DrillDownNavigation, DrillDownButton } from "~/components/DrillDownNavigation";
 
@@ -188,6 +190,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export default function DashboardRoute() {
   const { data, enhancedMetrics, metricInsights, cohortData, cohortInsights, useMockData, scenario, mcp } = useLoaderData<typeof loader>();
+  const [currentRole, setCurrentRole] = useState<UserRole>("viewer");
+  const userPermissions = createMockUser(currentRole);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const navigation = useNavigation();
@@ -319,10 +323,10 @@ export default function DashboardRoute() {
   const metricCount = data.metrics.length || 4;
   const metricsContent = showSkeleton
     ? Array.from({ length: 5 }, (_, index) => (
-        <EnhancedMetricCardSkeleton key={`enhanced-metric-skeleton-${index}`} />
+        <PermissionGuard widgetId={metric.id} userPermissions={userPermissions}><EnhancedMetricCardSkeleton key={`enhanced-metric-skeleton-${index}`} />
       ))
     : enhancedMetrics.map((metric) => (
-        <EnhancedMetricCard
+        <PermissionGuard widgetId={metric.id} userPermissions={userPermissions}><EnhancedMetricCard
           key={metric.id}
           metric={metric}
           onClick={() => {
@@ -330,6 +334,7 @@ export default function DashboardRoute() {
             console.log(`Drilling down to ${metric.id} details`);
           }}
         />
+  </PermissionGuard>
       ));
 }
 
@@ -458,6 +463,7 @@ function SalesSparkline({
         data={dataset}
         isAnimated={false}
       />
+  </PermissionGuard>
     </div>
   );
 }
