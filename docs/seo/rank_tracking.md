@@ -11,8 +11,10 @@ import os, importlib.util
 from pathlib import Path
 os.environ["SEO_DATA_DIR"] = os.path.abspath("./data/seo")
 MODULE_PATH = Path("app/seo-api/analytics/rank_tracking.py").resolve()
+import sys
 spec = importlib.util.spec_from_file_location("rank_tracking", str(MODULE_PATH))
 rt = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = rt
 spec.loader.exec_module(rt)
 rt.append_daily_rank("my kw", 18)
 print(rt.compute_volatility_index("my kw"))

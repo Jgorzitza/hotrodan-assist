@@ -2,8 +2,10 @@ import os, datetime as dt, importlib.util
 from pathlib import Path
 
 MODULE_PATH = Path("app/seo-api/analytics/rank_tracking.py").resolve()
+import sys
 spec = importlib.util.spec_from_file_location("rank_tracking", str(MODULE_PATH))
 rt = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = rt
 spec.loader.exec_module(rt)  # type: ignore
 
 
