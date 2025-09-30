@@ -30,3 +30,20 @@ npm-debug.log*
 
 # local test databases
 *.db
+# Local DBs & caches
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Node
+node_modules/
+dist/
+build/
+coverage/
+.vitest/
+.cache/
