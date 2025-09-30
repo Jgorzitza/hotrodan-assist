@@ -37,6 +37,7 @@ import {
 } from "~/lib/mcp";
 import type { McpClientOverrides } from "~/lib/mcp/config.server";
 import { getMcpClientOverridesForShop } from "~/lib/mcp/config.server";
+import { fetchInventoryDashboard as fetchShopifyInventory } from "~/lib/shopify/inventory.server";
 import {
   DASHBOARD_RANGE_KEY_LIST,
   DASHBOARD_RANGE_PRESETS,
@@ -93,6 +94,26 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const usingMocks = shouldUseMcpMocks(toggles);
 
   const data = await getDashboardOverview(range, scenario);
+
+  // Fetch real Shopify inventory data when not using mocks
+  if (!USE_MOCK_DATA) {
+    try {
+      const { admin } = await authenticate.admin(request);
+      const shopifyData = await fetchShopifyInventory(admin);
+      
+      // Merge Shopify data into dashboard
+      data.inventory = {
+        lowStock: shopifyData.metrics.lowStockCount,
+        purchaseOrdersInFlight: 0,
+        overstock: 0,
+      };
+      
+      console.log(`✅ Shopify: ${shopifyData.metrics.totalProducts} products, ${shopifyData.metrics.lowStockCount} low stock`);
+    } catch (error) {
+      console.error("❌ Shopify integration error:", error);
+      // Continue with mock data
+    }
+  }
 
   const shouldHydrateMcp = featureEnabled || USE_MOCK_DATA;
   let mcpSource: string | undefined;

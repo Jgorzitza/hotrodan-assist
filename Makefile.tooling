@@ -1,0 +1,46 @@
+# Tooling & QA Automation Makefile
+.PHONY: help test-all load-test benchmark regression monitor clean
+
+help: ## Show this help message
+	@echo "Tooling & QA Automation Commands:"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+test-all: ## Run all automation tests
+	@echo "🚀 Running all automation tests..."
+	@cd tooling && ./RUN_ALL_TESTS.sh
+
+load-test: ## Run k6 load tests
+	@echo "📈 Running load tests..."
+	@cd tooling/load-testing && ./run-all-load-tests.sh
+
+benchmark: ## Run API performance benchmarks
+	@echo "📊 Running benchmarks..."
+	@cd tooling/benchmarking && ./run-benchmarks.sh
+
+regression: ## Run regression tests
+	@echo "🧪 Running regression tests..."
+	@cd tooling/regression && ./run-regression-tests.sh
+
+browser-test: ## Run cross-browser tests
+	@echo "🌐 Running browser tests..."
+	@cd tooling/cross-browser && ./run-browser-tests.sh
+
+monitor: ## Start monitoring stack (Prometheus + Grafana)
+	@echo "📊 Starting monitoring stack..."
+	@cd tooling/monitoring && ./setup-monitoring.sh
+
+error-track: ## Scan logs for errors
+	@echo "🔍 Scanning logs for errors..."
+	@cd tooling/monitoring && python3 error-tracking.py
+
+clean: ## Clean test artifacts and logs
+	@echo "🧹 Cleaning test artifacts..."
+	@rm -rf logs/*.json logs/*.md logs/screenshots/*
+	@echo "✅ Clean complete"
+
+install-deps: ## Install testing dependencies
+	@echo "📦 Installing dependencies..."
+	@pip install -q requests pytest
+	@cd tooling/cross-browser && pip install -q -r requirements.txt
+	@echo "✅ Dependencies installed"

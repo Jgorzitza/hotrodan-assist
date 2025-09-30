@@ -297,3 +297,80 @@ async def create_audit_adjustment(request: AuditAdjustmentRequest):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+# Dashboard inventory endpoint
+@app.get("/api/v1/dashboard/inventory")
+async def get_dashboard_inventory(range: str = "7d", scenario: str = "base"):
+    """Get dashboard inventory summary with metrics."""
+    try:
+        # Mock data for now - will be replaced with real data from stock_sync
+        inventory_data = {
+            "scenario": scenario,
+            "state": "ok",
+            "summary": {
+                "skusAtRisk": 12,
+                "averageCoverDays": 28.5,
+                "openPoBudget": {
+                    "amount": 45000.00,
+                    "currency": "USD",
+                    "formatted": "$45,000.00"
+                }
+            },
+            "buckets": [
+                {
+                    "id": "urgent",
+                    "label": "Urgent (< 7 days)",
+                    "description": "SKUs requiring immediate replenishment",
+                    "leadTimeDays": 3,
+                    "skuCount": 3,
+                    "valueAtRisk": {
+                        "amount": 12500.00,
+                        "currency": "USD",
+                        "formatted": "$12,500.00"
+                    }
+                },
+                {
+                    "id": "air",
+                    "label": "Air Freight (7-14 days)",
+                    "description": "SKUs needing air freight replenishment",
+                    "leadTimeDays": 10,
+                    "skuCount": 5,
+                    "valueAtRisk": {
+                        "amount": 18750.00,
+                        "currency": "USD",
+                        "formatted": "$18,750.00"
+                    }
+                },
+                {
+                    "id": "sea",
+                    "label": "Sea Freight (14-30 days)",
+                    "description": "SKUs suitable for sea freight",
+                    "leadTimeDays": 21,
+                    "skuCount": 4,
+                    "valueAtRisk": {
+                        "amount": 8900.00,
+                        "currency": "USD",
+                        "formatted": "$8,900.00"
+                    }
+                },
+                {
+                    "id": "overstock",
+                    "label": "Overstock",
+                    "description": "SKUs with excess inventory",
+                    "leadTimeDays": 0,
+                    "skuCount": 2,
+                    "valueAtRisk": {
+                        "amount": 4850.00,
+                        "currency": "USD",
+                        "formatted": "$4,850.00"
+                    }
+                }
+            ],
+            "skus": [],
+            "vendors": []
+        }
+        
+        return {"success": True, "data": inventory_data}
+    except Exception as e:
+        logger.error(f"Dashboard inventory error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
