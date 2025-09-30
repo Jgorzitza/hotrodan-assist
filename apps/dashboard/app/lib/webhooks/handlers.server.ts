@@ -283,13 +283,13 @@ export const handleAppUninstalled = (context: ShopifyWebhookContext) =>
 const handleInventoryLevelsUpdateImpl: HandlerImplementation = async (params) => {
   const { shop } = params;
   
-  console.log(`📦 Inventory levels updated for ${shop}`);
+  // console.log(`📦 Inventory levels updated for ${shop}`);
   
   // Clear cache to ensure fresh data on next fetch
   const { shopifyCache } = await import("~/lib/shopify/cache.server");
   shopifyCache.clear();
   
-  console.log(`✅ Inventory cache cleared for ${shop}`);
+  // console.log(`✅ Inventory cache cleared for ${shop}`);
 };
 
 export const handleInventoryLevelsUpdate = (context: ShopifyWebhookContext) =>
