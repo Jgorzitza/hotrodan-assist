@@ -99,6 +99,12 @@ def query(q: QueryIn, request: Request):
     
     start_time = time.time()
     
+    # Check cache first
+    cached_result = QUERY_CACHE.get(q.question, q.top_k, q.provider)
+    if cached_result:
+        return cached_result
+
+    
     try:
         # Select provider using MODEL_SELECTOR
         chosen_provider = MODEL_SELECTOR.choose(q.provider)
