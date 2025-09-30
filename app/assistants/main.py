@@ -1,8 +1,10 @@
 # FastAPI stub for drafts/approve/edit endpoints; Codex will wire DB + adapters.
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 from datetime import datetime
+
+from app.dashboard import render_dashboard_home, render_dashboard_sales
 app = FastAPI()
 DRAFTS = {}; COUNTER = 0
 
@@ -22,6 +24,9 @@ class Edit(BaseModel):
     editor_user_id: str
     final_text: str
 
+class DashboardRequest(BaseModel):
+    payload: Dict[str, Any]
+
 @app.post("/assistants/draft")
 def draft(body: DraftCreate):
     global COUNTER
@@ -40,3 +45,19 @@ def approve(body: Approve):
 def edit(body: Edit):
     # Codex: compute diff, learn, send via adapter
     return {"sent_msg_id": "ext-edit-stub"}
+
+
+@app.post("/assistants/dashboard/home")
+def dashboard_home(body: DashboardRequest):
+    if not isinstance(body.payload, dict):
+        raise HTTPException(status_code=400, detail="payload must be an object")
+    result = render_dashboard_home(body.payload)
+    return result
+
+
+@app.post("/assistants/dashboard/sales")
+def dashboard_sales(body: DashboardRequest):
+    if not isinstance(body.payload, dict):
+        raise HTTPException(status_code=400, detail="payload must be an object")
+    result = render_dashboard_sales(body.payload)
+    return result

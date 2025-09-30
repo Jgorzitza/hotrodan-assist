@@ -26,6 +26,13 @@ services:
     ports: [ "8002:8002" ]
     depends_on: [ db, redis, rag-api ]
 
+  dashboard:
+    build: ./app/dashboard
+    env_file: .env
+    volumes: [ "./:/workspace" ]
+    ports: [ "8003:8003" ]
+    depends_on: [ assistants ]
+
   sync:
     build: ./app/sync
     env_file: .env
