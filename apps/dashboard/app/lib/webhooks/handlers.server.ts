@@ -1,15 +1,18 @@
-import type { Session } from "@shopify/shopify-api";
-import type { AdminApiContext } from "@shopify/shopify-app-remix/server";
-import { resolveWebhookKey, type WebhookTopicKey } from "./constants";
+import type { Session } from '@shopify/shopify-api';
+import type { AdminApiContext } from '@shopify/shopify-app-remix/server';
+import { resolveWebhookKey, type WebhookTopicKey } from './constants';
 import {
   cleanupStoreSessions,
   createWebhookEvent,
   markWebhookEventStatus,
   persistOrderFlag,
   persistProductVelocity,
-} from "./persistence.server";
-import { enqueueWebhookJob } from "./queue.server";
-import { hasProcessedWebhook, markWebhookProcessed } from "./idempotency.server";
+} from './persistence.server';
+import { enqueueWebhookJob } from './queue.server';
+import {
+  hasProcessedWebhook,
+  markWebhookProcessed,
+} from './idempotency.server';
 
 export type ShopifyWebhookContext = {
   apiVersion: string;
@@ -28,15 +31,16 @@ type HandlerResult = {
 };
 
 type HandlerImplementation = (
+  // eslint-disable-next-line no-unused-vars
   params: ShopifyWebhookContext & {
     payloadObject: Record<string, any>;
     topicKey: WebhookTopicKey;
     webhookEventId?: string;
-  },
+  }
 ) => Promise<void>;
 
 const ensurePayloadObject = (payload: unknown): Record<string, any> => {
-  if (payload && typeof payload === "object") {
+  if (payload && typeof payload === 'object') {
     return payload as Record<string, any>;
   }
   return {};
@@ -44,10 +48,10 @@ const ensurePayloadObject = (payload: unknown): Record<string, any> => {
 
 const withWebhookProcessing = async (
   context: ShopifyWebhookContext,
-  impl: HandlerImplementation,
+  impl: HandlerImplementation
 ): Promise<HandlerResult> => {
   if (!context.webhookId) {
-    throw new Error("Webhook context missing webhookId");
+    throw new Error('Webhook context missing webhookId');
   }
 
   if (hasProcessedWebhook(context.webhookId)) {
@@ -65,12 +69,12 @@ const withWebhookProcessing = async (
     context.webhookId,
     context.shop,
     context.topic,
-    payloadObject,
+    payloadObject
   );
 
   const webhookEventId = eventRecord?.id;
 
-  await markWebhookEventStatus(context.webhookId, "PROCESSING");
+  await markWebhookEventStatus(context.webhookId, 'PROCESSING');
 
   try {
     await impl({
@@ -79,21 +83,26 @@ const withWebhookProcessing = async (
       payloadObject,
       webhookEventId,
     });
-    await markWebhookEventStatus(context.webhookId, "SUCCEEDED");
+    await markWebhookEventStatus(context.webhookId, 'SUCCEEDED');
     markWebhookProcessed(context.webhookId);
     return { enqueued: true };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    await markWebhookEventStatus(context.webhookId, "FAILED", message);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    await markWebhookEventStatus(context.webhookId, 'FAILED', message);
     throw error;
   }
 };
 
 const extractOrderId = (payload: Record<string, any>) =>
-  payload?.admin_graphql_api_id || payload?.id || payload?.order_id || payload?.legacyResourceId;
+  payload?.admin_graphql_api_id ||
+  payload?.id ||
+  payload?.order_id ||
+  payload?.legacyResourceId;
 
 const extractSku = (payload: Record<string, any>): string => {
-  const firstVariant = Array.isArray(payload?.variants) ? payload.variants[0] : undefined;
+  const firstVariant = Array.isArray(payload?.variants)
+    ? payload.variants[0]
+    : undefined;
   if (firstVariant?.sku) return String(firstVariant.sku);
   if (payload?.sku) return String(payload.sku);
   if (payload?.id) return `product-${payload.id}`;
@@ -101,7 +110,9 @@ const extractSku = (payload: Record<string, any>): string => {
 };
 
 const estimateAverageDailySales = (payload: Record<string, any>): number => {
-  const velocity = Number(payload?.velocity ?? payload?.average_daily_sales ?? 0);
+  const velocity = Number(
+    payload?.velocity ?? payload?.average_daily_sales ?? 0
+  );
   if (Number.isFinite(velocity) && velocity > 0) return velocity;
   const totalSales = Number(payload?.total_sales ?? payload?.totalOrdered ?? 0);
   if (Number.isFinite(totalSales) && totalSales > 0) {
@@ -123,8 +134,8 @@ const handleOrdersCreateImpl: HandlerImplementation = async ({
     shopDomain: shop,
     webhookEventId,
     orderId,
-    flagType: "order_created",
-    status: "OPEN",
+    flagType: 'order_created',
+    status: 'OPEN',
     metadata: {
       webhookId,
       financialStatus: payloadObject?.financial_status,
@@ -139,7 +150,7 @@ const handleOrdersCreateImpl: HandlerImplementation = async ({
     shopDomain: shop,
     payload: {
       orderId,
-      reason: "order_created",
+      reason: 'order_created',
       placedAt: payloadObject?.created_at,
     },
   });
@@ -157,8 +168,8 @@ const handleOrdersFulfilledImpl: HandlerImplementation = async ({
     shopDomain: shop,
     webhookEventId,
     orderId,
-    flagType: "order_fulfilled",
-    status: "RESOLVED",
+    flagType: 'order_fulfilled',
+    status: 'RESOLVED',
     metadata: {
       webhookId,
       fulfilledAt: payloadObject?.fulfilled_at ?? payloadObject?.processed_at,
@@ -172,7 +183,7 @@ const handleOrdersFulfilledImpl: HandlerImplementation = async ({
     shopDomain: shop,
     payload: {
       orderId,
-      reason: "order_fulfilled",
+      reason: 'order_fulfilled',
       fulfillmentStatus: payloadObject?.fulfillment_status,
     },
   });
@@ -190,8 +201,8 @@ const handleFulfillmentsUpdateImpl: HandlerImplementation = async ({
     shopDomain: shop,
     webhookEventId,
     orderId,
-    flagType: "fulfillment_update",
-    status: "OPEN",
+    flagType: 'fulfillment_update',
+    status: 'OPEN',
     metadata: {
       webhookId,
       status: payloadObject?.status,
@@ -206,7 +217,7 @@ const handleFulfillmentsUpdateImpl: HandlerImplementation = async ({
     shopDomain: shop,
     payload: {
       orderId,
-      reason: "fulfillment_update",
+      reason: 'fulfillment_update',
       status: payloadObject?.status,
     },
   });
@@ -221,7 +232,9 @@ const handleProductsUpdateImpl: HandlerImplementation = async ({
 }) => {
   const sku = extractSku(payloadObject);
   const averageDailySales = estimateAverageDailySales(payloadObject);
-  const currentInventory = Number(payloadObject?.total_inventory ?? payloadObject?.inventory_quantity ?? 0);
+  const currentInventory = Number(
+    payloadObject?.total_inventory ?? payloadObject?.inventory_quantity ?? 0
+  );
   await persistProductVelocity({
     shopDomain: shop,
     webhookEventId,
@@ -258,7 +271,7 @@ const handleAppUninstalledImpl: HandlerImplementation = async ({
     topicKey,
     shopDomain: shop,
     payload: {
-      action: "cleanup",
+      action: 'cleanup',
     },
   });
 };
@@ -278,17 +291,14 @@ export const handleProductsUpdate = (context: ShopifyWebhookContext) =>
 export const handleAppUninstalled = (context: ShopifyWebhookContext) =>
   withWebhookProcessing(context, handleAppUninstalledImpl);
 
-
 // Inventory Levels Update handler implementation
-const handleInventoryLevelsUpdateImpl: HandlerImplementation = async (params) => {
-  const { shop } = params;
-  
+const handleInventoryLevelsUpdateImpl: HandlerImplementation = async () => {
   // console.log(`📦 Inventory levels updated for ${shop}`);
-  
+
   // Clear cache to ensure fresh data on next fetch
-  const { shopifyCache } = await import("~/lib/shopify/cache.server");
+  const { shopifyCache } = await import('~/lib/shopify/cache.server');
   shopifyCache.clear();
-  
+
   // console.log(`✅ Inventory cache cleared for ${shop}`);
 };
 

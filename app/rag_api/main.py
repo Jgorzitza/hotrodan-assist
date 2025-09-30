@@ -28,6 +28,7 @@ from app.rag_api.security import check_rate_limit, validate_request
 from app.rag_api.advanced_functions import query_routing, context_aware_response, query_analytics, performance_optimization
 from app.rag_api.monitor import track_performance, get_metrics, save_metrics
 from app.rag_api.analytics import ANALYTICS
+from app.rag_api.rate_limiter import RATE_LIMITER
 from app.rag_api.model_selector import MODEL_SELECTOR
 
 configure_settings()
@@ -92,7 +93,8 @@ class MetricsResponse(BaseModel):
 def query(q: QueryIn, request: Request):
     """Query the RAG system with advanced processing and multi-model support."""
     # Security validation
-    validate_request(request)
+    # Advanced rate limiting
+    RATE_LIMITER.enforce_rate_limit(request.client.host, q.provider)
     
     start_time = time.time()
     
@@ -241,3 +243,11 @@ def analytics_performance():
 def analytics_usage():
     """Get usage pattern analytics."""
     return ANALYTICS.get_usage_patterns()
+
+@app.get("/rate-limit/status")
+def rate_limit_status(request: Request, provider: Optional[str] = None):
+    """Get current rate limit status for the client."""
+    return RATE_LIMITER.get_rate_limit_status(
+        request.client.host,
+        provider=provider
+    )
