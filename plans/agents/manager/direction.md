@@ -1,3 +1,9 @@
+<!-- MANAGER: SOURCE OF TRUTH -->
+> This file is the **only** authoritative plan for the Manager.  
+> - Status snapshots live in `status-update.md` (append-only).  
+> - Policy lives in `approval-process.md`.  
+> - `next-phase-direction.md` is **staging only** and must be merged here the same cycle, then archived or cleared.
+
 # Manager — Direction (owned by Manager)
 
 **Repo**: `~/llama_rag`  •  **Branch**: `chore/repo-canonical-layout`  •  **Sprint start**: 2025-09-28
