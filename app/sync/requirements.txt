@@ -2,3 +2,8 @@ fastapi
 uvicorn[standard]
 python-dotenv
 httpx
+SQLAlchemy>=2.0
+alembic
+psycopg2-binary
+redis>=5.0
+celery>=5.4
