@@ -29,6 +29,7 @@ from app.rag_api.advanced_functions import query_routing, context_aware_response
 from app.rag_api.monitor import track_performance, get_metrics, save_metrics
 from app.rag_api.analytics import ANALYTICS
 from app.rag_api.rate_limiter import RATE_LIMITER
+from app.rag_api.cache import QUERY_CACHE
 from app.rag_api.model_selector import MODEL_SELECTOR
 
 configure_settings()
@@ -179,7 +180,7 @@ def query(q: QueryIn, request: Request):
         ANALYTICS.track_query(q.question, mode, time.time() - start_time, len(sources), success=True)
 
         
-        return {
+        result = {
             "answer": answer,
             "sources": sources,
             "mode": mode,
@@ -188,6 +189,8 @@ def query(q: QueryIn, request: Request):
             "routing": routing,
             "optimization": optimization
         }
+        QUERY_CACHE.set(q.question, q.top_k, result, q.provider)
+        return result
 
     except Exception as e:
         # Track failed query
@@ -251,3 +254,25 @@ def rate_limit_status(request: Request, provider: Optional[str] = None):
         request.client.host,
         provider=provider
     )
+
+@app.get("/cache/stats")
+def cache_stats():
+    """Get cache statistics."""
+    return QUERY_CACHE.get_stats()
+
+@app.get("/cache/top-queries")
+def cache_top_queries(limit: int = 10):
+    """Get most frequently cached queries."""
+    return {"top_queries": QUERY_CACHE.get_top_queries(limit)}
+
+@app.post("/cache/invalidate")
+def cache_invalidate():
+    """Invalidate all cache entries."""
+    count = QUERY_CACHE.invalidate()
+    return {"invalidated": count, "message": f"Invalidated {count} cache entries"}
+
+@app.post("/cache/cleanup")
+def cache_cleanup():
+    """Cleanup expired cache entries."""
+    count = QUERY_CACHE.cleanup_expired()
+    return {"cleaned": count, "message": f"Removed {count} expired entries"}
