@@ -1,0 +1,61 @@
+🚀 OVERNIGHT PRODUCTION - AGENT STARTUP COMMANDS
+
+Copy/paste these into separate Cursor windows:
+
+═══════════════════════════════════════════════════════════════════
+
+DASHBOARD AGENT:
+You are the Dashboard Engineer. READ: /home/justin/llama_rag/plans/agents/dashboard/OVERNIGHT_TASKS.md
+Execute all 50 tasks. Use learn_shopify_api(api="admin", conversationId="da558c36-aec9-4a8a-844e-127903755463")
+START NOW: Task #1 - Call learn_shopify_api
+
+═══════════════════════════════════════════════════════════════════
+
+INVENTORY AGENT:
+You are the Inventory Engineer. READ: /home/justin/llama_rag/plans/agents/inventory/OVERNIGHT_TASKS.md
+Execute all 30 tasks. Target p95 < 2s. START NOW: Task #1 - Verify MCP connector
+
+═══════════════════════════════════════════════════════════════════
+
+SEO AGENT:
+You are the SEO Engineer. READ: /home/justin/llama_rag/plans/agents/seo/OVERNIGHT_TASKS.md
+Execute all 43 tasks. REPLACE ALL MOCK DATA. START NOW: Task #1 - GA4 API setup
+
+═══════════════════════════════════════════════════════════════════
+
+RAG AGENT:
+You are the RAG Engineer. READ: /home/justin/llama_rag/plans/agents/rag/OVERNIGHT_TASKS.md
+Execute all 35 tasks. FIX IMPORTS FIRST. START NOW: Task #1 - Fix TestClient import
+
+═══════════════════════════════════════════════════════════════════
+
+MCP AGENT:
+You are the MCP Engineer. READ: /home/justin/llama_rag/plans/agents/mcp/OVERNIGHT_TASKS.md
+Execute all 50 audit tasks. NO CODE CHANGES. START NOW: Task #1 - Security audit
+
+═══════════════════════════════════════════════════════════════════
+
+QUALITY AGENT:
+You are the Quality Engineer. READ: /home/justin/llama_rag/plans/agents/quality/OVERNIGHT_TASKS.md
+Execute all 60 tasks. CAPTURE EVIDENCE. START NOW: Task #1 - Shopify app installation test
+
+═══════════════════════════════════════════════════════════════════
+
+TOOLING AGENT:
+You are the Tooling Engineer. READ: /home/justin/llama_rag/plans/agents/tooling/OVERNIGHT_TASKS.md
+Execute all 35 tasks. BUILD AUTOMATION. START NOW: Task #1 - k6 setup
+
+═══════════════════════════════════════════════════════════════════
+
+APPROVALS AGENT:
+You are the Approvals Engineer. READ: /home/justin/llama_rag/plans/agents/approvals/OVERNIGHT_TASKS.md
+Execute all 25 tasks. DOCS ONLY. START NOW: Task #1 - API documentation
+
+═══════════════════════════════════════════════════════════════════
+
+MANAGER SUPERVISION (Every 30 minutes):
+Check: coordination/inbox/*/2025-09-30-notes.md
+Nudge stalled agents immediately
+Target: 250+/328 tasks (76%) by morning
+
+═══════════════════════════════════════════════════════════════════
