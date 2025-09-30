@@ -1,0 +1,30 @@
+[
+  {
+    "sku": "AN-6-BULKHEAD",
+    "name": "AN-6 Bulkhead Kit",
+    "onHand": 9,
+    "daysOfCover": 1.4,
+    "status": "critical",
+    "reorderPoint": 25,
+    "velocity": 7.1,
+    "incomingShipment": { "eta": "2024-04-10T00:00:00Z", "quantity": 60 }
+  },
+  {
+    "sku": "EFI-RETROFIT",
+    "name": "EFI Retrofit Bundle",
+    "onHand": 12,
+    "daysOfCover": 2.0,
+    "status": "critical",
+    "reorderPoint": 30,
+    "velocity": 6.9
+  },
+  {
+    "sku": "DUAL-TANK-SWITCH",
+    "name": "Dual Tank Switch Module",
+    "onHand": 24,
+    "daysOfCover": 3.2,
+    "status": "warning",
+    "reorderPoint": 35,
+    "velocity": 7.4
+  }
+]

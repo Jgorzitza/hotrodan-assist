@@ -1,0 +1,68 @@
+{
+  "inbox": {
+    "awaiting_review": 3,
+    "awaiting_review_sla_minutes": 30,
+    "threads": [
+      {
+        "conversation_id": "c118",
+        "channel": "chat",
+        "customer": "Kimberly H.",
+        "last_message_at": "2024-04-04T15:42:00Z",
+        "sla_breach": false,
+        "subject": "EFI swap fuel pump sizing",
+        "summary": "Assistant drafted follow-up with AN-8 fittings recommendation.",
+        "draft_status": "proposed",
+        "next_action_owner": "human"
+      },
+      {
+        "conversation_id": "c204",
+        "channel": "email",
+        "customer": "Diego M.",
+        "last_message_at": "2024-04-04T14:05:00Z",
+        "sla_breach": false,
+        "subject": "Returnless kit availability",
+        "summary": "Waiting on Ops to confirm warehouse ETA.",
+        "draft_status": "approved",
+        "next_action_owner": "assistant"
+      },
+      {
+        "conversation_id": "c311",
+        "channel": "chat",
+        "customer": "Sasha L.",
+        "last_message_at": "2024-04-04T13:58:00Z",
+        "sla_breach": true,
+        "subject": "Billing address update",
+        "summary": "Customer provided VIN, awaiting billing override instructions.",
+        "draft_status": "proposed",
+        "next_action_owner": "human"
+      }
+    ]
+  },
+  "learning": {
+    "edits_last_24h": 5,
+    "new_corrections": [
+      {
+        "pattern": "Torque spec for AN-6 fittings",
+        "author": "Devon",
+        "added_at": "2024-04-04T09:10:00Z"
+      }
+    ],
+    "goldens_regressions": []
+  },
+  "system_health": {
+    "rag_index_age_hours": 6.5,
+    "last_ingest": "2024-04-04T08:05:00Z",
+    "openai_latency_p95_ms": 820,
+    "error_rate_pct": 1.2
+  },
+  "highlights": {
+    "notable_threads": [
+      "c118 — follow-up on AN fittings upgrade",
+      "c204 — returnless kit inventory sync"
+    ],
+    "product_requests": [
+      { "category": "fuel systems", "count": 7, "trend": "up" },
+      { "category": "pressure regulators", "count": 3, "trend": "flat" }
+    ]
+  }
+}

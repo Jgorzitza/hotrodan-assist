@@ -1,0 +1,92 @@
+{
+  "inbox": {
+    "awaiting_review": 7,
+    "awaiting_review_sla_minutes": 20,
+    "threads": [
+      {
+        "conversation_id": "c402",
+        "channel": "chat",
+        "customer": "Lena P.",
+        "last_message_at": "2024-04-04T15:55:00Z",
+        "sla_breach": true,
+        "subject": "AN-10 hose backorder",
+        "summary": "Need escalation note on supplier delay.",
+        "draft_status": "proposed",
+        "next_action_owner": "human"
+      },
+      {
+        "conversation_id": "c415",
+        "channel": "email",
+        "customer": "Tyler S.",
+        "last_message_at": "2024-04-04T15:22:00Z",
+        "sla_breach": true,
+        "subject": "Payment link retry",
+        "summary": "Assistant awaiting finance guidance on failed charge.",
+        "draft_status": "edited",
+        "next_action_owner": "human"
+      },
+      {
+        "conversation_id": "c421",
+        "channel": "chat",
+        "customer": "Sonia R.",
+        "last_message_at": "2024-04-04T14:47:00Z",
+        "sla_breach": true,
+        "subject": "Order #8472 shipment stuck",
+        "summary": "Carrier exception; need logistics update.",
+        "draft_status": "proposed",
+        "next_action_owner": "assistant"
+      },
+      {
+        "conversation_id": "c433",
+        "channel": "email",
+        "customer": "Manny G.",
+        "last_message_at": "2024-04-04T14:12:00Z",
+        "sla_breach": false,
+        "subject": "Bulk AN fitting pricing",
+        "summary": "Sales requested tiered discount approval.",
+        "draft_status": "approved",
+        "next_action_owner": "human"
+      }
+    ]
+  },
+  "learning": {
+    "edits_last_24h": 11,
+    "new_corrections": [
+      {
+        "pattern": "Returnless retrofit lead time messaging",
+        "author": "Priya",
+        "added_at": "2024-04-04T12:05:00Z"
+      },
+      {
+        "pattern": "Fuel pump amperage calculator",
+        "author": "Justin",
+        "added_at": "2024-04-04T10:18:00Z"
+      }
+    ],
+    "goldens_regressions": [
+      {
+        "id": "GD-022",
+        "title": "AN-6 hose compatibility",
+        "failing_since": "2024-04-03T23:30:00Z"
+      }
+    ]
+  },
+  "system_health": {
+    "rag_index_age_hours": 28.1,
+    "last_ingest": "2024-04-03T11:40:00Z",
+    "openai_latency_p95_ms": 1190,
+    "error_rate_pct": 5.4
+  },
+  "highlights": {
+    "notable_threads": [
+      "c402 — supplier escalation required",
+      "c421 — carrier exception follow-up",
+      "c415 — payment retry blocked"
+    ],
+    "product_requests": [
+      { "category": "fuel systems", "count": 12, "trend": "up" },
+      { "category": "wiring harnesses", "count": 5, "trend": "up" },
+      { "category": "gauges", "count": 4, "trend": "flat" }
+    ]
+  }
+}

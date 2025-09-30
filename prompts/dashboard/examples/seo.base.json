@@ -1,0 +1,19 @@
+{
+  "keywords": [
+    { "keyword": "an fitting kit", "position": 3, "delta": 1, "volume": 5400 },
+    { "keyword": "ls swap fuel system", "position": 5, "delta": 0, "volume": 3600 }
+  ],
+  "crawlIssues": [
+    { "id": "CI-101", "area": "sitemaps", "status": "open", "severity": "medium" }
+  ],
+  "lighthouse": {
+    "performance": 88,
+    "accessibility": 92,
+    "bestPractices": 95,
+    "seo": 91
+  },
+  "contentOpportunities": [
+    { "topic": "Returnless fuel system guide", "confidence": 0.82 },
+    { "topic": "Boost referenced regulators", "confidence": 0.74 }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "keywords": [
+    { "keyword": "an fitting kit", "position": 7, "delta": -3, "volume": 5400 },
+    { "keyword": "ls swap fuel system", "position": 11, "delta": -5, "volume": 3600 }
+  ],
+  "crawlIssues": [
+    { "id": "CI-201", "area": "structured-data", "status": "open", "severity": "high" },
+    { "id": "CI-202", "area": "performance", "status": "open", "severity": "medium" }
+  ],
+  "lighthouse": {
+    "performance": 61,
+    "accessibility": 78,
+    "bestPractices": 80,
+    "seo": 72
+  },
+  "contentOpportunities": [
+    { "topic": "Fuel line sizing chart", "confidence": 0.66 }
+  ]
+}

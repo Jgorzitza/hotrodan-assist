@@ -1,0 +1,75 @@
+{
+  "period": {
+    "label": "MTD",
+    "start": "2024-04-01T00:00:00Z",
+    "end": "2024-04-04T23:59:59Z"
+  },
+  "revenue": {
+    "gross": 12840,
+    "net": 11710,
+    "previous_period_delta_pct": -27.6,
+    "top_products": [
+      { "sku": "AN-10-HOSE", "name": "AN-10 Hose Kit", "revenue": 2400, "delta_pct": -33.1 },
+      { "sku": "EFI-RETROFIT", "name": "EFI Retrofit Bundle", "revenue": 2100, "delta_pct": -18.4 }
+    ]
+  },
+  "assistant_pipeline": {
+    "open_opportunities": [
+      {
+        "conversation_id": "c244",
+        "stage": "waiting_payment",
+        "estimated_value": 2700,
+        "last_message": "2024-04-01T08:05:00Z",
+        "owner": "assistant",
+        "blocked_reason": "Customer awaiting bank transfer confirmation (52h)"
+      },
+      {
+        "conversation_id": "c301",
+        "stage": "quote_sent",
+        "estimated_value": 3600,
+        "last_message": "2024-04-03T13:42:00Z",
+        "owner": "human",
+        "blocked_reason": "Needs custom fabrication estimate"
+      },
+      {
+        "conversation_id": "c325",
+        "stage": "qualified",
+        "estimated_value": 2200,
+        "last_message": "2024-04-03T16:18:00Z",
+        "owner": "assistant",
+        "blocked_reason": null
+      },
+      {
+        "conversation_id": "c341",
+        "stage": "waiting_payment",
+        "estimated_value": 1950,
+        "last_message": "2024-04-02T10:27:00Z",
+        "owner": "human",
+        "blocked_reason": "Pending PO approval (50h)"
+      }
+    ],
+    "wins_last_period": 2,
+    "wins_previous_period": 5
+  },
+  "shopify_metrics": {
+    "orders": 42,
+    "avg_order_value": 279,
+    "conversion_rate_pct": 2.3,
+    "abandoned_checkouts": 39
+  },
+  "inventory_watch": [
+    { "sku": "AN-6-BULKHEAD", "name": "AN-6 Bulkhead Kit", "on_hand": 12, "days_of_cover": 1.8, "status": "critical" },
+    { "sku": "DUAL-TANK-SWITCH", "name": "Dual Tank Switch Module", "on_hand": 33, "days_of_cover": 3.1, "status": "warning" },
+    { "sku": "EFI-RETROFIT", "name": "EFI Retrofit Bundle", "on_hand": 15, "days_of_cover": 2.6, "status": "critical" }
+  ],
+  "demand_signals": {
+    "product_requests": [
+      { "category": "fuel systems", "count": 22, "trend": "up" },
+      { "category": "gauges", "count": 10, "trend": "up" }
+    ],
+    "faq_gaps": [
+      { "topic": "Fuel pump amperage", "requests": 7 },
+      { "topic": "Boost-referenced regulators", "requests": 6 }
+    ]
+  }
+}

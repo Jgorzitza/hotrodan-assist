@@ -1,0 +1,11 @@
+{
+  "merchant": {
+    "id": "m-001",
+    "name": "Hot Rod AN",
+    "plan": "Trial",
+    "timezone": "America/Chicago"
+  },
+  "team": [],
+  "featureFlags": {},
+  "integrations": []
+}

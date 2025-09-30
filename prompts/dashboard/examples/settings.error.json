@@ -1,0 +1,10 @@
+{
+  "error": {
+    "status": 500,
+    "message": "Mock error: settings service failed",
+    "meta": {
+      "mock": true,
+      "scenario": "error"
+    }
+  }
+}

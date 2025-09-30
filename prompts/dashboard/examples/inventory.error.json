@@ -1,0 +1,10 @@
+{
+  "error": {
+    "status": 503,
+    "message": "Mock error: inventory service unavailable",
+    "meta": {
+      "mock": true,
+      "scenario": "error"
+    }
+  }
+}

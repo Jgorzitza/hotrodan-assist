@@ -1,0 +1,10 @@
+{
+  "error": {
+    "status": 500,
+    "message": "Mock error: SEO insights endpoint failed",
+    "meta": {
+      "mock": true,
+      "scenario": "error"
+    }
+  }
+}

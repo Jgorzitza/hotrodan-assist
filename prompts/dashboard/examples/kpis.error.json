@@ -1,0 +1,10 @@
+{
+  "error": {
+    "status": 502,
+    "message": "Mock error: KPI service bad gateway",
+    "meta": {
+      "mock": true,
+      "scenario": "error"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "period": {
+    "label": "Today",
+    "start": "2024-04-04T00:00:00Z",
+    "end": "2024-04-04T23:59:59Z"
+  },
+  "revenue": {
+    "gross": 0,
+    "net": 0,
+    "previous_period_delta_pct": 0,
+    "top_products": []
+  },
+  "assistant_pipeline": {
+    "open_opportunities": [],
+    "wins_last_period": 0,
+    "wins_previous_period": 0
+  },
+  "shopify_metrics": {
+    "orders": 0,
+    "avg_order_value": 0,
+    "conversion_rate_pct": 0,
+    "abandoned_checkouts": 0
+  },
+  "inventory_watch": [],
+  "demand_signals": {
+    "product_requests": [],
+    "faq_gaps": []
+  }
+}

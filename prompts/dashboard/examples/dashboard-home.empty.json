@@ -1,0 +1,22 @@
+{
+  "inbox": {
+    "awaiting_review": 0,
+    "awaiting_review_sla_minutes": 0,
+    "threads": []
+  },
+  "learning": {
+    "edits_last_24h": 0,
+    "new_corrections": [],
+    "goldens_regressions": []
+  },
+  "system_health": {
+    "rag_index_age_hours": null,
+    "last_ingest": null,
+    "openai_latency_p95_ms": null,
+    "error_rate_pct": null
+  },
+  "highlights": {
+    "notable_threads": [],
+    "product_requests": []
+  }
+}

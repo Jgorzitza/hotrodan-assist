@@ -1,0 +1,10 @@
+{
+  "error": {
+    "status": 504,
+    "message": "Mock error: orders service timeout",
+    "meta": {
+      "mock": true,
+      "scenario": "error"
+    }
+  }
+}

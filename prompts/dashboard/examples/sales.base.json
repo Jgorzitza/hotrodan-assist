@@ -1,0 +1,67 @@
+{
+  "period": {
+    "label": "Last 7 days",
+    "start": "2024-03-28T00:00:00Z",
+    "end": "2024-04-03T23:59:59Z"
+  },
+  "revenue": {
+    "gross": 47280,
+    "net": 43950,
+    "previous_period_delta_pct": 7.4,
+    "top_products": [
+      { "sku": "AN-8-HOSE", "name": "AN-8 PTFE Hose Kit", "revenue": 8200, "delta_pct": 18.9 },
+      { "sku": "EFI-RETROFIT", "name": "EFI Retrofit Bundle", "revenue": 6900, "delta_pct": 9.7 },
+      { "sku": "DUAL-TANK-SWITCH", "name": "Dual Tank Switch Module", "revenue": 5400, "delta_pct": 5.3 }
+    ]
+  },
+  "assistant_pipeline": {
+    "open_opportunities": [
+      {
+        "conversation_id": "c118",
+        "stage": "quote_sent",
+        "estimated_value": 4200,
+        "last_message": "2024-04-02T21:12:00Z",
+        "owner": "human",
+        "blocked_reason": "Waiting on financing approval"
+      },
+      {
+        "conversation_id": "c204",
+        "stage": "qualified",
+        "estimated_value": 1800,
+        "last_message": "2024-04-03T16:55:00Z",
+        "owner": "assistant",
+        "blocked_reason": null
+      },
+      {
+        "conversation_id": "c244",
+        "stage": "waiting_payment",
+        "estimated_value": 2700,
+        "last_message": "2024-04-01T18:32:00Z",
+        "owner": "human",
+        "blocked_reason": "Customer verifying ACH limit"
+      }
+    ],
+    "wins_last_period": 6,
+    "wins_previous_period": 5
+  },
+  "shopify_metrics": {
+    "orders": 162,
+    "avg_order_value": 271,
+    "conversion_rate_pct": 3.2,
+    "abandoned_checkouts": 24
+  },
+  "inventory_watch": [
+    { "sku": "AN-6-BULKHEAD", "name": "AN-6 Bulkhead Kit", "on_hand": 28, "days_of_cover": 4.8, "status": "warning" },
+    { "sku": "AN-10-HOSE", "name": "AN-10 Hose Kit", "on_hand": 64, "days_of_cover": 9.3, "status": "ok" }
+  ],
+  "demand_signals": {
+    "product_requests": [
+      { "category": "fuel systems", "count": 16, "trend": "up" },
+      { "category": "wiring", "count": 8, "trend": "flat" }
+    ],
+    "faq_gaps": [
+      { "topic": "Returnless vs return-style", "requests": 5 },
+      { "topic": "Fuel pump amperage", "requests": 4 }
+    ]
+  }
+}

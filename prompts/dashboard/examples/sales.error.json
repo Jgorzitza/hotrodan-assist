@@ -1,0 +1,10 @@
+{
+  "error": {
+    "status": 500,
+    "message": "Mock error: sales route timed out",
+    "meta": {
+      "mock": true,
+      "scenario": "error"
+    }
+  }
+}

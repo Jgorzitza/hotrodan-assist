@@ -1,0 +1,36 @@
+[
+  {
+    "id": "aov",
+    "label": "Average Order Value",
+    "value": 271,
+    "changePct": 4.2,
+    "changeDirection": "up",
+    "target": 250,
+    "status": "ok",
+    "trend": [
+      { "label": "D-6", "value": 248 },
+      { "label": "D-5", "value": 252 },
+      { "label": "D-4", "value": 260 },
+      { "label": "D-3", "value": 266 },
+      { "label": "D-2", "value": 269 },
+      { "label": "D-1", "value": 271 }
+    ]
+  },
+  {
+    "id": "conversion",
+    "label": "Conversion Rate",
+    "value": 3.2,
+    "changePct": 0.0,
+    "changeDirection": "flat",
+    "target": 3.5,
+    "status": "warning",
+    "trend": [
+      { "label": "D-6", "value": 3.0 },
+      { "label": "D-5", "value": 3.1 },
+      { "label": "D-4", "value": 3.2 },
+      { "label": "D-3", "value": 3.1 },
+      { "label": "D-2", "value": 3.2 },
+      { "label": "D-1", "value": 3.2 }
+    ]
+  }
+]
