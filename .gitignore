@@ -47,3 +47,6 @@ build/
 coverage/
 .vitest/
 .cache/
+venv/
+chroma/
+k6-v0.48.0-linux-amd64/
