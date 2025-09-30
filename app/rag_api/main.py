@@ -188,6 +188,15 @@ def query(q: QueryIn, request: Request):
         }
 
     except Exception as e:
+        # Track failed query
+        ANALYTICS.track_query(
+            q.question, 
+            chosen_provider.name if 'chosen_provider' in locals() else 'unknown',
+            time.time() - start_time,
+            0,
+            success=False,
+            error=str(e)
+        )
         raise HTTPException(status_code=500, detail=f"RAG query failed: {str(e)}")
 
 @app.get("/health")
@@ -212,3 +221,23 @@ def get_config():
 def metrics():
     """Get API metrics."""
     return get_metrics()
+
+@app.get("/analytics/dashboard")
+def analytics_dashboard():
+    """Get comprehensive analytics dashboard data."""
+    return ANALYTICS.get_dashboard_data()
+
+@app.get("/analytics/providers")
+def analytics_providers():
+    """Get provider-specific metrics."""
+    return ANALYTICS.get_provider_summary()
+
+@app.get("/analytics/performance")
+def analytics_performance():
+    """Get performance metrics."""
+    return ANALYTICS.get_performance_metrics()
+
+@app.get("/analytics/usage")
+def analytics_usage():
+    """Get usage pattern analytics."""
+    return ANALYTICS.get_usage_patterns()
