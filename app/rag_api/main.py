@@ -27,6 +27,7 @@ from rag_config import (
 from app.rag_api.security import check_rate_limit, validate_request
 from app.rag_api.advanced_functions import query_routing, context_aware_response, query_analytics, performance_optimization
 from app.rag_api.monitor import track_performance, get_metrics, save_metrics
+from app.rag_api.analytics import ANALYTICS
 from app.rag_api.model_selector import MODEL_SELECTOR
 
 configure_settings()
@@ -171,6 +172,10 @@ def query(q: QueryIn, request: Request):
 
         # Generate analytics
         analytics = query_analytics(q.question, time.time() - start_time, len(sources), mode)
+        
+        # Track query with enhanced analytics
+        ANALYTICS.track_query(q.question, mode, time.time() - start_time, len(sources), success=True)
+
         
         return {
             "answer": answer,
