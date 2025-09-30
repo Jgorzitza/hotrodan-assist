@@ -1,0 +1,963 @@
+╭─ info ───────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  Using shopify.app.toml for default values:                                  │
+│                                                                              │
+│    • Org:             Hot Rod AN LLC                                         │
+│    • App:             Dashboard                                              │
+│    • Dev store:       afafsaf.myshopify.com                                  │
+│    • Update URLs:     Not yet configured                                     │
+│                                                                              │
+│   You can pass `--reset` to your command to reset your app configuration.    │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Running pre-dev command: "npx prisma generate"Preparing app preview on afafsaf.myshopify.comProxy server started on port 43695 GraphiQL server started on port 3457✅ Ready, watching for changes in your app │ Access scopes auto-granted: customer_read_customers, customer_read_draft_orders, customer_read_markets, customer_read_orders, customer_write_customers, customer_write_orders, read_all_orders, read_analytics, read_assigned_fulfillment_orders, read_audit_events, read_cash_tracking, read_channels, read_checkouts, read_companies, read_content, read_custom_fulfillment_services, read_custom_pixels, read_customer_events, read_customer_merge, read_customer_payment_methods, read_customers, read_delivery_customizations, read_delivery_option_generators, read_discounts, read_discounts_allocator_functions, read_discovery, read_draft_orders, read_files, read_fulfillment_constraint_rules, read_fulfillments, read_inventory, read_inventory_shipments, read_inventory_shipments_received_items, read_inventory_transfers, read_legal_policies, read_locales, read_locations, read_marketing_events, read_marketing_integrated_campaigns, read_markets, read_markets_home, read_merchant_managed_fulfillment_orders, read_metaobject_definitions, read_metaobjects, read_online_store_navigation, read_online_store_pages, read_order_edits, read_orders, read_packing_slip_templates, read_payment_mandate, read_payment_terms, read_pixels, read_price_rules, read_product_feeds, read_product_listings, read_products, read_publications, read_purchase_options, read_reports, read_resource_feedbacks, read_returns, read_script_tags, read_shipping, read_shopify_payments_bank_accounts, read_shopify_payments_disputes, read_shopify_payments_payouts, read_store_credit_account_transactions, read_themes, read_third_party_fulfillment_orders, read_translations, read_validations, unauthenticated_read_bundles, unauthenticated_read_content, write_assigned_fulfillment_orders, write_content, write_custom_fulfillment_services, write_custom_pixels, write_customer_merge, write_customers, write_delivery_customizations, write_delivery_option_generators, write_discounts, write_discounts_allocator_functions, write_discovery, write_draft_orders, write_files, write_fulfillment_constraint_rules, write_inventory, write_inventory_shipments, write_inventory_shipments_received_items, write_inventory_transfers, write_legal_policies, write_locales, write_locations, write_marketing_events, write_marketing_integrated_campaigns, write_markets, write_markets_home, write_merchant_managed_fulfillment_orders, write_metaobject_definitions, write_metaobjects, write_online_store_navigation, write_online_store_pages, write_order_edits, write_orders, write_packing_slip_templates, write_payment_mandate, write_payment_terms, write_pixels, write_price_rules, write_product_feeds, write_product_listings, write_products, write_publications, write_purchase_options, write_reports, write_resource_feedbacks, write_returns, write_script_tags, write_shipping, write_shopify_payments_disputes, write_theme_code, write_themes, write_third_party_fulfillment_orders, write_translations└ Using URL: https://hotrodan.com/dashboadPrisma schema loaded from prisma/schema.prisma
+Datasource "db": SQLite database "dev.sqlite" at "file:dev.sqlite"
+
+1 migration found in prisma/migrations
+
+
+No pending migrations to apply.
+  ➜  Local:   http://localhost:36761/
+  ➜  Network: use --host to expose
+11:36:45 AM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+11:36:45 AM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+❌ Error└  Error reloading app: Error loading the app, please check your app configuration.11:54:53 AM [vite] vite.config.ts changed, restarting server...
+11:54:53 AM [vite] (client) Re-optimizing dependencies because lockfile has changed
+11:54:53 AM [vite] server restarted.
+11:57:40 AM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+11:57:40 AM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+12:14:28 PM [vite] vite.config.ts changed, restarting server...
+12:14:28 PM [vite] server restarted.
+12:18:05 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app.orders.tsx:100:48: ERROR: Expected "}" but found ";"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.orders.tsx:100:48
+  
+  Expected "}" but found ";"
+  98 |          : intent === "assign-to-me"
+  99 |            ? `Order ${orderId} assigned to you (mock)`
+  100|            : `Action '${intent}' accepted (mock)`;
+     |                                                  ^
+  101|    });
+  102|  };
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+12:41:04 PM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+12:41:04 PM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+12:41:38 PM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+12:41:38 PM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+1:27:08 PM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+1:27:08 PM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+1:28:18 PM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+1:28:18 PM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+3:46:11 PM [vite] (ssr) warning: Duplicate key "sentiment" in object literal
+300|    timeRemainingSeconds: ticket.slaBreached ? -1 : null,
+301|    confidence: null,
+302|    sentiment: ticket.sentiment,
+   |    ^
+303|    feedbackSummary: { up: 0, down: 0, total: 0 },
+304|  });
+
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.inbox.tsx
+3:46:20 PM [vite] (ssr) warning: Duplicate key "sentiment" in object literal
+300|    timeRemainingSeconds: ticket.slaBreached ? -1 : null,
+301|    confidence: null,
+302|    sentiment: ticket.sentiment,
+   |    ^
+303|    feedbackSummary: { up: 0, down: 0, total: 0 },
+304|  });
+
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.inbox.tsx
+3:46:28 PM [vite] (ssr) warning: Duplicate key "sentiment" in object literal
+300|    timeRemainingSeconds: ticket.slaBreached ? -1 : null,
+301|    confidence: null,
+302|    sentiment: ticket.sentiment,
+   |    ^
+303|    feedbackSummary: { up: 0, down: 0, total: 0 },
+304|  });
+
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.inbox.tsx
+3:47:02 PM [vite] (ssr) warning: Duplicate key "sentiment" in object literal
+300|    timeRemainingSeconds: ticket.slaBreached ? -1 : null,
+301|    confidence: null,
+302|    sentiment: ticket.sentiment,
+   |    ^
+303|    feedbackSummary: { up: 0, down: 0, total: 0 },
+304|  });
+
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.inbox.tsx
+3:52:10 PM [vite] (ssr) warning: Duplicate key "sentiment" in object literal
+300|    timeRemainingSeconds: ticket.slaBreached ? -1 : null,
+301|    confidence: null,
+302|    sentiment: ticket.sentiment,
+   |    ^
+303|    feedbackSummary: { up: 0, down: 0, total: 0 },
+304|  });
+
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.inbox.tsx
+3:52:21 PM [vite] (ssr) warning: Duplicate key "sentiment" in object literal
+300|    timeRemainingSeconds: ticket.slaBreached ? -1 : null,
+301|    confidence: null,
+302|    sentiment: ticket.sentiment,
+   |    ^
+303|    feedbackSummary: { up: 0, down: 0, total: 0 },
+304|  });
+
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.inbox.tsx
+4:16:00 PM [vite] (ssr) warning: Duplicate key "sentiment" in object literal
+301|    timeRemainingSeconds: ticket.slaBreached ? -1 : null,
+302|    confidence: null,
+303|    sentiment: ticket.sentiment,
+   |    ^
+304|    feedbackSummary: { up: 0, down: 0, total: 0 },
+305|  });
+
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.inbox.tsx
+4:16:21 PM [vite] (ssr) warning: Duplicate key "sentiment" in object literal
+302|    timeRemainingSeconds: ticket.slaBreached ? -1 : null,
+303|    confidence: null,
+304|    sentiment: ticket.sentiment,
+   |    ^
+305|    feedbackSummary: { up: 0, down: 0, total: 0 },
+306|  });
+
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.inbox.tsx
+4:16:29 PM [vite] (ssr) warning: Duplicate key "sentiment" in object literal
+302|    timeRemainingSeconds: ticket.slaBreached ? -1 : null,
+303|    confidence: null,
+304|    sentiment: ticket.sentiment,
+   |    ^
+305|    feedbackSummary: { up: 0, down: 0, total: 0 },
+306|  });
+
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.inbox.tsx
+4:17:07 PM [vite] (ssr) warning: Duplicate key "sentiment" in object literal
+302|    timeRemainingSeconds: ticket.slaBreached ? -1 : null,
+303|    confidence: null,
+304|    sentiment: ticket.sentiment,
+   |    ^
+305|    feedbackSummary: { up: 0, down: 0, total: 0 },
+306|  });
+
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.inbox.tsx
+4:49:39 PM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+4:49:39 PM [vite] changed tsconfig file detected: /home/justin/llama_rag/dashboard/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+4:49:39 PM [vite] vite.config.ts changed, restarting server...
+4:49:39 PM [vite] server restarted.
+9:34:03 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app.seo.tsx:274:9: ERROR: Expected ")" but found ":"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.seo.tsx:274:9
+  
+  Expected ")" but found ":"
+  272|  
+  273|  const fetchAdapterData = async <T>(
+  274|    adapter: AdapterMeta,
+     |           ^
+  275|    fetcher: () => Promise<T>,
+  276|    fallback: T,
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+9:34:04 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app.seo.tsx:274:9: ERROR: Expected ")" but found ":"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.seo.tsx:274:9
+  
+  Expected ")" but found ":"
+  272|  
+  273|  const fetchAdapterData = async <T>(
+  274|    adapter: AdapterMeta,
+     |           ^
+  275|    fetcher: () => Promise<T>,
+  276|    fallback: T,
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+9:34:25 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app.seo.tsx:274:9: ERROR: Expected ")" but found ":"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app.seo.tsx:274:9
+  
+  Expected ")" but found ":"
+  272|  
+  273|  const fetchAdapterData = async <T>(
+  274|    adapter: AdapterMeta,
+     |           ^
+  275|    fetcher: () => Promise<T>,
+  276|    fallback: T,
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+3:32:58 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:32:58 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:32:58 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:32:58 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:32:58 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:32:58 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:32:58 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:32:58 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:33:04 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0
+  
+  Unexpected "<<"
+  64 |    const [searchParams] = useSearchParams();
+  65 |    const navigate = useNavigate();
+  66 |  <<<<<<< Updated upstream
+     |  ^
+  67 |  =======
+  68 |    const navigation = useNavigation();
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+3:33:04 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0
+  
+  Unexpected "<<"
+  64 |    const [searchParams] = useSearchParams();
+  65 |    const navigate = useNavigate();
+  66 |  <<<<<<< Updated upstream
+     |  ^
+  67 |  =======
+  68 |    const navigation = useNavigation();
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+3:33:04 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0
+  
+  Unexpected "<<"
+  64 |    const [searchParams] = useSearchParams();
+  65 |    const navigate = useNavigate();
+  66 |  <<<<<<< Updated upstream
+     |  ^
+  67 |  =======
+  68 |    const navigation = useNavigation();
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+3:33:04 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0
+  
+  Unexpected "<<"
+  64 |    const [searchParams] = useSearchParams();
+  65 |    const navigate = useNavigate();
+  66 |  <<<<<<< Updated upstream
+     |  ^
+  67 |  =======
+  68 |    const navigation = useNavigation();
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+3:33:04 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0
+  
+  Unexpected "<<"
+  64 |    const [searchParams] = useSearchParams();
+  65 |    const navigate = useNavigate();
+  66 |  <<<<<<< Updated upstream
+     |  ^
+  67 |  =======
+  68 |    const navigation = useNavigation();
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+3:33:04 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0
+  
+  Unexpected "<<"
+  64 |    const [searchParams] = useSearchParams();
+  65 |    const navigate = useNavigate();
+  66 |  <<<<<<< Updated upstream
+     |  ^
+  67 |  =======
+  68 |    const navigation = useNavigation();
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+3:33:30 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/app.inbox.stream.ts
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 15)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:33:30 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/app.inbox.stream.ts
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 15)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:33:30 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/app.inbox.stream.ts
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 15)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:33:30 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/app.inbox.stream.ts
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 15)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:33:30 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/app.inbox.stream.ts
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 15)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:33:30 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/app.inbox.stream.ts
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 15)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+3:33:34 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+3:33:34 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+3:33:34 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+3:33:34 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+3:33:34 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+3:33:34 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+3:33:34 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+3:33:34 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+6:00:18 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:18 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:18 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:18 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:18 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:18 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:18 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:18 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/webhooks.fulfillments.update.tsx
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 1)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:20 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0
+  
+  Unexpected "<<"
+  64 |    const [searchParams] = useSearchParams();
+  65 |    const navigate = useNavigate();
+  66 |  <<<<<<< Updated upstream
+     |  ^
+  67 |  =======
+  68 |    const navigation = useNavigation();
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+6:00:20 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0
+  
+  Unexpected "<<"
+  64 |    const [searchParams] = useSearchParams();
+  65 |    const navigate = useNavigate();
+  66 |  <<<<<<< Updated upstream
+     |  ^
+  67 |  =======
+  68 |    const navigation = useNavigation();
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+6:00:20 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0
+  
+  Unexpected "<<"
+  64 |    const [searchParams] = useSearchParams();
+  65 |    const navigate = useNavigate();
+  66 |  <<<<<<< Updated upstream
+     |  ^
+  67 |  =======
+  68 |    const navigation = useNavigation();
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+6:00:20 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0
+  
+  Unexpected "<<"
+  64 |    const [searchParams] = useSearchParams();
+  65 |    const navigate = useNavigate();
+  66 |  <<<<<<< Updated upstream
+     |  ^
+  67 |  =======
+  68 |    const navigation = useNavigation();
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+6:00:20 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0
+  
+  Unexpected "<<"
+  64 |    const [searchParams] = useSearchParams();
+  65 |    const navigate = useNavigate();
+  66 |  <<<<<<< Updated upstream
+     |  ^
+  67 |  =======
+  68 |    const navigation = useNavigation();
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+6:00:20 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Transform failed with 1 error:
+/home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /home/justin/llama_rag/dashboard/app/routes/app._index.tsx:66:0
+  
+  Unexpected "<<"
+  64 |    const [searchParams] = useSearchParams();
+  65 |    const navigate = useNavigate();
+  66 |  <<<<<<< Updated upstream
+     |  ^
+  67 |  =======
+  68 |    const navigation = useNavigation();
+  
+      at failureErrorWithLog (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+      at /home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+      at responseCallbacks.<computed> (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/home/justin/llama_rag/dashboard/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Socket.Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+6:00:36 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/app.inbox.stream.ts
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 15)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:36 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/app.inbox.stream.ts
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 15)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:36 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/app.inbox.stream.ts
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 15)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:36 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/app.inbox.stream.ts
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 15)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:36 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/app.inbox.stream.ts
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 15)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:36 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Could not resolve module ID for /app/routes/app.inbox.stream.ts
+      at resolveId (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:229:24)
+      at async Promise.all (index 0)
+      at getRouteModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:232:20)
+      at /home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:203:25
+      at async Promise.all (index 15)
+      at getRouteManifestModuleExports (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:202:17)
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:566:32)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+6:00:45 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+6:00:45 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+6:00:45 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+6:00:45 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+6:00:45 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+6:00:45 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+6:00:45 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)
+6:00:45 PM [vite] (ssr) Error when evaluating SSR module virtual:remix/server-manifest: Cannot read properties of undefined (reading 'includes')
+      at getRemixManifestForDev (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:576:34)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at LoadPluginContext.load (/home/justin/llama_rag/dashboard/node_modules/@remix-run/dev/dist/vite/plugin.js:932:87)
+      at EnvironmentPluginContainer.load (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42282:22)
+      at loadAndTransform (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35672:22)
+      at fetchModule (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:46847:16)
+      at handleInvoke (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:38991:22)
+      at EventEmitter.listenerForInvokeHandler (file:///home/justin/llama_rag/dashboard/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:39064:19)

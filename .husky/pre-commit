@@ -1,6 +1,3 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-echo "🔍 Running pre-commit checks..."
-npm run pre-commit
-echo "✅ Pre-commit checks passed!"
+. "$(command -v git)"; # harmless no-op; keeps sh happy on WSL
+npx --yes lint-staged

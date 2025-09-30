@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude mcp:*)",
+      "Read(//home/justin/**)",
+      "WebSearch",
+      "Bash(claude:*)",
+      "Bash(npx:*)",
+      "WebFetch(domain:shopify.dev)",
+      "Bash(docker-compose:*)",
+      "Bash(curl:*)",
+      "Bash(tar:*)",
+      "Bash(sudo mv:*)",
+      "Bash(k6:*)",
+      "Bash(/home/justin/llama_rag/tools/k6-v0.48.0-linux-amd64/k6 version)",
+      "Bash(python -m pytest app/rag_api/tests/test_api_integration.py -v)",
+      "Bash(python -m pytest app/rag_api/tests/test_model_selector.py -v)",
+      "Bash(find:*)",
+      "Bash(npm install:*)",
+      "Bash(/home/justin/llama_rag/venv/bin/python -m pytest app/rag_api/tests/test_api_integration.py -v)",
+      "Bash(python3:*)",
+      "Bash(netstat:*)",
+      "Bash(ss:*)",
+      "Bash(/home/justin/llama_rag/venv/bin/python -m pytest app/rag_api/tests/test_model_selector.py -v)",
+      "Bash(docker ps:*)",
+      "Bash(/home/justin/llama_rag/venv/bin/pip install fastapi uvicorn[standard] pydantic python-multipart)",
+      "Bash(npm test)",
+      "Bash(echo $NODE_OPTIONS)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,1 @@
+node: --optimize-for-size is not allowed in NODE_OPTIONS

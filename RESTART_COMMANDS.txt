@@ -1,0 +1,63 @@
+🔄 AGENT RESTART COMMANDS - Post-Progress Update
+
+PROGRESS SUMMARY:
+✅ SEO: 100% COMPLETE (43/43 tasks) - Live connectors operational!
+✅ DASHBOARD: 70% COMPLETE (35/50 tasks) - Shopify GraphQL integration working
+✅ MCP: 40% COMPLETE (20/50 tasks) - Security & code quality audits done
+🔄 Services: Inventory (8004) ✅ | MCP (8003) ✅
+
+═══════════════════════════════════════════════════════════════════
+
+DASHBOARD (Resume Task #36):
+You are the Dashboard Engineer. Progress: 35/50 tasks done.
+READ: /home/justin/llama_rag/plans/agents/dashboard/OVERNIGHT_TASKS.md
+COMPLETED: Shopify API, inventory service, real data integration
+NEXT: Tasks 36-50 (Testing, assistant enhancement, production)
+START: Task #36 - Cross-browser testing
+
+SEO (New Assignment - Integration):
+You are the SEO Engineer. ALL 43 tasks COMPLETE! 🎉
+NEW WORK: Dashboard integration, optimization, monitoring (20 tasks)
+START: Create dashboard SEO cards with live GA4/GSC/Bing data
+
+MCP (Resume Task #21):
+You are the MCP Engineer. Progress: 20/50 audit tasks.
+READ: /home/justin/llama_rag/plans/agents/mcp/OVERNIGHT_TASKS.md  
+COMPLETED: Security (A-) & Code Quality (A) audits
+NEXT: Connector security review, performance analysis
+START: Task #21 - Shopify connector security audit
+
+INVENTORY (Start Task #1):
+You are the Inventory Engineer.
+READ: /home/justin/llama_rag/plans/agents/inventory/OVERNIGHT_TASKS.md
+API operational on 8004 ✅
+EXECUTE: All 30 tasks (MCP integration, dashboard API, performance)
+START: Task #1 - Verify MCP connector
+
+RAG (Start Task #1):
+You are the RAG Engineer.
+READ: /home/justin/llama_rag/plans/agents/rag/OVERNIGHT_TASKS.md
+EXECUTE: All 35 tasks (testing, analytics, rate limiting, integration)
+START: Task #1 - Fix TestClient import (from fastapi.testclient import TestClient)
+
+QUALITY (Start Task #1):
+You are the Quality Engineer.
+READ: /home/justin/llama_rag/plans/agents/quality/OVERNIGHT_TASKS.md
+EXECUTE: All 60 validation tasks
+START: Task #1 - Shopify app installation test
+
+TOOLING (Start Task #1):
+You are the Tooling Engineer.
+READ: /home/justin/llama_rag/plans/agents/tooling/OVERNIGHT_TASKS.md
+EXECUTE: All 35 tasks (k6, Selenium, benchmarks, monitoring)
+START: Task #1 - Install k6 load testing
+
+APPROVALS (Start Task #1):
+You are the Approvals Engineer.
+READ: /home/justin/llama_rag/plans/agents/approvals/OVERNIGHT_TASKS.md
+EXECUTE: All 25 documentation tasks (NO CODE - docs only)
+START: Task #1 - OpenAPI documentation
+
+═══════════════════════════════════════════════════════════════════
+MANAGER: Monitor every 30min | Target: 250+ tasks | Current: 55/328 (17%)
+═══════════════════════════════════════════════════════════════════

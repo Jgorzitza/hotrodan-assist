@@ -1,0 +1,80 @@
+2025-09-29 14:37:10,880 - INFO - Starting comprehensive E2E validation
+2025-09-29 14:37:10,881 - INFO - Testing API health
+2025-09-29 14:37:10,930 - INFO - Testing all analytics endpoints
+2025-09-29 14:37:10,934 - INFO - ✓ channel_campaign_metrics - 0.005s
+2025-09-29 14:37:10,939 - WARNING - ✗ attribution_models - HTTP 404
+2025-09-29 14:37:10,940 - WARNING - ✗ funnel_dropoff - HTTP 404
+2025-09-29 14:37:10,942 - WARNING - ✗ forecast_rollup - HTTP 404
+2025-09-29 14:37:10,943 - WARNING - ✗ pricing_elasticity - HTTP 404
+2025-09-29 14:37:10,943 - INFO - Testing data processing
+2025-09-29 14:37:10,954 - INFO - Testing performance
+2025-09-29 14:37:10,973 - INFO - Testing concurrent requests
+2025-09-29 14:37:10,990 - INFO - Testing error handling
+2025-09-29 14:37:11,013 - INFO - Testing integration
+2025-09-29 14:37:11,017 - INFO - E2E validation completed - Success rate: 52.6%
+2025-09-29 14:37:49,219 - INFO - Starting comprehensive E2E validation
+2025-09-29 14:37:49,219 - INFO - Testing API health
+2025-09-29 14:37:49,222 - INFO - Testing all analytics endpoints
+2025-09-29 14:37:49,222 - ERROR - ✗ channel_campaign_metrics - HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7a720>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,223 - ERROR - ✗ attribution_models - HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/attribution-models (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063fa7890>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,224 - ERROR - ✗ funnel_dropoff - HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/funnel-dropoff (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7a270>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,224 - ERROR - ✗ forecast_rollup - HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/forecast-rollup (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d79a30>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,225 - ERROR - ✗ pricing_elasticity - HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/pricing-elasticity (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7b140>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,225 - INFO - Testing data processing
+2025-09-29 14:37:49,229 - INFO - Testing performance
+2025-09-29 14:37:49,230 - ERROR - Performance test error: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7baa0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,230 - ERROR - Performance test error: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7ab10>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,231 - ERROR - Performance test error: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7a3f0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,232 - ERROR - Performance test error: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d78c80>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,232 - ERROR - Performance test error: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063f86d80>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,233 - ERROR - Performance test error: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063e00bc0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,234 - ERROR - Performance test error: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d78da0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,234 - ERROR - Performance test error: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d79970>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,235 - ERROR - Performance test error: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7aba0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,235 - ERROR - Performance test error: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/sales/channel-campaign-metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x722063d7b8f0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-09-29 14:37:49,235 - INFO - Testing concurrent requests
+2025-09-29 14:37:49,245 - INFO - Testing error handling
+2025-09-29 14:37:49,251 - INFO - Testing integration
+2025-09-29 14:37:49,252 - INFO - E2E validation completed - Success rate: 0.0%
+2025-09-29 14:38:17,396 - INFO - Starting comprehensive E2E validation
+2025-09-29 14:38:17,396 - INFO - Testing API health
+2025-09-29 14:38:17,402 - INFO - Testing all analytics endpoints
+2025-09-29 14:38:17,403 - INFO - ✓ channel_campaign_metrics - 0.002s
+2025-09-29 14:38:17,405 - INFO - ✓ attribution_models - 0.001s
+2025-09-29 14:38:17,407 - INFO - ✓ funnel_dropoff - 0.001s
+2025-09-29 14:38:17,408 - INFO - ✓ forecast_rollup - 0.001s
+2025-09-29 14:38:17,409 - INFO - ✓ pricing_elasticity - 0.001s
+2025-09-29 14:38:17,409 - INFO - Testing data processing
+2025-09-29 14:38:17,418 - INFO - Testing performance
+2025-09-29 14:38:17,430 - INFO - Testing concurrent requests
+2025-09-29 14:38:17,444 - INFO - Testing error handling
+2025-09-29 14:38:17,463 - INFO - Testing integration
+2025-09-29 14:38:17,467 - INFO - E2E validation completed - Success rate: 78.9%
+2025-09-29 14:47:24,247 - INFO - Starting comprehensive E2E validation
+2025-09-29 14:47:24,247 - INFO - Testing API health
+2025-09-29 14:47:24,251 - INFO - Testing all analytics endpoints
+2025-09-29 14:47:24,253 - INFO - ✓ channel_campaign_metrics - 0.001s
+2025-09-29 14:47:24,254 - INFO - ✓ attribution_models - 0.001s
+2025-09-29 14:47:24,255 - INFO - ✓ funnel_dropoff - 0.001s
+2025-09-29 14:47:24,256 - INFO - ✓ forecast_rollup - 0.001s
+2025-09-29 14:47:24,258 - INFO - ✓ pricing_elasticity - 0.001s
+2025-09-29 14:47:24,258 - INFO - Testing data processing
+2025-09-29 14:47:24,266 - INFO - Testing performance
+2025-09-29 14:47:24,278 - INFO - Testing concurrent requests
+2025-09-29 14:47:24,293 - INFO - Testing error handling
+2025-09-29 14:47:24,310 - INFO - Testing integration
+2025-09-29 14:47:24,314 - INFO - E2E validation completed - Success rate: 78.9%
+2025-09-29 14:52:24,473 - INFO - Starting comprehensive E2E validation
+2025-09-29 14:52:24,474 - INFO - Testing API health
+2025-09-29 14:52:24,478 - INFO - Testing all analytics endpoints
+2025-09-29 14:52:24,480 - INFO - ✓ channel_campaign_metrics - 0.001s
+2025-09-29 14:52:24,481 - INFO - ✓ attribution_models - 0.002s
+2025-09-29 14:52:24,483 - INFO - ✓ funnel_dropoff - 0.002s
+2025-09-29 14:52:24,485 - INFO - ✓ forecast_rollup - 0.001s
+2025-09-29 14:52:24,486 - INFO - ✓ pricing_elasticity - 0.002s
+2025-09-29 14:52:24,487 - INFO - Testing data processing
+2025-09-29 14:52:24,496 - INFO - Testing performance
+2025-09-29 14:52:24,509 - INFO - Testing concurrent requests
+2025-09-29 14:52:24,524 - INFO - Testing error handling
+2025-09-29 14:52:24,541 - INFO - Testing integration
+2025-09-29 14:52:24,546 - INFO - E2E validation completed - Success rate: 78.9%

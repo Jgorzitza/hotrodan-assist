@@ -2,6 +2,10 @@
   "name": "app",
   "private": true,
   "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:cross-browser": "playwright test --config=tests/visual-regression/visual-regression.config.js --project=chromium --project=webkit --project=mobile-chrome",
     "test:visual": "cd tests/visual-regression && ./run-visual-tests.sh",
     "test:visual:update": "cd tests/visual-regression && UPDATE_SNAPSHOTS=true ./run-visual-tests.sh",
     "build": "remix vite:build",
@@ -54,6 +58,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.1",
     "@remix-run/eslint-config": "^2.16.1",
     "@remix-run/route-config": "^2.16.1",
     "@shopify/api-codegen-preset": "^1.1.1",
@@ -63,8 +68,8 @@
     "@types/react-dom": "^18.2.14",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^10.0.1",
-    "msw": "^2.2.3",
     "jsdom": "^27.0.0",
+    "msw": "^2.2.3",
     "prettier": "^3.2.4",
     "typescript": "^5.2.2",
     "vite": "^6.2.2",

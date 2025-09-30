@@ -1,55 +1,16 @@
-# Python
+# python
+.venv/
 __pycache__/
 *.pyc
-*.pyo
-*.egg-info/
-.eggs/
-.venv/
-venv/
-env/
-.env
-.env.*
 
-# LlamaIndex / Chroma artifacts
-chroma/
-storage/
-data/chroma/
-data/storage/
+# node
+node_modules/
 
-# OS/editor
+# os/editor
 .DS_Store
-Thumbs.db
-.idea/
-.vscode/
+*.swp
 
-# Node (if used for Approval App)
-node_modules/
-pnpm-lock.yaml
-yarn.lock
-npm-debug.log*
-
-# Local secrets
-.env
-
-# === build & cache ===
-**/__pycache__/
-*.pyc
-node_modules/
+# builds
 dist/
-.build/
-
-# === local data / vector dbs / sqlite ===
-chroma/
-*.sqlite3
-*.bin
-
-# === logs & temp ===
-*.log
-reingest.log
-
-# === local env ===
+build/
 .env
-
-# virtualenvs
-.venv*/
-venv/

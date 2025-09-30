@@ -1,0 +1,95 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MCP Connectors API",
+    "description": "Mock MCP connectors for inventory integration",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "description": "Root endpoint",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shopify/products": {
+      "get": {
+        "summary": "Get Shopify Products",
+        "description": "Mock Shopify products endpoint",
+        "operationId": "get_shopify_products_shopify_products_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ga4/traffic-summary": {
+      "get": {
+        "summary": "Get Ga4 Traffic",
+        "description": "Mock GA4 traffic summary endpoint",
+        "operationId": "get_ga4_traffic_ga4_traffic_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gsc/search-queries": {
+      "get": {
+        "summary": "Get Gsc Queries",
+        "description": "Mock GSC search queries endpoint",
+        "operationId": "get_gsc_queries_gsc_search_queries_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

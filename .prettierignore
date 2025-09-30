@@ -6,3 +6,5 @@ coverage/
 .env*
 .DS_Store
 *.md
+docs/api/approval_app_openapi.json
+docs/api/seo_automation_openapi.json

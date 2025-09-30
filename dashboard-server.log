@@ -1,0 +1,17 @@
+
+> start
+> remix-serve ./build/server/index.js --port 4173 --host 0.0.0.0
+
+
+file:///home/justin/llama_rag/dashboard/node_modules/@shopify/src/server/shopify-app.ts:154
+    throw new ShopifyError(message);
+          ^
+Error: Detected an empty appUrl configuration, please make sure to set the necessary environment variables.
+If you're deploying your app, you can find more information at https://shopify.dev/docs/apps/launch/deployment/deploy-web-app/deploy-to-hosting-service#step-4-set-up-environment-variables
+    at deriveApi (file:///home/justin/llama_rag/dashboard/node_modules/@shopify/src/server/shopify-app.ts:154:11)
+    at shopifyApp (file:///home/justin/llama_rag/dashboard/node_modules/@shopify/src/server/shopify-app.ts:66:15)
+    at file:///home/justin/llama_rag/dashboard/build/server/index.js?t=1759042460824.627:570:17
+    at ModuleJob.run (node:internal/modules/esm/module_job:345:25)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:651:26)
+    at run (/home/justin/llama_rag/dashboard/node_modules/@remix-run/serve/dist/cli.js:111:15)

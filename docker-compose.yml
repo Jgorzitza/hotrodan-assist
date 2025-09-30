@@ -37,16 +37,14 @@ services:
     env_file: .env
     ports: [ "5173:5173" ]
     depends_on: [ assistants ]
-volumes:
-  pgdata:
 
   inventory-api:
     build: .
     env_file: .env
-    volumes: 
+    volumes:
       - "./:/workspace"
       - "./data:/data"
-    ports: 
+    ports:
       - "8004:8004"
     depends_on: [db, redis, rag-api]
     command: python3 -m uvicorn inventory_api:app --host 0.0.0.0 --port 8004
@@ -54,20 +52,17 @@ volumes:
   connectors:
     build: ./app/connectors
     env_file: .env
-    volumes: 
+    volumes:
       - "./:/workspace"
-    ports: 
+    ports:
       - "8003:8003"
     depends_on: [db, redis]
     command: python3 -m uvicorn connectors.main:app --host 0.0.0.0 --port 8003
 
-volumes:
-  pgdata:
-
   dashboard:
     build: ./apps/dashboard
     env_file: apps/dashboard/.env
-    ports: 
+    ports:
       - "8080:8080"
     depends_on: [db, redis]
     volumes:
@@ -90,3 +85,6 @@ volumes:
       - "./apps/dashboard/cloudflare:/app/cloudflare"
     depends_on: [dashboard]
     restart: unless-stopped
+
+volumes:
+  pgdata:

@@ -65,11 +65,11 @@
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e && npm run benchmark:dashboard && npm run test:report"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
+    "**/*.{json,md,yml,yaml}": [
       "prettier --write"
     ],
-    "*.{json,md,yml,yaml}": [
+    "**/*.{js,jsx,ts,tsx}": [
+      "eslint --max-warnings=0",
       "prettier --write"
     ]
   },

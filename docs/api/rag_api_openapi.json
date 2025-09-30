@@ -1,0 +1,695 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Enhanced RAG API with Multi-Model Support",
+    "description": "RAG API with security, advanced functions, and flexible model providers",
+    "version": "2.1.0"
+  },
+  "paths": {
+    "/query": {
+      "post": {
+        "summary": "Query",
+        "description": "Query the RAG system with advanced processing and multi-model support.",
+        "operationId": "query_query_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "description": "Health check endpoint.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/config": {
+      "get": {
+        "summary": "Get Config",
+        "description": "Get API configuration and limits.",
+        "operationId": "get_config_config_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "summary": "Metrics",
+        "description": "Get API metrics.",
+        "operationId": "metrics_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/dashboard": {
+      "get": {
+        "summary": "Analytics Dashboard",
+        "description": "Get comprehensive analytics dashboard data.",
+        "operationId": "analytics_dashboard_analytics_dashboard_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/providers": {
+      "get": {
+        "summary": "Analytics Providers",
+        "description": "Get provider-specific metrics.",
+        "operationId": "analytics_providers_analytics_providers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/performance": {
+      "get": {
+        "summary": "Analytics Performance",
+        "description": "Get performance metrics.",
+        "operationId": "analytics_performance_analytics_performance_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/usage": {
+      "get": {
+        "summary": "Analytics Usage",
+        "description": "Get usage pattern analytics.",
+        "operationId": "analytics_usage_analytics_usage_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rate-limit/status": {
+      "get": {
+        "summary": "Rate Limit Status",
+        "description": "Get current rate limit status for the client.",
+        "operationId": "rate_limit_status_rate_limit_status_get",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cache/stats": {
+      "get": {
+        "summary": "Cache Stats",
+        "description": "Get cache statistics.",
+        "operationId": "cache_stats_cache_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cache/top-queries": {
+      "get": {
+        "summary": "Cache Top Queries",
+        "description": "Get most frequently cached queries.",
+        "operationId": "cache_top_queries_cache_top_queries_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cache/invalidate": {
+      "post": {
+        "summary": "Cache Invalidate",
+        "description": "Invalidate all cache entries.",
+        "operationId": "cache_invalidate_cache_invalidate_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cache/cleanup": {
+      "post": {
+        "summary": "Cache Cleanup",
+        "description": "Cleanup expired cache entries.",
+        "operationId": "cache_cleanup_cache_cleanup_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/analyze": {
+      "post": {
+        "summary": "Analyze Query",
+        "description": "Analyze query and get optimization recommendations.",
+        "operationId": "analyze_query_query_analyze_post",
+        "parameters": [
+          {
+            "name": "question",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Question"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/benchmark/run": {
+      "post": {
+        "summary": "Run Benchmark",
+        "description": "Run a benchmark suite.",
+        "operationId": "run_benchmark_benchmark_run_post",
+        "parameters": [
+          {
+            "name": "suite_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "default",
+              "title": "Suite Name"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/benchmark/suites": {
+      "get": {
+        "summary": "List Benchmark Suites",
+        "description": "List all benchmark suites.",
+        "operationId": "list_benchmark_suites_benchmark_suites_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/benchmark/suite/{suite_name}": {
+      "get": {
+        "summary": "Get Benchmark Suite",
+        "description": "Get details of a specific benchmark suite.",
+        "operationId": "get_benchmark_suite_benchmark_suite__suite_name__get",
+        "parameters": [
+          {
+            "name": "suite_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Suite Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/production/config": {
+      "get": {
+        "summary": "Get Production Config",
+        "description": "Get production configuration.",
+        "operationId": "get_production_config_production_config_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/detailed": {
+      "get": {
+        "summary": "Detailed Health",
+        "description": "Detailed health check for monitoring.",
+        "operationId": "detailed_health_health_detailed_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/readiness": {
+      "get": {
+        "summary": "Readiness",
+        "description": "Readiness check for load balancer.",
+        "operationId": "readiness_readiness_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ConfigResponse": {
+        "properties": {
+          "generation_mode": {
+            "type": "string",
+            "title": "Generation Mode"
+          },
+          "openai_available": {
+            "type": "boolean",
+            "title": "Openai Available"
+          },
+          "collection_name": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "index_id": {
+            "type": "string",
+            "title": "Index Id"
+          },
+          "max_top_k": {
+            "type": "integer",
+            "title": "Max Top K",
+            "default": 50
+          },
+          "min_top_k": {
+            "type": "integer",
+            "title": "Min Top K",
+            "default": 1
+          },
+          "max_question_length": {
+            "type": "integer",
+            "title": "Max Question Length",
+            "default": 2000
+          },
+          "system_hint": {
+            "type": "string",
+            "title": "System Hint"
+          },
+          "features": {
+            "items": {},
+            "type": "array",
+            "title": "Features"
+          },
+          "available_providers": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Available Providers",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "generation_mode",
+          "openai_available",
+          "collection_name",
+          "index_id",
+          "system_hint",
+          "features"
+        ],
+        "title": "ConfigResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MetricsResponse": {
+        "properties": {
+          "query_count": {
+            "type": "integer",
+            "title": "Query Count"
+          },
+          "avg_response_time_ms": {
+            "type": "number",
+            "title": "Avg Response Time Ms"
+          },
+          "error_count": {
+            "type": "integer",
+            "title": "Error Count"
+          },
+          "error_rate": {
+            "type": "number",
+            "title": "Error Rate"
+          },
+          "last_query_time": {
+            "type": "string",
+            "title": "Last Query Time"
+          },
+          "queries_by_hour": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Queries By Hour"
+          },
+          "recent_response_times_ms": {
+            "items": {},
+            "type": "array",
+            "title": "Recent Response Times Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query_count",
+          "avg_response_time_ms",
+          "error_count",
+          "error_rate",
+          "last_query_time",
+          "queries_by_hour",
+          "recent_response_times_ms"
+        ],
+        "title": "MetricsResponse"
+      },
+      "QueryIn": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question",
+            "description": "Question to ask the RAG system"
+          },
+          "top_k": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Top K",
+            "description": "Number of top results to retrieve",
+            "default": 10
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider",
+            "description": "Optional LLM provider (openai, anthropic, local, retrieval-only)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "QueryIn"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

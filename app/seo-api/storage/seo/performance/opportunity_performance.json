@@ -1,0 +1,29 @@
+{
+  "opp_1": {
+    "opportunity_id": "opp_1",
+    "title": "LS Engine Swap Guide",
+    "target_keyword": "LS engine swap guide",
+    "implemented_at": "2025-01-01T00:00:00",
+    "baseline_traffic": 100,
+    "baseline_ranking": 25,
+    "baseline_conversions": 2,
+    "current_traffic": 800,
+    "current_ranking": 5,
+    "current_conversions": 15,
+    "traffic_growth": 700.0,
+    "ranking_improvement": 20,
+    "conversion_growth": 650.0,
+    "implementation_cost": 500,
+    "revenue_generated": 2500,
+    "roi_percentage": 400.0,
+    "payback_period_days": 73,
+    "is_successful": true,
+    "success_factors": [
+      "High traffic growth",
+      "Significant ranking improvement",
+      "Strong conversion growth",
+      "Excellent ROI"
+    ],
+    "areas_for_improvement": []
+  }
+}
