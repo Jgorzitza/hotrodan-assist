@@ -4,6 +4,10 @@ from pathlib import Path
 from typing import Literal, Tuple
 
 from llama_index.core import Settings
+from dotenv import load_dotenv
+
+load_dotenv()
+load_dotenv()
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.embeddings.fastembed import FastEmbedEmbedding
 from llama_index.embeddings.openai import OpenAIEmbedding

@@ -1,0 +1,79 @@
+{
+  "url": "https://example.com/seo-tips",
+  "analysis": {
+    "url": "https://example.com/seo-tips",
+    "title": "SEO Tips",
+    "meta_description": "Learn about SEO",
+    "h1": "SEO Tips",
+    "h2s": [
+      "Introduction",
+      "Best Practices",
+      "Conclusion"
+    ],
+    "content": "SEO Tips SEO Tips Introduction Search engine optimization is important for websites. It helps improve visibility in search results. Best Practices Use relevant keywords, create quality content, and build backlinks. Conclusion Follow these tips to improve your SEO.",
+    "word_count": 38,
+    "readability_score": 45.50521052631581,
+    "seo_score": 38.0,
+    "overall_score": 41.7526052631579,
+    "issues": [
+      "Title too short (under 30 characters)",
+      "Meta description too short (under 120 characters)",
+      "H1 too short (under 20 characters)",
+      "Content too short (under 300 words)"
+    ],
+    "suggestions": [
+      "Expand title to 30-60 characters for better SEO",
+      "Expand meta description to 120-160 characters",
+      "Make H1 more descriptive (20-60 characters)",
+      "Expand content to at least 300 words for better SEO"
+    ],
+    "keyword_density": {
+      "tips": 7.89,
+      "search": 5.26,
+      "improve": 5.26
+    },
+    "internal_links": [],
+    "external_links": [],
+    "images": [],
+    "headings_structure": {
+      "H1": 1,
+      "H2": 3,
+      "H3": 0,
+      "H4": 0,
+      "H5": 0,
+      "H6": 0
+    },
+    "created_at": "2025-09-28T19:48:41.827761"
+  },
+  "suggestions": [
+    {
+      "type": "seo",
+      "priority": "medium",
+      "title": "Expand Title Length",
+      "description": "Title is too short for optimal SEO",
+      "current_value": "8 characters",
+      "suggested_value": "30-60 characters",
+      "impact": "Medium - Better search visibility",
+      "effort": "Low - Quick edit",
+      "code_example": null
+    },
+    {
+      "type": "technical",
+      "priority": "low",
+      "title": "Add Internal Links",
+      "description": "Insufficient internal linking",
+      "current_value": "0 internal links",
+      "suggested_value": "At least 3-5 internal links",
+      "impact": "Low - Improves site structure",
+      "effort": "Low - Quick additions",
+      "code_example": null
+    }
+  ],
+  "priority_actions": [
+    "Plan 1 medium-priority improvements",
+    "Monitor performance after implementing changes"
+  ],
+  "estimated_impact": "Low - Minor improvements expected",
+  "effort_required": "Low - Quick fixes and minor updates",
+  "created_at": "2025-09-28T19:48:41.827797"
+}

@@ -51,11 +51,13 @@ class SlackConfig:
 @dataclass
 class EmailConfig:
     smtp_server: str
-    smtp_port: int = 587
     username: str
     password: str
     from_email: str
     to_emails: List[str]
+    smtp_port: int = 587
+    use_tls: bool = True
+    timeout: Optional[int] = None
 
 
 @dataclass

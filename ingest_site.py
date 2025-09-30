@@ -1,15 +1,20 @@
-import os, time
-from typing import List
+import os
+import time
 from itertools import islice
+from typing import List
+
 import requests
 from bs4 import BeautifulSoup
 
-from llama_index.core import Settings, VectorStoreIndex, Document
+from llama_index.core import Document, Settings, VectorStoreIndex
 from llama_index.core.node_parser import SentenceSplitter
-from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.llms.openai import OpenAI
+
+from rag_pipeline import DocumentPipeline
 
 INDEX_ID = "hotrodan"
+
 
 def batched(iterable, n=32):
     it = iter(iterable)
@@ -19,11 +24,13 @@ def batched(iterable, n=32):
             return
         yield chunk
 
+
 def load_urls(path="urls.txt"):
     if not os.path.exists(path):
         raise SystemExit("Missing urls.txt. Run discover_urls.py first.")
     with open(path, "r") as f:
         return [line.strip() for line in f if line.strip()]
+
 
 def shopify_headers():
     si = os.getenv("SHOPIFY_SIGNATURE_INPUT")
@@ -38,6 +45,7 @@ def shopify_headers():
         })
     return headers
 
+
 def fetch_text(url: str) -> str:
     r = requests.get(url, headers=shopify_headers(), timeout=30)
     r.raise_for_status()
@@ -46,12 +54,14 @@ def fetch_text(url: str) -> str:
         tag.extract()
     return soup.get_text(" ", strip=True)
 
+
 def fetch_docs(urls: List[str]) -> List[Document]:
     docs = []
     for u in urls:
         txt = fetch_text(u)
         docs.append(Document(text=txt, metadata={"source_url": u}))
     return docs
+
 
 def main():
     if not os.getenv("OPENAI_API_KEY"):
@@ -64,15 +74,29 @@ def main():
     all_urls = load_urls()
     print(f"Ingesting {len(all_urls)} URLs...")
 
+    pipeline = DocumentPipeline()
     all_docs = []
     for chunk in batched(all_urls, n=25):
-        all_docs.extend(fetch_docs(chunk))
+        docs = fetch_docs(chunk)
+        processed = pipeline.run(docs)
+        if not processed:
+            print(f"Warning: Document pipeline produced no chunks for batch of size {len(docs)}")
+            continue
+        all_docs.extend(processed)
         time.sleep(0.5)  # polite throttle
+
+    if not all_docs:
+        raise SystemExit("Document pipeline produced no chunks. Check source data.")
+
+    print(
+        f"Document pipeline: {len(all_urls)} URLs -> {len(all_docs)} processed chunks"
+    )
 
     index = VectorStoreIndex.from_documents(all_docs)
     index.set_index_id(INDEX_ID)
     index.storage_context.persist(persist_dir="storage")
-    print(f"Done. Persisted {len(all_docs)} docs to ./storage with index_id={INDEX_ID}")
+    print(f"Done. Persisted {len(all_docs)} chunks to ./storage with index_id={INDEX_ID}")
+
 
 if __name__ == "__main__":
     main()

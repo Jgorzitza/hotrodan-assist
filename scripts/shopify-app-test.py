@@ -23,7 +23,7 @@ class ShopifyAppTester:
 
     def __init__(self):
         self.project_root = Path(__file__).parent.parent
-        self.dashboard_dir = self.project_root / "dashboard"
+        self.dashboard_dir = self.project_root / "apps" / "dashboard"
         self.test_results = []
 
     def log_test_result(self, test_name: str, success: bool, details: str = ""):
@@ -123,7 +123,7 @@ class ShopifyAppTester:
             return False
 
         # Read tunnel URL from .env (placeholder implementation)
-        tunnel_url = "https://your-tunnel-url.ngrok.io"  # This should be read from .env
+        tunnel_url = "https://mock-tunnel-url.ngrok.io  # Tunnel URL not configured in .env"  # This should be read from .env
 
         try:
             response = requests.get(f"{tunnel_url}/health", timeout=10)
@@ -229,7 +229,7 @@ Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}
 
 ## Summary
 - **Tests Passed**: {passed}/{total}
-- **Success Rate**: {passed/total*100".1f"}%
+- **Success Rate**: {passed/total*100:.1f}%
 
 ## Detailed Results
 """

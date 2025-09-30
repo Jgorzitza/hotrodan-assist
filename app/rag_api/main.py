@@ -11,6 +11,7 @@ sys.path.append("/home/justin/llama_rag")
 
 import chromadb
 from fastapi import FastAPI, HTTPException, Request
+from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field, validator
 
 from llama_index.core import StorageContext, load_index_from_storage
@@ -23,11 +24,12 @@ from rag_config import (
 )
 
 # Import our modules
-from security import check_rate_limit, validate_request
-from advanced_functions import query_routing, context_aware_response, query_analytics, performance_optimization
+from app.rag_api.security import check_rate_limit, validate_request
+from app.rag_api.advanced_functions import query_routing, context_aware_response, query_analytics, performance_optimization
 
 # Import monitoring
-from monitor import track_performance, get_metrics, save_metrics
+from app.rag_api.monitor import track_performance, get_metrics, save_metrics
+from app.rag_api.model_selector import MODEL_SELECTOR
 
 configure_settings()
 
@@ -57,6 +59,7 @@ app = FastAPI(
 class QueryIn(BaseModel):
     question: str = Field(..., min_length=1, max_length=2000, description="Question to ask the RAG system")
     top_k: int = Field(default=10, ge=1, le=50, description="Number of top results to retrieve")
+    provider: Optional[str] = Field(None, description="Optional LLM provider (openai, anthropic, local, retrieval-only)")
     
     @validator('question')
     def validate_question(cls, v):
@@ -74,6 +77,7 @@ class ConfigResponse(BaseModel):
     max_question_length: int = 2000
     system_hint: str
     features: list
+    available_providers: Dict[str, Any] = {}
 
 class MetricsResponse(BaseModel):
     query_count: int
@@ -86,93 +90,8 @@ class MetricsResponse(BaseModel):
 
 @app.post("/query")
 @track_performance
+@track_performance
 def query(q: QueryIn, request: Request):
-    """Query the RAG system with advanced processing."""
-    # Security validation
-    validate_request(request)
-    
-    start_time = time.time()
-    
-    try:
-        # Query routing and optimization
-        routing = query_routing(q.question)
-        optimization = performance_optimization(q.question, q.top_k)
-        
-        # Use absolute paths to ensure we find the storage files
-        chroma_path = "/home/justin/llama_rag/chroma"
-        persist_dir = "/home/justin/llama_rag/storage"
-
-        client = chromadb.PersistentClient(path=chroma_path)
-        collection = client.get_or_create_collection(
-            COLLECTION, metadata={"hnsw:space": "cosine"}
-        )
-        vector_store = ChromaVectorStore(chroma_collection=collection)
-        storage = StorageContext.from_defaults(
-            vector_store=vector_store, persist_dir=persist_dir
-        )
-        index = load_index_from_storage(storage, index_id=INDEX_ID)
-
-        retriever = index.as_retriever(similarity_top_k=optimization["optimized_top_k"])
-        nodes = retriever.retrieve(q.question)
-
-        if GENERATION_MODE == "openai" and OPENAI_API_KEY:
-            qe = index.as_query_engine(
-                response_mode="compact", similarity_top_k=optimization["optimized_top_k"]
-            )
-            resp = qe.query(_SYSTEM_HINT + "\n\nQuestion: " + q.question)
-            sources = [
-                n.metadata.get("source_url", "unknown")
-                for n in getattr(resp, "source_nodes", [])
-            ]
-            answer = str(resp)
-        else:
-            # Retrieval-only mode with advanced processing
-            retrieved_docs = []
-            source_urls = []
-            
-            for node_with_score in nodes:
-                node = getattr(node_with_score, "node", None) or node_with_score
-                text = getattr(node, "text", None)
-                if text is None and hasattr(node, "get_content"):
-                    text = node.get_content()
-                if not text:
-                    continue
-                
-                retrieved_docs.append({
-                    "text": text,
-                    "source_url": node.metadata.get("source_url", "unknown")
-                })
-                source = node.metadata.get("source_url", "unknown")
-                if source not in source_urls:
-                    source_urls.append(source)
-
-            if not retrieved_docs:
-                return {
-                    "answer": "No relevant documents retrieved. Configure OPENAI_API_KEY for full responses.",
-                    "sources": [],
-                    "mode": "retrieval-only",
-                    "query_analytics": query_analytics(q.question, time.time() - start_time, 0, "retrieval-only")
-                }
-
-            # Context-aware response generation
-            answer = context_aware_response(q.question, retrieved_docs)
-            sources = source_urls[:10]
-
-        # Generate analytics
-        analytics = query_analytics(q.question, time.time() - start_time, len(sources), GENERATION_MODE)
-        
-        return {
-            "answer": answer,
-            "sources": sources,
-            "mode": GENERATION_MODE,
-            "query_analytics": analytics,
-            "routing": routing,
-            "optimization": optimization
-        }
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"RAG query failed: {str(e)}")
-
 @app.get("/health")
 def health():
     """Health check endpoint."""

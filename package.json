@@ -54,7 +54,15 @@
     "test:retry": "node scripts/test-reliability/test-retry.js",
     "test:reliability": "npm run test:flaky && npm run test:retry",
     "quality:dashboard": "node scripts/quality-dashboard.js",
-    "quality:all": "npm run test:e2e && npm run security:all && npm run test:accessibility && npm run test:load && npm run test:reliability && npm run quality:dashboard"
+    "quality:all": "npm run test:e2e && npm run security:all && npm run test:accessibility && npm run test:load && npm run test:reliability && npm run quality:dashboard",
+    "test:dashboard": "playwright test e2e/shopify-admin-dashboard.spec.ts",
+    "test:dashboard:ui": "playwright test e2e/shopify-admin-dashboard.spec.ts --ui",
+    "test:dashboard:debug": "playwright test e2e/shopify-admin-dashboard.spec.ts --debug",
+    "test:cross-browser": "playwright test e2e/shopify-admin-dashboard.spec.ts --project=chromium --project=webkit --project=mobile-chrome",
+    "benchmark:dashboard": "node tooling/performance/dashboard-benchmarks.js",
+    "benchmark:dashboard:prod": "BENCHMARK_BASE_URL=https://afafsaf.myshopify.com node tooling/performance/dashboard-benchmarks.js",
+    "test:report": "node tooling/testing/test-report-generator.js",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e && npm run benchmark:dashboard && npm run test:report"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

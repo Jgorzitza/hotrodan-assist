@@ -36,6 +36,7 @@ npm run test:e2e -- --list
 
 ## Repo highlights
 - Retrieval stack: LlamaIndex + Chroma scripts in repo root (`discover_urls.py`, `ingest_site_chroma.py`, `query_chroma_router.py`).
+- Advanced document pipeline lives under `rag_pipeline/` powering dedupe, TOC-aware splitting, and semantic chunking for all ingest flows.
 - Quality guardrails: `corrections/corrections.yaml`, `goldens/qa.yaml`, `run_goldens.py`.
 - Service stubs: FastAPI apps under `app/` (rag-api, assistants, sync, approval-app).
 - Specs & docs: `HANDOVER.md`, `HANDOVER_ALL_IN_ONE.md`, and `agents.md`.

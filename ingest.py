@@ -1,12 +1,17 @@
-import os, sys
+import os
+import sys
 from typing import List
-from llama_index.core import Settings, VectorStoreIndex, Document
+
+from llama_index.core import Document, Settings, VectorStoreIndex
 from llama_index.core.node_parser import SentenceSplitter
-from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.llms.openai import OpenAI
 from llama_index.readers.web import SimpleWebPageReader
 
+from rag_pipeline import DocumentPipeline
+
 INDEX_ID = "hotrodan"
+
 
 def main(urls: List[str]):
     if not os.getenv("OPENAI_API_KEY"):
@@ -25,11 +30,21 @@ def main(urls: List[str]):
         md["source_url"] = md.get("url", "unknown")
         tagged_docs.append(Document(text=d.text, metadata=md))
 
-    index = VectorStoreIndex.from_documents(tagged_docs)
+    pipeline = DocumentPipeline()
+    processed_docs = pipeline.run(tagged_docs)
+
+    if not processed_docs:
+        raise SystemExit("Document pipeline produced no chunks. Check source data.")
+
+    print(
+        f"Document pipeline: {len(tagged_docs)} raw docs -> {len(processed_docs)} processed chunks"
+    )
+
+    index = VectorStoreIndex.from_documents(processed_docs)
     index.set_index_id(INDEX_ID)
-    # IMPORTANT: persist the *index's* storage context
     index.storage_context.persist(persist_dir="storage")
     print("Done. Index persisted to ./storage with index_id:", INDEX_ID)
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
