@@ -152,7 +152,8 @@
 - Keep inbox regression tests current (`tests/test_assistants_inbox.py`, `app/assistants/tests/test_inbox_routes.py`).
 
 ## Status / Notes
-- Owner: Codex
-- Blockers: Filter UX + approve/edit workflow wiring.
-- Notes: Dashboard mocks already consume provider; backend ready to replace stubs.
-- Next: Persist drafts + audit in real store, wire adapters/webhooks, integrate frontend actions.
+- Owner: Codex (Section 0 bootstrap)
+- Blockers: Frontend still needs to consume `metrics.confidence_histogram` and expose active mock scenario selector; histogram bucket spec may still evolve but backend ships low/medium/high today.
+- Notes: Added `app/assistants/mock_data.py` with seeded `default`/`heavy`/`empty` scenarios and `seed_mock_scenario` loader for demos/tests; websocket + SSE streams now handshake with delivery adapter metadata, supported event list, and live metrics snapshots, and broadcasts include enriched feedback payloads with histogram snapshots. Smoke coverage exercises handshake/ping flows and SSE feedback updates (pytest commands noted below pending env deps).
+- Reminder: Ensure privacy guardrails—never expose full PII in mock data.
+- Next: Hook dashboard fetchers to the SSE/websocket handshake metadata (delivery channels, mock scenarios) for optimistic list refresh, align UI feedback widgets with the enriched event payloads, and prep adapter registry shims for live provider credentials.
