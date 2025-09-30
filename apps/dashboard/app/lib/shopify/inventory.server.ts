@@ -1,7 +1,5 @@
 /**
  * Shopify Inventory Service
- * 
- * Fetches real inventory data from Shopify Admin API
  */
 
 import type { AdminApiContext } from "@shopify/shopify-app-remix/server";
@@ -23,39 +21,45 @@ export type InventoryDashboardData = {
   }>;
 };
 
-/**
- * Fetch inventory dashboard data from Shopify
- */
+type ProductEdge = {
+  node: {
+    id: string;
+    title: string;
+    totalInventory?: number | null;
+  };
+};
+
+type ProductsResponse = {
+  data?: {
+    products?: {
+      edges?: ProductEdge[];
+    };
+  };
+};
+
 export const fetchInventoryDashboard = async (
   admin: AdminApiContext
 ): Promise<InventoryDashboardData> => {
-  try {
-    const response = await executeAdmin<any>(
-      admin,
-      buildGetProductsWithInventoryQuery(50).query,
-      { variables: { first: 50 } }
-    );
+  const response = await executeAdmin<ProductsResponse>(
+    admin,
+    buildGetProductsWithInventoryQuery(50).query,
+    { variables: { first: 50 } }
+  );
 
-    const products = response.data?.products?.edges?.map((edge: any) => ({
-      id: edge.node.id,
-      title: edge.node.title,
-      inventory: edge.node.totalInventory ?? 0,
-    })) ?? [];
+  const products = response.data?.products?.edges?.map((edge: ProductEdge) => ({
+    id: edge.node.id,
+    title: edge.node.title,
+    inventory: edge.node.totalInventory ?? 0,
+  })) ?? [];
 
-    const metrics = {
-      totalProducts: products.length,
-      lowStockCount: products.filter((p: any) => p.inventory < 10).length,
-      totalSKUs: products.length,
-    };
+  const metrics = {
+    totalProducts: products.length,
+    lowStockCount: products.filter((p) => p.inventory < 10).length,
+    totalSKUs: products.length,
+  };
 
-    console.log(`✅ Fetched ${products.length} products from Shopify`);
-
-    return {
-      metrics,
-      products,
-    };
-  } catch (error) {
-    console.error("❌ Failed to fetch Shopify inventory:", error);
-    throw error;
-  }
+  return {
+    metrics,
+    products,
+  };
 };

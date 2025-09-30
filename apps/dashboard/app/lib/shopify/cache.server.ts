@@ -8,7 +8,7 @@ type CacheEntry<T> = {
 };
 
 class SimpleCache {
-  private cache: Map<string, CacheEntry<any>> = new Map();
+  private cache: Map<string, CacheEntry<unknown>> = new Map();
   private readonly defaultTTL = 5 * 60 * 1000; // 5 minutes
 
   set<T>(key: string, data: T, ttl?: number): void {
@@ -27,7 +27,7 @@ class SimpleCache {
       return null;
     }
     
-    return entry.data;
+    return entry.data as T;
   }
 
   clear(): void {
@@ -44,11 +44,9 @@ export async function cachedFetch<T>(
 ): Promise<T> {
   const cached = shopifyCache.get<T>(key);
   if (cached !== null) {
-    console.log(`📦 Cache HIT: ${key}`);
     return cached;
   }
 
-  console.log(`🔍 Cache MISS: ${key}`);
   const data = await fetcher();
   shopifyCache.set(key, data, ttl);
   return data;
