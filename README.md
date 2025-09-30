@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# hotrodan-assist
-=======
 # Hot Rod AN — RAG + Omnichannel Assistants
 
 Start here: see **HANDOVER.md** for full specs, milestones, and service layout.
@@ -21,10 +18,8 @@ python run_goldens.py  # offline corrections-only; no API calls
 - Corrections layer: corrections/corrections.yaml
 - Golden tests: goldens/qa.yaml, run_goldens.py
 - Handover spec: HANDOVER.md
->>>>>>> c11eefd (Initial handover bundle)
 
-See **HANDOVER_ALL_IN_ONE.md** for the full spec.
-
-See **HANDOVER_ALL_IN_ONE.md** for the full spec.
-
-See **HANDOVER_ALL_IN_ONE.md** for the full spec.
+## Documentation
+- HANDOVER.md — high-level initiative brief.
+- HANDOVER_ALL_IN_ONE.md — consolidated handover reference.
+- prompts/dashboard/mcp.md — Storefront MCP boundary, scope, and launch guardrails.
