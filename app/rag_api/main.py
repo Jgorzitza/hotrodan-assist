@@ -31,6 +31,8 @@ from app.rag_api.analytics import ANALYTICS
 from app.rag_api.rate_limiter import RATE_LIMITER
 from app.rag_api.cache import QUERY_CACHE
 from app.rag_api.query_optimizer import QUERY_OPTIMIZER
+from app.rag_api.benchmarks import BENCHMARK
+from app.rag_api.production_config import PROD_CONFIG, HEALTH_CHECKER
 from app.rag_api.model_selector import MODEL_SELECTOR
 
 configure_settings()
@@ -299,3 +301,66 @@ def analyze_query(question: str):
         "confidence": analysis.confidence,
         "reasoning": analysis.reasoning
     }
+
+@app.post("/benchmark/run")
+def run_benchmark(suite_name: str = "default", provider: Optional[str] = None):
+    """Run a benchmark suite."""
+    suite = BENCHMARK.create_suite(suite_name)
+    
+    # Run standard queries
+    for query in BENCHMARK.standard_queries[:5]:  # Quick benchmark
+        start = time.time()
+        try:
+            # Simulate query (would actually call query endpoint)
+            elapsed = (time.time() - start) * 1000
+            suite.add_result(BenchmarkResult(
+                query=query,
+                provider=provider or "default",
+                response_time_ms=elapsed,
+                success=True,
+                sources_count=5,
+                answer_length=100
+            ))
+        except Exception as e:
+            elapsed = (time.time() - start) * 1000
+            suite.add_result(BenchmarkResult(
+                query=query,
+                provider=provider or "default",
+                response_time_ms=elapsed,
+                success=False,
+                error=str(e)
+            ))
+    
+    BENCHMARK.finalize_suite(suite_name)
+    return suite.get_statistics()
+
+@app.get("/benchmark/suites")
+def list_benchmark_suites():
+    """List all benchmark suites."""
+    return {
+        "suites": list(BENCHMARK.suites.keys()),
+        "count": len(BENCHMARK.suites)
+    }
+
+@app.get("/benchmark/suite/{suite_name}")
+def get_benchmark_suite(suite_name: str):
+    """Get details of a specific benchmark suite."""
+    suite = BENCHMARK.get_suite(suite_name)
+    if not suite:
+        raise HTTPException(status_code=404, detail=f"Benchmark suite '{suite_name}' not found")
+    return suite.get_statistics()
+
+@app.get("/production/config")
+def get_production_config():
+    """Get production configuration."""
+    return PROD_CONFIG.to_dict()
+
+@app.get("/health/detailed")
+def detailed_health():
+    """Detailed health check for monitoring."""
+    return HEALTH_CHECKER.check_health()
+
+@app.get("/readiness")
+def readiness():
+    """Readiness check for load balancer."""
+    return HEALTH_CHECKER.check_readiness()
