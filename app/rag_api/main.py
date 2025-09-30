@@ -1,22 +1,17 @@
-"""FastAPI shim over the shared RAG index with enhanced validation and config.
-
-Supports two modes:
-- ``openai`` (default): uses OpenAI for embeddings + generation.
-- ``retrieval-only``: FastEmbed embeddings paired with a simple
-  retrieval response when no OpenAI key is present.
-"""
+"""Enhanced RAG API with security, advanced functions, and multi-model support."""
 
 import os
 import sys
+import time
 from dotenv import load_dotenv
 from textwrap import shorten
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 
 # Add the parent directory to the path to import rag_config
 sys.path.append("/home/justin/llama_rag")
 
 import chromadb
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field, validator
 
 from llama_index.core import StorageContext, load_index_from_storage
@@ -28,8 +23,11 @@ from rag_config import (
     configure_settings,
 )
 
-# Import monitoring
-from monitor import track_performance, get_metrics, save_metrics
+# Import our modules
+from app.rag_api.security import check_rate_limit, validate_request
+from app.rag_api.advanced_functions import query_routing, context_aware_response, query_analytics, performance_optimization
+from app.rag_api.monitor import track_performance, get_metrics, save_metrics
+from app.rag_api.model_selector import MODEL_SELECTOR
 
 configure_settings()
 
@@ -51,28 +49,21 @@ _SYSTEM_HINT = (
 )
 
 app = FastAPI(
-    title="RAG API",
-    description="Retrieval-Augmented Generation API for HotRodAN knowledge base",
-    version="1.0.0",
+    title="Enhanced RAG API with Multi-Model Support",
+    description="RAG API with security, advanced functions, and flexible model providers",
+    version="2.1.0",
 )
 
-
 class QueryIn(BaseModel):
-    question: str = Field(..., min_length=1, max_length=1000, description="Question to ask the RAG system")
+    question: str = Field(..., min_length=1, max_length=2000, description="Question to ask the RAG system")
     top_k: int = Field(default=10, ge=1, le=50, description="Number of top results to retrieve")
+    provider: Optional[str] = Field(None, description="Optional LLM provider (openai, anthropic, local, retrieval-only)")
     
     @validator('question')
     def validate_question(cls, v):
         if not v or not v.strip():
             raise ValueError('Question cannot be empty or whitespace only')
         return v.strip()
-    
-    @validator('top_k')
-    def validate_top_k(cls, v):
-        if v < 1 or v > 50:
-            raise ValueError('top_k must be between 1 and 50')
-        return v
-
 
 class ConfigResponse(BaseModel):
     generation_mode: str
@@ -81,9 +72,10 @@ class ConfigResponse(BaseModel):
     index_id: str
     max_top_k: int = 50
     min_top_k: int = 1
-    max_question_length: int = 1000
+    max_question_length: int = 2000
     system_hint: str
-
+    features: list
+    available_providers: Dict[str, Any] = {}
 
 class MetricsResponse(BaseModel):
     query_count: int
@@ -94,13 +86,24 @@ class MetricsResponse(BaseModel):
     queries_by_hour: dict
     recent_response_times_ms: list
 
-
 @app.post("/query")
 @track_performance
-def query(q: QueryIn):
-    """Query the RAG system with a question."""
+def query(q: QueryIn, request: Request):
+    """Query the RAG system with advanced processing and multi-model support."""
+    # Security validation
+    validate_request(request)
+    
+    start_time = time.time()
+    
     try:
-        # Use absolute paths to ensure we find the storage files
+        # Select provider using MODEL_SELECTOR
+        chosen_provider = MODEL_SELECTOR.choose(q.provider)
+        
+        # Query routing and optimization
+        routing = query_routing(q.question)
+        optimization = performance_optimization(q.question, q.top_k)
+        
+        # Load index
         chroma_path = "/home/justin/llama_rag/chroma"
         persist_dir = "/home/justin/llama_rag/storage"
 
@@ -114,66 +117,78 @@ def query(q: QueryIn):
         )
         index = load_index_from_storage(storage, index_id=INDEX_ID)
 
-        retriever = index.as_retriever(similarity_top_k=q.top_k)
+        retriever = index.as_retriever(similarity_top_k=optimization["optimized_top_k"])
         nodes = retriever.retrieve(q.question)
 
-        if GENERATION_MODE == "openai" and OPENAI_API_KEY:
+        # Generate response based on chosen provider
+        if chosen_provider.llm:
+            # Use LLM for generation
             qe = index.as_query_engine(
-                response_mode="compact", similarity_top_k=q.top_k
+                llm=chosen_provider.llm,
+                response_mode="compact",
+                similarity_top_k=optimization["optimized_top_k"]
             )
             resp = qe.query(_SYSTEM_HINT + "\n\nQuestion: " + q.question)
             sources = [
                 n.metadata.get("source_url", "unknown")
                 for n in getattr(resp, "source_nodes", [])
             ]
-            return {"answer": str(resp), "sources": sources, "mode": "openai"}
+            answer = str(resp)
+            mode = chosen_provider.name
+        else:
+            # Retrieval-only mode
+            retrieved_docs = []
+            source_urls = []
+            
+            for node_with_score in nodes:
+                node = getattr(node_with_score, "node", None) or node_with_score
+                text = getattr(node, "text", None)
+                if text is None and hasattr(node, "get_content"):
+                    text = node.get_content()
+                if not text:
+                    continue
+                
+                retrieved_docs.append({
+                    "text": text,
+                    "source_url": node.metadata.get("source_url", "unknown")
+                })
+                source = node.metadata.get("source_url", "unknown")
+                if source not in source_urls:
+                    source_urls.append(source)
 
-        # Retrieval-only mode
-        summaries = []
-        source_urls = []
-        for node_with_score in nodes:
-            node = getattr(node_with_score, "node", None) or node_with_score
-            text = getattr(node, "text", None)
-            if text is None and hasattr(node, "get_content"):
-                text = node.get_content()
-            if not text:
-                continue
-            summaries.append(
-                shorten(text.replace("\n", " "), width=400, placeholder="…")
-            )
-            source = node.metadata.get("source_url", "unknown")
-            if source not in source_urls:
-                source_urls.append(source)
+            if not retrieved_docs:
+                return {
+                    "answer": "No relevant documents retrieved.",
+                    "sources": [],
+                    "mode": "retrieval-only",
+                    "provider_info": chosen_provider.metadata,
+                    "query_analytics": query_analytics(q.question, time.time() - start_time, 0, "retrieval-only")
+                }
 
-        if not summaries:
-            return {
-                "answer": "No relevant documents retrieved. Configure OPENAI_API_KEY for full responses.",
-                "sources": [],
-                "mode": "retrieval-only",
-            }
+            answer = context_aware_response(q.question, retrieved_docs)
+            sources = source_urls[:10]
+            mode = "retrieval-only"
 
-        answer = "\n\n".join(f"• {snippet}" for snippet in summaries[:3])
+        # Generate analytics
+        analytics = query_analytics(q.question, time.time() - start_time, len(sources), mode)
+        
         return {
-            "answer": answer
-            + "\n\n[LLM disabled: configure OPENAI_API_KEY for full narratives]",
-            "sources": source_urls[:10],
-            "mode": "retrieval-only",
+            "answer": answer,
+            "sources": sources,
+            "mode": mode,
+            "provider_info": chosen_provider.metadata,
+            "query_analytics": analytics,
+            "routing": routing,
+            "optimization": optimization
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"RAG query failed: {str(e)}")
 
-
 @app.get("/health")
 def health():
     """Health check endpoint."""
-    return {
-        "status": "healthy",
-        "mode": GENERATION_MODE,
-        "openai_available": bool(OPENAI_API_KEY),
-        "timestamp": os.popen("date -Iseconds").read().strip(),
-    }
-
+    return {"status": "healthy", "timestamp": time.time()}
 
 @app.get("/config", response_model=ConfigResponse)
 def get_config():
@@ -183,27 +198,12 @@ def get_config():
         openai_available=bool(OPENAI_API_KEY),
         collection_name=COLLECTION,
         index_id=INDEX_ID,
-        max_top_k=50,
-        min_top_k=1,
-        max_question_length=1000,
-        system_hint=_SYSTEM_HINT
+        system_hint=_SYSTEM_HINT,
+        features=["security", "rate_limiting", "query_routing", "performance_optimization", "multi_model"],
+        available_providers=MODEL_SELECTOR.provider_summary()
     )
-
 
 @app.get("/metrics", response_model=MetricsResponse)
 def metrics():
-    """Get performance metrics."""
+    """Get API metrics."""
     return get_metrics()
-
-
-@app.post("/metrics/save")
-def save_metrics_endpoint():
-    """Manually save metrics to file."""
-    save_metrics()
-    return {"status": "metrics saved"}
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
