@@ -1,0 +1,20 @@
+{
+  "name": "llama-rag-monorepo",
+  "private": true,
+  "workspaces": [
+    "app/dashboard"
+  ],
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:format": "prisma format",
+    "prisma:diff": "prisma migrate diff --from-schema-datamodel ./prisma/schema.prisma --to-schema-datasource env(DATABASE_URL)",
+    "seed": "ts-node --transpile-only scripts/seed.ts"
+  },
+  "devDependencies": {
+    "prisma": "^5.17.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,0 +1,241 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "tracing"]
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum ChannelType {
+  email
+  chat
+  shopify
+  slack
+}
+
+enum MessageDirection {
+  inbound
+  outbound
+  system
+}
+
+enum DraftStatus {
+  pending
+  sent
+  superseded
+  archived
+}
+
+enum ActionType {
+  approve
+  edit
+  reject
+}
+
+enum JobType {
+  crawl
+  ingest_goldens
+  corrections_sync
+}
+
+enum JobStatus {
+  queued
+  running
+  succeeded
+  failed
+}
+
+model Account {
+  id              String           @id @default(cuid())
+  name            String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  users           User[]
+  channels        Channel[]
+  conversations   Conversation[]
+  sourceDocuments SourceDocument[]
+  jobRuns         JobRun[]
+  notifications   Notification[]
+}
+
+model User {
+  id            String        @id @default(cuid())
+  accountId     String
+  account       Account       @relation(fields: [accountId], references: [id])
+  email         String        @unique
+  displayName   String
+  role          String        @default("agent")
+  authProvider  String
+  authSubject   String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  actions       DraftAction[]
+  draftsCreated Draft[]       @relation("DraftCreator")
+  notifications Notification[]
+}
+
+model Channel {
+  id            String         @id @default(cuid())
+  accountId     String
+  account       Account        @relation(fields: [accountId], references: [id])
+  type          ChannelType
+  externalId    String         @unique
+  name          String
+  metadata      Json           @default("{}")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  conversations Conversation[]
+
+  @@index([accountId, type], map: "idx_channel_account_type")
+}
+
+model Conversation {
+  id            String         @id @default(cuid())
+  accountId     String
+  account       Account        @relation(fields: [accountId], references: [id])
+  channelId     String
+  channel       Channel        @relation(fields: [channelId], references: [id])
+  externalId    String         @unique
+  subject       String?
+  status        String         @default("open")
+  customerEmail String?
+  customerName  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  messages      Message[]
+  drafts        Draft[]
+
+  @@index([accountId, status], map: "idx_conversation_account_status")
+  @@index([channelId, createdAt], map: "idx_conversation_channel_created")
+}
+
+model Message {
+  id             String        @id @default(cuid())
+  conversationId String
+  conversation   Conversation  @relation(fields: [conversationId], references: [id])
+  externalId     String?
+  direction      MessageDirection
+  subject        String?
+  bodyText       String
+  bodyHtml       String?
+  sentAt         DateTime      @default(now())
+  metadata       Json           @default("{}")
+  attachments    Attachment[]
+  actions        DraftAction[] @relation("ActionMessage")
+  triggeredDraft Draft?        @relation("DraftTrigger")
+
+  @@index([conversationId, sentAt], map: "idx_message_conversation_sent")
+}
+
+model Draft {
+  id               String          @id @default(cuid())
+  conversationId   String
+  conversation     Conversation    @relation(fields: [conversationId], references: [id])
+  triggerMessageId String? @unique
+  triggerMessage   Message?        @relation("DraftTrigger", fields: [triggerMessageId], references: [id])
+  authorUserId     String?
+  authorUser       User?           @relation("DraftCreator", fields: [authorUserId], references: [id])
+  modelKey         String
+  promptVersion    String
+  status           DraftStatus     @default(pending)
+  suggestedText    String
+  suggestedHtml    String?
+  topSources       Json            @default("[]")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  actions          DraftAction[]
+  learningSample   LearningSample?
+
+  @@index([conversationId, status], map: "idx_draft_conversation_status")
+  @@index([status, createdAt], map: "idx_draft_status_created")
+}
+
+model DraftAction {
+  id            String        @id @default(cuid())
+  draftId       String
+  draft         Draft         @relation(fields: [draftId], references: [id])
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  type          ActionType
+  finalText     String?
+  finalHtml     String?
+  sentMsgId     String?
+  notes         String?
+  diffJson      Json?
+  createdAt     DateTime      @default(now())
+  messageId     String?
+  message       Message?      @relation("ActionMessage", fields: [messageId], references: [id])
+  learningSample LearningSample?
+
+  @@index([draftId], map: "idx_action_draft")
+  @@index([userId, createdAt], map: "idx_action_user_created")
+}
+
+model LearningSample {
+  id             String       @id @default(cuid())
+  draftId        String       @unique
+  draft          Draft        @relation(fields: [draftId], references: [id])
+  actionId       String       @unique
+  action         DraftAction  @relation(fields: [actionId], references: [id])
+  diffJson       Json
+  embeddingsJson Json?
+  createdAt      DateTime     @default(now())
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id])
+  fileName  String
+  mimeType  String
+  sizeBytes Int
+  fileUrl   String
+  createdAt DateTime @default(now())
+
+  @@index([messageId], map: "idx_attachment_message")
+}
+
+model JobRun {
+  id         String    @id @default(cuid())
+  accountId  String
+  account    Account   @relation(fields: [accountId], references: [id])
+  type       JobType
+  status     JobStatus @default(queued)
+  startedAt  DateTime?
+  finishedAt DateTime?
+  error      String?
+  metrics    Json?
+  createdAt  DateTime  @default(now())
+
+  @@index([accountId, type, createdAt], map: "idx_jobrun_account_type_created")
+}
+
+model SourceDocument {
+  id            String   @id @default(cuid())
+  accountId     String
+  account       Account  @relation(fields: [accountId], references: [id])
+  sourceUrl     String   @unique
+  title         String?
+  hash          String?
+  indexedAt     DateTime
+  nextRefreshAt DateTime?
+  metadata      Json     @default("{}")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  type      String
+  payload   Json     @default("{}")
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([accountId, createdAt], map: "idx_notification_account_created")
+  @@index([userId, createdAt], map: "idx_notification_user_created")
+}
