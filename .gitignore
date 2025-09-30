@@ -27,3 +27,6 @@ node_modules/
 pnpm-lock.yaml
 yarn.lock
 npm-debug.log*
+
+# local test databases
+*.db
