@@ -25,7 +25,7 @@ import {
   Text,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
-import { PolarisVizProvider, SparkLineChart } from "@shopify/polaris-viz";
+import { PolarisVizProvider } from "@shopify/polaris-viz";
 import type { DataPoint } from "@shopify/polaris-viz-core";
 
 import { authenticate } from "../shopify.server";
@@ -109,7 +109,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       };
       
       // console.log(`✅ Shopify: ${shopifyData.metrics.totalProducts} products, ${shopifyData.metrics.lowStockCount} low stock`);
-    } catch (_error) {
+    } catch {
       // console.error("❌ Shopify integration error:", error);
       // Continue with mock data
     }
@@ -598,7 +598,7 @@ const formatDelta = (delta: number) =>
 
 function SalesSparkline({
   points,
-  rangeLabel,
+  _rangeLabel,
 }: {
   points: DataPoint[];
   rangeLabel: string;
