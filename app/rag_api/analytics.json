@@ -1,0 +1,140 @@
+{
+  "queries": [
+    {
+      "timestamp": "2025-09-29T22:21:09.841718",
+      "question_length": 15,
+      "provider": "retrieval-only",
+      "response_time_ms": 647.7479934692383,
+      "sources_count": 2,
+      "success": true,
+      "error": null,
+      "hour": "2025-09-29 22:00",
+      "quality_score": 0.486
+    },
+    {
+      "timestamp": "2025-09-29T22:21:10.236247",
+      "question_length": 15,
+      "provider": "retrieval-only",
+      "response_time_ms": 290.39978981018066,
+      "sources_count": 3,
+      "success": true,
+      "error": null,
+      "hour": "2025-09-29 22:00",
+      "quality_score": 0.633
+    },
+    {
+      "timestamp": "2025-09-29T22:21:11.461831",
+      "question_length": 15,
+      "provider": "retrieval-only",
+      "response_time_ms": 1121.7148303985596,
+      "sources_count": 3,
+      "success": true,
+      "error": null,
+      "hour": "2025-09-29 22:00",
+      "quality_score": 0.383
+    },
+    {
+      "timestamp": "2025-09-29T22:21:12.036299",
+      "question_length": 12,
+      "provider": "retrieval-only",
+      "response_time_ms": 467.9369926452637,
+      "sources_count": 2,
+      "success": true,
+      "error": null,
+      "hour": "2025-09-29 22:00",
+      "quality_score": 0.54
+    },
+    {
+      "timestamp": "2025-09-29T22:21:12.325002",
+      "question_length": 12,
+      "provider": "retrieval-only",
+      "response_time_ms": 285.77327728271484,
+      "sources_count": 2,
+      "success": true,
+      "error": null,
+      "hour": "2025-09-29 22:00",
+      "quality_score": 0.594
+    },
+    {
+      "timestamp": "2025-09-29T22:21:12.893789",
+      "question_length": 12,
+      "provider": "retrieval-only",
+      "response_time_ms": 565.8447742462158,
+      "sources_count": 2,
+      "success": true,
+      "error": null,
+      "hour": "2025-09-29 22:00",
+      "quality_score": 0.51
+    },
+    {
+      "timestamp": "2025-09-29T22:21:13.137905",
+      "question_length": 12,
+      "provider": "retrieval-only",
+      "response_time_ms": 241.04070663452148,
+      "sources_count": 2,
+      "success": true,
+      "error": null,
+      "hour": "2025-09-29 22:00",
+      "quality_score": 0.608
+    },
+    {
+      "timestamp": "2025-09-29T22:21:13.897796",
+      "question_length": 12,
+      "provider": "retrieval-only",
+      "response_time_ms": 756.8848133087158,
+      "sources_count": 2,
+      "success": true,
+      "error": null,
+      "hour": "2025-09-29 22:00",
+      "quality_score": 0.453
+    },
+    {
+      "timestamp": "2025-09-29T22:21:14.107832",
+      "question_length": 12,
+      "provider": "retrieval-only",
+      "response_time_ms": 207.2153091430664,
+      "sources_count": 2,
+      "success": true,
+      "error": null,
+      "hour": "2025-09-29 22:00",
+      "quality_score": 0.618
+    },
+    {
+      "timestamp": "2025-09-29T22:21:14.568610",
+      "question_length": 12,
+      "provider": "retrieval-only",
+      "response_time_ms": 457.46350288391113,
+      "sources_count": 1,
+      "success": true,
+      "error": null,
+      "hour": "2025-09-29 22:00",
+      "quality_score": 0.503
+    }
+  ],
+  "provider_metrics": {
+    "retrieval-only": {
+      "count": 10,
+      "total_time": 5.042021989822388,
+      "errors": 0,
+      "avg_sources": 2.1,
+      "total_sources": 21,
+      "avg_time_ms": 504.2021989822387,
+      "error_rate": 0.0
+    }
+  },
+  "hourly_queries": {
+    "2025-09-29 22:00": 10
+  },
+  "quality_scores": [
+    0.486,
+    0.633,
+    0.383,
+    0.54,
+    0.594,
+    0.51,
+    0.608,
+    0.453,
+    0.618,
+    0.503
+  ]
+}
