@@ -30,6 +30,7 @@ from app.rag_api.monitor import track_performance, get_metrics, save_metrics
 from app.rag_api.analytics import ANALYTICS
 from app.rag_api.rate_limiter import RATE_LIMITER
 from app.rag_api.cache import QUERY_CACHE
+from app.rag_api.query_optimizer import QUERY_OPTIMIZER
 from app.rag_api.model_selector import MODEL_SELECTOR
 
 configure_settings()
@@ -282,3 +283,19 @@ def cache_cleanup():
     """Cleanup expired cache entries."""
     count = QUERY_CACHE.cleanup_expired()
     return {"cleaned": count, "message": f"Removed {count} expired entries"}
+
+@app.post("/query/analyze")
+def analyze_query(question: str):
+    """Analyze query and get optimization recommendations."""
+    analysis = QUERY_OPTIMIZER.analyze_query(question)
+    return {
+        "question": question,
+        "complexity": analysis.complexity.value,
+        "intent": analysis.intent.value,
+        "keywords": analysis.keywords,
+        "entities": analysis.entities,
+        "recommended_top_k": analysis.recommended_top_k,
+        "recommended_provider": analysis.recommended_provider,
+        "confidence": analysis.confidence,
+        "reasoning": analysis.reasoning
+    }
