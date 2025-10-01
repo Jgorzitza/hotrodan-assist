@@ -23,3 +23,10 @@
   - app/_index: removed unused analytics helper + imports; app/sales: removed unused import.
 - After: 0 errors, 12 warnings (mostly test import-type rules; 1 jsx-key warning remains to address).
 - Next: address remaining jsx-key warning safely, run dashboard/root vitest, then open PR.
+
+## 2025-10-01T08:11Z — PR opened and validation
+- PR: https://github.com/Jgorzitza/hotrodan-assist/pull/5
+- Lint: dashboard ESLint 0 errors, 12 warnings (non-critical).
+- Tests: root and dashboard Vitest PASS (4 files, 12 tests each).
+- Goldens: OFFLINE_CORRECTIONS_ONLY=1 passed.
+- Next: rely on CI for Node 20, Playwright smoke; proceed with further cleanup tasks while PR runs.

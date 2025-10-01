@@ -1,4 +1,33 @@
 name: CI
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install root dev deps
+        run: npm ci --include=dev || npm ci
+      - name: Typecheck root
+        run: npm run -s typecheck
+      - name: Install dashboard deps
+        working-directory: dashboard
+        run: npm ci --include=dev || npm ci
+      - name: Generate Prisma (best-effort)
+        working-directory: dashboard
+        run: npm run -s prisma:generate || true
+      - name: Test dashboard
+        working-directory: dashboard
+        run: npx vitest run --config vitest.config.ts
+
+name: CI
 
 on:
   push:

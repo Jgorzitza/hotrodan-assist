@@ -10,3 +10,4 @@ python-dotenv
 llama-index-embeddings-fastembed
 fastembed
 prometheus-client
+redis

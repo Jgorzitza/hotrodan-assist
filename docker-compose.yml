@@ -15,6 +15,16 @@ services:
     ports:
       - "6379:6379"
 
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    environment:
+      - ENABLE_MCP=true
+      - USE_MOCK_DATA=true
+    ports:
+      - "3000:3000"
+
   rag-api:
     build: ./app/rag_api
     env_file: .env

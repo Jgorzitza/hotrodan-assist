@@ -7,9 +7,12 @@
 import os
 from textwrap import shorten
 from dotenv import load_dotenv
+from hashlib import sha1
+import json
+import time
 
 import chromadb
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
@@ -19,6 +22,7 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 # Monitoring helpers
 from monitor import track_performance, get_metrics, save_metrics
 from prometheus_client import Counter, generate_latest
+import redis
 
 # Load .env for container and local runs
 load_dotenv()
@@ -28,6 +32,11 @@ CHROMA_PATH = os.getenv("CHROMA_PATH", "/workspace/chroma")
 PERSIST_DIR = os.getenv("PERSIST_DIR", "/workspace/storage")
 COLLECTION = os.getenv("COLLECTION", "hotrodan")
 INDEX_ID = os.getenv("INDEX_ID", "hotrodan")
+REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+RAG_CACHE_TTL = int(os.getenv("RAG_CACHE_TTL", "600"))
+RAG_RATE_LIMIT_PER_MIN = int(os.getenv("RAG_RATE_LIMIT_PER_MIN", "120"))
+RAG_REQUIRE_AUTH = os.getenv("RAG_REQUIRE_AUTH", "false").lower() == "true"
+RAG_API_TOKEN = os.getenv("RAG_API_TOKEN", "")
 
 GENERATION_MODE = os.getenv("RAG_GENERATION_MODE", "openai")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -63,10 +72,63 @@ app = FastAPI(
 )
 
 REQUESTS = Counter("rag_requests_total", "Total RAG requests", ["route"])
+RATE_LIMITED = Counter("rag_rate_limited_total", "Requests rejected due to rate limiting")
 
 class QueryIn(BaseModel):
     question: str
     top_k: int = 10
+
+# ----- Redis helpers -----
+_redis_client = None
+
+def get_redis():
+    global _redis_client
+    if _redis_client is None:
+        try:
+            _redis_client = redis.from_url(REDIS_URL)
+        except Exception:
+            _redis_client = None
+    return _redis_client
+
+
+def cache_key_for(q: QueryIn) -> str:
+    raw = f"{q.question}\n{k}".encode()
+    return "rq:" + sha1(raw).hexdigest()
+
+
+def cache_get(k: str):
+    r = get_redis()
+    if not r:
+        return None
+    try:
+        v = r.get(k)
+        return json.loads(v) if v else None
+    except Exception:
+        return None
+
+
+def cache_set(k: str, value: dict, ttl: int = RAG_CACHE_TTL):
+    r = get_redis()
+    if not r:
+        return
+    try:
+        r.setex(k, ttl, json.dumps(value))
+    except Exception:
+        pass
+
+
+def ip_rate_limited(ip: str) -> bool:
+    r = get_redis()
+    if not r:
+        return False
+    try:
+        key = f"rl:{ip}:{int(time.time()//60)}"
+        n = r.incr(key)
+        if n == 1:
+            r.expire(key, 65)
+        return n > RAG_RATE_LIMIT_PER_MIN
+    except Exception:
+        return False
 
 class MetricsResponse(BaseModel):
     query_count: int
@@ -79,7 +141,26 @@ class MetricsResponse(BaseModel):
 
 @app.post("/query")
 @track_performance
-def query(q: QueryIn):
+def query(req: Request, q: QueryIn):
+    # Optional bearer auth
+    if RAG_REQUIRE_AUTH:
+        auth = req.headers.get("authorization", "")
+        if not (auth.startswith("Bearer ") and auth.split(" ",1)[1] == RAG_API_TOKEN):
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # Rate limiting by client IP
+    ip = req.client.host if req.client else "unknown"
+    if ip_rate_limited(ip):
+        RATE_LIMITED.inc()
+        raise HTTPException(status_code=429, detail="Rate limit exceeded")
+
+    REQUESTS.labels(route="query").inc()
+
+    # Cache layer
+    ck = "rq:" + sha1(f"{q.question}\n{q.top_k}".encode()).hexdigest()
+    cached = cache_get(ck)
+    if cached:
+        return cached
     REQUESTS.labels(route="query").inc()
     try:
         client = chromadb.PersistentClient(path=CHROMA_PATH)
@@ -102,7 +183,9 @@ def query(q: QueryIn):
                 n.metadata.get("source_url", "unknown")
                 for n in getattr(resp, "source_nodes", [])
             ]
-            return {"answer": str(resp), "sources": sources, "mode": "openai"}
+            result = {"answer": str(resp), "sources": sources, "mode": "openai"}
+            cache_set(ck, result)
+            return result
 
         summaries = []
         source_urls = []
@@ -126,11 +209,13 @@ def query(q: QueryIn):
             }
 
         answer = "\n\n".join(f"• {s}" for s in summaries[:3])
-        return {
+        result = {
             "answer": answer + "\n\n[LLM disabled: configure OPENAI_API_KEY for full narratives]",
             "sources": source_urls[:10],
             "mode": "retrieval-only",
         }
+        cache_set(ck, result)
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"RAG query failed: {str(e)}")
 
@@ -141,6 +226,17 @@ def health():
         "mode": GENERATION_MODE,
         "openai_available": bool(OPENAI_API_KEY),
     }
+
+@app.get("/ready")
+def ready():
+    try:
+        client = chromadb.PersistentClient(path=CHROMA_PATH)
+        collection = client.get_or_create_collection(COLLECTION, metadata={"hnsw:space": "cosine"})
+        _ = collection.count()
+        ok = True
+    except Exception:
+        ok = False
+    return {"ready": ok}
 
 @app.get("/metrics", response_model=MetricsResponse)
 def metrics():
