@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ConnectionHealth, SettingsPayload } from "~/types/settings";

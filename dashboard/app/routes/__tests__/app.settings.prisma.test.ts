@@ -65,9 +65,7 @@ vi.mock("@shopify/shopify-app-remix/server", () => ({
 
 vi.mock("@shopify/shopify-app-session-storage-prisma", () => ({
   __esModule: true,
-  PrismaSessionStorage: class PrismaSessionStorageMock {
-    constructor() {}
-  },
+  PrismaSessionStorage: class PrismaSessionStorageMock {},
 }));
 
 vi.mock("../lib/settings/connection-tests.server", () => ({

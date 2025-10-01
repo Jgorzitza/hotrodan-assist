@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { analyticsSalesFixtures, analyticsSalesWarning } from "~/mocks/fixtures/analytics.sales";

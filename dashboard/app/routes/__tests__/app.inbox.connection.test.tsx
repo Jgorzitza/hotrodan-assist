@@ -1,5 +1,6 @@
 /* @vitest-environment jsdom */
 /* eslint-disable testing-library/no-unnecessary-act */
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 
 import React, { act } from "react";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
