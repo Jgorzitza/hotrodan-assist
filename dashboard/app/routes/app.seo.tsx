@@ -1067,19 +1067,13 @@ export default function SeoRoute() {
         title="SEO insights"
         subtitle="Review health scores, keyword opportunities, and technical issues."
       >
-        <TitleBar
-          title="SEO"
-          primaryAction={{
-            content: "Export keywords CSV",
-            onAction: () => handleExport("keywords"),
-          }}
-          secondaryActions={[
-            {
-              content: "Export page CSV",
-              onAction: () => handleExport("pages"),
-            },
-          ]}
-        />
+        <InlineStack align="space-between" blockAlign="center">
+          <Text as="h2" variant="headingLg">SEO</Text>
+          <InlineStack gap="100">
+            <Button onClick={() => handleExport("keywords")}>Export keywords CSV</Button>
+            <Button onClick={() => handleExport("pages")} variant="secondary">Export page CSV</Button>
+          </InlineStack>
+        </InlineStack>
 
         <BlockStack gap="500">
           {(dataset.alert || dataset.error || useMockData || (!useMockData && allAdaptersDisconnected)) && (
@@ -1098,6 +1092,9 @@ export default function SeoRoute() {
                     Connect GA4, Search Console, or Bing in Settings, then run connection tests. Until
                     then, this view will show limited data.
                   </p>
+                  <InlineStack gap="200" blockAlign="center">
+                    <Button onClick={() => navigate("/app/settings")}>Go to Settings</Button>
+                  </InlineStack>
                 </Banner>
               )}
               {dataset.alert && !dataset.error && (
@@ -1114,7 +1111,6 @@ export default function SeoRoute() {
           )}
 
           <Card>
-            <Card.Section>
               <InlineStack align="space-between" blockAlign="center">
                 <BlockStack gap="050">
                   <Text variant="headingMd" as="h2">
@@ -1124,7 +1120,7 @@ export default function SeoRoute() {
                     Toggle adapters for this view. Connection health reflects the latest Settings sync.
                   </Text>
                 </BlockStack>
-                <ButtonGroup segmented>
+                <ButtonGroup>
                   {adapterList.map((adapter) => (
                     <Button
                       key={adapter.id}
@@ -1141,9 +1137,7 @@ export default function SeoRoute() {
                   ))}
                 </ButtonGroup>
               </InlineStack>
-            </Card.Section>
             <Divider borderColor="border" />
-            <Card.Section>
               <BlockStack gap="100">
                 <InlineStack align="space-between" blockAlign="center">
                   <Text as="h3" variant="headingSm">Live connection health</Text>
@@ -1161,19 +1155,15 @@ export default function SeoRoute() {
                       const res = healthFetcher.data!.results[key] as { status: string; durationMs: number; message?: string } | undefined;
                       const tone = res?.status === "success" ? "success" : res?.status === "warning" ? "warning" : "critical";
                       return (
-                        <Badge key={key} tone={tone as any}>
-                          {key.toUpperCase()}: {res?.status ?? "error"}
-                        </Badge>
+                        <Badge key={key} tone={tone as any}>{`${key.toUpperCase()}: ${res?.status ?? "error"}`}</Badge>
                       );
                     })}
                   </InlineStack>
                 ) : (
-                  <Text variant="bodySm" tone="subdued">Checking provider health…</Text>
+                  <Text variant="bodySm" tone="subdued" as="span">Checking provider health…</Text>
                 )}
               </BlockStack>
-            </Card.Section>
             <Divider borderColor="border" />
-            <Card.Section>
               <InlineGrid columns={{ xs: 1, sm: 3 }} gap="200">
                 {adapterList.map((adapter) => (
                   <BlockStack key={adapter.id} gap="100">
@@ -1189,7 +1179,7 @@ export default function SeoRoute() {
                             : "Error"}
                       </Badge>
                     </InlineStack>
-                    <Text variant="bodySm" tone="subdued">
+                    <Text variant="bodySm" tone="subdued" as="span">
                       {adapter.disabledByConnection
                         ? "Enable in Settings to hydrate this section."
                         : adapter.error ?? adapter.message ?? "Connected"}
@@ -1197,12 +1187,11 @@ export default function SeoRoute() {
                   </BlockStack>
                 ))}
               </InlineGrid>
-            </Card.Section>
           </Card>
 
           <Layout>
-            <Layout.Section oneThird>
-              <Card title="Scorecard" sectioned>
+            <Layout.Section>
+              <Card>
                 <BlockStack gap="200">
                   <ScoreRow
                     label="Core Web Vitals"
@@ -1225,7 +1214,6 @@ export default function SeoRoute() {
             </Layout.Section>
             <Layout.Section>
               <Card>
-                <Card.Section>
                   <InlineStack align="space-between" blockAlign="center">
                     <BlockStack gap="050">
                       <Text variant="headingMd" as="h2">
@@ -1237,7 +1225,7 @@ export default function SeoRoute() {
                     </BlockStack>
                     {trafficSummary && (
                       <InlineStack gap="200">
-                        <BlockStack gap="030">
+                        <BlockStack gap="050">
                           <Text variant="bodySm" tone="subdued" as="span">
                             Sessions
                           </Text>
@@ -1245,7 +1233,7 @@ export default function SeoRoute() {
                             {formatNumber(trafficSummary.sessions)}
                           </Text>
                         </BlockStack>
-                        <BlockStack gap="030">
+                        <BlockStack gap="050">
                           <Text variant="bodySm" tone="subdued" as="span">
                             Conversions
                           </Text>
@@ -1256,8 +1244,6 @@ export default function SeoRoute() {
                       </InlineStack>
                     )}
                   </InlineStack>
-                </Card.Section>
-                <Card.Section>
                   {adapters.ga4.active && traffic.length ? (
                     <div style={{ width: "100%", height: 260 }}>
                       <LineChart
@@ -1266,29 +1252,20 @@ export default function SeoRoute() {
                         xAxisOptions={{
                           labelFormatter: (value) => formatDateLabel(String(value)),
                         }}
-                        tooltipOptions={{
-                          keyFormatter: (value) => formatDateLabel(String(value)),
-                          valueFormatter: (value, { series }) =>
-                            series === 0
-                              ? `${formatNumber(Number(value ?? 0))} clicks`
-                              : `${formatNumber(Number(value ?? 0))} impressions`,
-                        }}
                       />
                     </div>
                   ) : (
-                    <Text variant="bodySm" tone="subdued">
+                    <Text variant="bodySm" tone="subdued" as="span">
                       {adapters.ga4.toggled
                         ? "GA4 data unavailable. Check adapter status in settings."
                         : "GA4 adapter disabled for this view."}
                     </Text>
                   )}
-                </Card.Section>
               </Card>
             </Layout.Section>
           </Layout>
 
           <Card>
-            <Card.Section>
               <InlineStack align="space-between" blockAlign="center">
                 <BlockStack gap="050">
                   <Text variant="headingMd" as="h2">
@@ -1326,9 +1303,7 @@ export default function SeoRoute() {
                   </Button>
                 </InlineStack>
               </InlineStack>
-            </Card.Section>
             <Divider borderColor="border" />
-            <Card.Section>
               <form onSubmit={handleKeywordSubmit}>
                 <InlineStack gap="200" blockAlign="end" wrap>
                   <Box minWidth="240px">
@@ -1336,6 +1311,7 @@ export default function SeoRoute() {
                       label="Search keywords"
                       labelHidden
                       placeholder="Filter keywords or top pages"
+                      autoComplete="off"
                       value={keywordQuery}
                       onChange={(value) => setKeywordQuery(value)}
                     />
@@ -1348,8 +1324,6 @@ export default function SeoRoute() {
                   </InlineStack>
                 </InlineStack>
               </form>
-            </Card.Section>
-            <Card.Section>
               {adapters.gsc.active && keywords.length ? (
                 <DataTable
                   columnContentTypes={[
@@ -1384,17 +1358,15 @@ export default function SeoRoute() {
                   ])}
                 />
               ) : (
-                <Text variant="bodySm" tone="subdued">
+                <Text variant="bodySm" tone="subdued" as="span">
                   {adapters.gsc.toggled
                     ? "Search Console data unavailable. Check adapter status in settings."
                     : "Search Console adapter disabled for this view."}
                 </Text>
               )}
-            </Card.Section>
           </Card>
 
           <Card>
-            <Card.Section>
               <InlineStack align="space-between" blockAlign="center">
                 <BlockStack gap="050">
                   <Text variant="headingMd" as="h2">
@@ -1429,9 +1401,7 @@ export default function SeoRoute() {
                   </Button>
                 </InlineStack>
               </InlineStack>
-            </Card.Section>
             <Divider borderColor="border" />
-            <Card.Section>
               <form onSubmit={handlePageSubmit}>
                 <InlineStack gap="200" blockAlign="end" wrap>
                   <Box minWidth="240px">
@@ -1439,6 +1409,7 @@ export default function SeoRoute() {
                       label="Search pages"
                       labelHidden
                       placeholder="Filter by URL or title"
+                      autoComplete="off"
                       value={pageQuery}
                       onChange={(value) => setPageQuery(value)}
                     />
@@ -1451,36 +1422,32 @@ export default function SeoRoute() {
                   </InlineStack>
                 </InlineStack>
               </form>
-            </Card.Section>
             {coverageIssues.length > 0 && (
               <>
-                <Divider borderColor="border-subdued" />
-                <Card.Section subdued>
+                <Divider borderColor="border" />
                   <InlineStack align="space-between" blockAlign="center">
                     <Text variant="headingSm" as="h3">
                       Coverage warnings
                     </Text>
                     <Badge tone={coverageIssues.length > 2 ? "critical" : "warning"}>
-                      {coverageIssues.length} open
+                      {`${coverageIssues.length} open`}
                     </Badge>
                   </InlineStack>
                   <BlockStack gap="050">
                     {coverageIssues.slice(0, 3).map((issue) => (
-                      <Text key={`${issue.page}-${issue.issue}`} variant="bodySm">
+                      <Text key={`${issue.page}-${issue.issue}`} variant="bodySm" as="span">
                         {issue.issue} — {issue.page}
                       </Text>
                     ))}
                     {coverageIssues.length > 3 && (
-                      <Text variant="bodySm" tone="subdued">
+                      <Text variant="bodySm" tone="subdued" as="span">
                         +{coverageIssues.length - 3} additional issues in Search Console
                       </Text>
                     )}
                   </BlockStack>
-                </Card.Section>
               </>
             )}
             <Divider borderColor="border" />
-            <Card.Section>
               {adapters.bing.active && pages.length ? (
                 <DataTable
                   columnContentTypes={["text", "numeric", "numeric", "numeric", "text"]}
@@ -1502,17 +1469,15 @@ export default function SeoRoute() {
                   ])}
                 />
               ) : (
-                <Text variant="bodySm" tone="subdued">
+                <Text variant="bodySm" tone="subdued" as="span">
                   {adapters.bing.toggled
                     ? "Bing metrics unavailable. Add credentials in settings."
                     : "Bing adapter disabled for this view."}
                 </Text>
               )}
-            </Card.Section>
           </Card>
 
           <Card>
-            <Card.Section>
               <InlineStack align="space-between" blockAlign="center">
                 <BlockStack gap="050">
                   <Text variant="headingMd" as="h2">
@@ -1540,21 +1505,19 @@ export default function SeoRoute() {
                     }
                   />
                   <InlineStack gap="100" blockAlign="center">
-                    <Badge tone="critical">Now {actionTotals.now}</Badge>
-                    <Badge tone="warning">Soon {actionTotals.soon}</Badge>
-                    <Badge tone="info">Later {actionTotals.later}</Badge>
+                    <Badge tone="critical">{`Now ${actionTotals.now}`}</Badge>
+                    <Badge tone="warning">{`Soon ${actionTotals.soon}`}</Badge>
+                    <Badge tone="info">{`Later ${actionTotals.later}`}</Badge>
                   </InlineStack>
                 </InlineStack>
               </InlineStack>
-            </Card.Section>
             <Divider borderColor="border" />
-            <Card.Section>
               {priorityFilterList.map((priority) => {
                 const items = groupedActions[priority];
                 if (!items.length) {
                   if (filters.actionPriority !== "all") {
                     return (
-                      <Text key={priority} variant="bodySm" tone="subdued">
+                      <Text key={priority} variant="bodySm" tone="subdued" as="span">
                         No actions in this bucket.
                       </Text>
                     );
@@ -1589,12 +1552,12 @@ export default function SeoRoute() {
                                   {action.description}
                                 </Text>
                               </BlockStack>
-                              <Badge tone={ACTION_STATUS_TONE[action.status]}>
+                              <Badge tone={ACTION_STATUS_TONE[action.status] as any}>
                                 {ACTION_STATUS_LABEL[action.status]}
                               </Badge>
                             </InlineStack>
                           </BlockStack>
-                          <Divider borderColor="border-subdued" />
+                          <Divider borderColor="border" />
                           <InlineStack gap="200" wrap blockAlign="center">
                             <Select
                               label="Status"
@@ -1616,9 +1579,7 @@ export default function SeoRoute() {
                               value={action.assignedTo}
                               onChange={(value) => handleAssignmentChange(action.id, value)}
                             />
-                            <Badge tone="info">
-                              {action.metricLabel}: {action.metricValue}
-                            </Badge>
+                            <Badge tone="info">{`${action.metricLabel}: ${action.metricValue ?? ""}`}</Badge>
                             {action.dueAt && (
                               <Text variant="bodySm" tone="subdued" as="span">
                                 Due {new Date(action.dueAt).toLocaleDateString()}
@@ -1636,19 +1597,18 @@ export default function SeoRoute() {
               })}
 
               {!filteredActions.length && (
-                <Text variant="bodySm" tone="subdued">
+                <Text variant="bodySm" tone="subdued" as="span">
                   No SEO actions match the selected filters.
                 </Text>
               )}
-            </Card.Section>
           </Card>
 
-          <Card title="MCP keyword opportunities" sectioned>
+          <Card>
             <BlockStack gap="200">
               {mcp.opportunities.map((opportunity) => (
                 <Box
                   key={opportunity.handle}
-                  background="bg-subdued"
+                  background="bg-surface-secondary"
                   padding="200"
                   borderRadius="200"
                 >
@@ -1663,14 +1623,12 @@ export default function SeoRoute() {
                             "Prioritize optimization to unlock incremental traffic."}
                         </Text>
                       </BlockStack>
-                      <Badge tone="info">
-                        Impact +{opportunity.projectedImpact.toFixed(1)}%
-                      </Badge>
+                      <Badge tone="info">{`Impact +${opportunity.projectedImpact.toFixed(1)}%`}</Badge>
                     </InlineStack>
                     {opportunity.keywordCluster.length > 0 && (
                       <InlineStack gap="150" wrap>
                         {opportunity.keywordCluster.map((keyword) => (
-                          <Badge key={keyword} tone="subdued">
+                          <Badge key={keyword} tone="info">
                             {keyword}
                           </Badge>
                         ))}
@@ -1699,7 +1657,7 @@ export default function SeoRoute() {
             </BlockStack>
           </Card>
 
-          <Card title="Insights" sectioned>
+          <Card>
             <BlockStack gap="300">
               {dataset.insights.map((insight) => (
                 <BlockStack key={insight.id} gap="150">
@@ -1718,9 +1676,7 @@ export default function SeoRoute() {
                     {insight.description}
                   </Text>
                   <InlineStack gap="200">
-                    <Badge tone="info">
-                      {insight.metricLabel}: {insight.metricValue}
-                    </Badge>
+                    <Badge tone="info">{`${insight.metricLabel}: ${insight.metricValue ?? ""}`}</Badge>
                     {insight.delta && (
                       <Text variant="bodySm" tone="subdued" as="span">
                         Δ {insight.delta}

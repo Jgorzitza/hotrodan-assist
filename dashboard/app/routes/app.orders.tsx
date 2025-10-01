@@ -33,7 +33,6 @@ import {
   useBreakpoints,
   useIndexResourceState,
 } from "@shopify/polaris";
-import { TitleBar } from "@shopify/app-bridge-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -350,10 +349,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   let syncCall:
-    | (<TUpdate>(
+    | ((
         path: string,
         payload: Record<string, unknown>,
-      ) => Promise<SyncOrdersActionResult<TUpdate>>)
+      ) => Promise<SyncOrdersActionResult>)
     | null = null;
 
   if (!USE_MOCK_DATA) {
@@ -367,8 +366,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json(buildResponse(false, message, { message }), { status: 500 });
     }
 
-    syncCall = async <TUpdate,>(path: string, payload: Record<string, unknown>) =>
-      postOrdersSyncAction<TUpdate>({
+    syncCall = async (path: string, payload: Record<string, unknown>) =>
+      postOrdersSyncAction({
         path,
         payload,
         baseUrl,
@@ -395,7 +394,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const fallbackMessage = `Assigned ${ids.length} order(s) to ${assignee}.`;
       if (syncCall) {
         try {
-          const result = await syncCall<SyncOrdersAssignResponse["updatedOrders"]>(
+          const result = await syncCall(
             "/sync/orders/assign",
             {
               orderIds: ids,
@@ -446,7 +445,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       }.`;
       if (syncCall) {
         try {
-          const result = await syncCall<SyncOrdersFulfillResponse["updatedOrders"]>(
+          const result = await syncCall(
             "/sync/orders/fulfill",
             {
               orderIds: ids,
@@ -503,7 +502,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         try {
           const results = await Promise.all(
             ids.map((id) =>
-              syncCall<SyncOrdersSupportResponse["updatedOrders"]>(
+              syncCall(
                 "/sync/orders/support",
                 {
                   orderId: id,
@@ -513,13 +512,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
               ),
             ),
           );
-          const success = results.every((result) => result.success ?? true);
+          const success = results.every((result: any) => result.success ?? true);
           const updated = mergeUpdatedOrders(
-            ...results.map((result) => result.updatedOrders),
-            ...results.map((result) => result.updatedOrder),
+            ...results.map((result: any) => result.updatedOrders),
+            ...results.map((result: any) => result.updatedOrder),
           );
-          const firstMessage = results.find((result) => Boolean(result.message))?.message;
-          const firstToast = results.find((result) => result.toast?.message)?.toast;
+          const firstMessage = results.find((result: any) => Boolean(result.message))?.message;
+          const firstToast = results.find((result: any) => result.toast?.message)?.toast;
           return json(
             buildResponse(success, fallbackMessage, {
               message: firstMessage,
@@ -567,7 +566,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const fallbackMessage = `Return updated (${payload.action}) for ${payload.orderId}.`;
       if (syncCall) {
         try {
-          const result = await syncCall<SyncOrdersReturnsResponse["updatedOrders"]>(
+          const result = await syncCall(
             "/sync/orders/returns",
             payload,
           );
@@ -621,9 +620,10 @@ export default function OrdersRoute() {
   const [dataGaps, setDataGaps] = useState<string[]>(dataset.dataGaps);
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetcherSubmission = (fetcher as any)?.submission as { formData: FormData } | undefined;
   const { orders: optimisticOrders, lookup: ordersById } = useOptimisticOrders({
     baseOrders: dataset.orders.items,
-    submission: fetcher.submission,
+    submission: fetcherSubmission,
     response: fetcher.data,
   });
 
@@ -794,7 +794,7 @@ export default function OrdersRoute() {
     }
   }, [activeOrder, activeOrderId]);
 
-  const fetcherIntentRaw = fetcher.submission?.formData.get("intent");
+  const fetcherIntentRaw = fetcherSubmission?.formData.get("intent");
   const actionState = useMemo(
     () => ({
       intent: typeof fetcherIntentRaw === "string" ? fetcherIntentRaw : null,
@@ -902,7 +902,7 @@ export default function OrdersRoute() {
         ? { status: success ? "success" : "error", message }
         : null;
     if (nextToast) {
-      setToast(nextToast);
+      setToast(nextToast as ActionToast);
     }
     clearSelection();
     revalidator.revalidate();
@@ -1087,7 +1087,6 @@ export default function OrdersRoute() {
       title="Orders"
       subtitle="Monitor fulfillment backlog, shipment health, and returns."
     >
-      <TitleBar title="Orders" primaryAction={{ content: "Export CSV", url: "#" }} />
       <Layout>
         <Layout.Section>
           <BlockStack gap="400">
@@ -1104,7 +1103,7 @@ export default function OrdersRoute() {
                   </Banner>
                 ))}
                 {dataGaps.map((gap, index) => (
-                  <Banner tone="attention" title="Data gap" key={`gap-${index}`}>
+                  <Banner tone="warning" title="Data gap" key={`gap-${index}`}>
                     <p>{gap}</p>
                   </Banner>
                 ))}
@@ -1112,9 +1111,8 @@ export default function OrdersRoute() {
             )}
 
             <Card>
-              <Card.Section>
-                <BlockStack gap="200">
-                  <InlineStack gap="200" blockAlign="center" wrap>
+              <BlockStack gap="200">
+                <InlineStack gap="200" blockAlign="center" wrap>
                     <Select
                       labelHidden
                       label="Date range"
@@ -1160,7 +1158,6 @@ export default function OrdersRoute() {
                     )}
                   </InlineStack>
                 </BlockStack>
-              </Card.Section>
             </Card>
 
             <FulfillmentPulseCard metrics={metrics} />
@@ -1181,8 +1178,8 @@ export default function OrdersRoute() {
                       <Button
                         disabled={!selectedOrderCount}
                         onClick={handleAssign}
-                        loading={fetcher.state !== "idle" && fetcher.submission?.formData.get("intent") === "assign"}
-                      >
+                        loading={fetcher.state !== "idle" && fetcherSubmission?.formData.get("intent") === "assign"}
+                       >
                         Assign
                       </Button>
                       <Button
@@ -1190,7 +1187,7 @@ export default function OrdersRoute() {
                         onClick={handleMarkFulfilled}
                         loading={
                           fetcher.state !== "idle" &&
-                          fetcher.submission?.formData.get("intent") === "markFulfilled"
+                          fetcherSubmission?.formData.get("intent") === "markFulfilled"
                         }
                       >
                         Mark fulfilled
@@ -1213,7 +1210,7 @@ export default function OrdersRoute() {
                     allResourcesSelected ? "All" : selectedResources.length
                   }
                   onSelectionChange={handleSelectionChange}
-                  headings={mdUp ? IndexHeadingsDesktop : IndexHeadingsMobile}
+                  headings={mdUp ? (IndexHeadingsDesktop as any) : (IndexHeadingsMobile as any)}
                 >
                   {optimisticOrders.map((order, index) => (
                     <IndexTable.Row
@@ -1293,7 +1290,7 @@ export default function OrdersRoute() {
               </BlockStack>
             </Card>
 
-            <Grid columns={{ xs: 1, md: 2 }} gap="400">
+            <Grid columns={{ xs: 1, md: 2 }}>
               <Grid.Cell>
                 <ShipmentsCard
                   shipments={dataset.shipments}
@@ -1464,9 +1461,10 @@ function FulfillmentPulseCard({ metrics }: { metrics: OrdersMetrics }) {
   ];
 
   return (
-    <Card title="Fulfillment pulse">
-      <Card.Section>
-        <Grid columns={{ xs: 1, sm: 2, md: 3 }} gap="200">
+    <Card>
+      <BlockStack gap="200">
+        <Text variant="headingSm" as="h3">Fulfillment pulse</Text>
+        <Grid columns={{ xs: 1, sm: 2, md: 3 }}>
           {rows.map(([label, value, tone]) => (
             <Grid.Cell key={label}>
               <BlockStack gap="050">
@@ -1481,7 +1479,7 @@ function FulfillmentPulseCard({ metrics }: { metrics: OrdersMetrics }) {
             </Grid.Cell>
           ))}
         </Grid>
-      </Card.Section>
+      </BlockStack>
     </Card>
   );
 }
@@ -1501,8 +1499,9 @@ function ShipmentsCard({
   const followUpBusy = actionState.isBusy && actionState.intent === "requestSupport";
 
   return (
-    <Card title="Shipments">
-      <Card.Section>
+    <Card>
+      <BlockStack gap="200">
+        <Text variant="headingSm" as="h3">Shipments</Text>
         <BlockStack gap="200">
           <InlineStack align="space-between" blockAlign="center">
             <Text variant="headingSm" as="h3">
@@ -1542,12 +1541,10 @@ function ShipmentsCard({
               ))}
             </BlockStack>
           ) : (
-            <Text variant="bodySm">No tracking items pending.</Text>
+            <Text variant="bodySm" as="span">No tracking items pending.</Text>
           )}
         </BlockStack>
-      </Card.Section>
-      <Divider borderColor="border" />
-      <Card.Section>
+        <Divider borderColor="border" />
         <BlockStack gap="200">
           <Text variant="headingSm" as="h3">
             Delayed ({shipments.delayed.length})
@@ -1581,10 +1578,10 @@ function ShipmentsCard({
               ))}
             </BlockStack>
           ) : (
-            <Text variant="bodySm">No carrier delays.</Text>
+            <Text variant="bodySm" as="span">No carrier delays.</Text>
           )}
         </BlockStack>
-      </Card.Section>
+      </BlockStack>
     </Card>
   );
 }
@@ -1604,13 +1601,14 @@ function ReturnsCard({
   const returnBusy = (action: string) => actionState.isBusy && actionState.intent === action;
 
   return (
-    <Card title="Returns & refunds">
-      <Card.Section>
+    <Card>
+      <BlockStack gap="200">
+        <Text variant="headingSm" as="h3">Returns & refunds</Text>
         <Text variant="bodySm" tone="subdued" as="span">
           Refund exposure {returns.refundValue.formatted} • Pending approvals {returns.refundsDue}
         </Text>
-      </Card.Section>
-      <Card.Section>
+      </BlockStack>
+      <BlockStack gap="200">
         {returns.pending.length ? (
           <BlockStack gap="200">
             {returns.pending.map((entry) => (
@@ -1654,9 +1652,9 @@ function ReturnsCard({
             ))}
           </BlockStack>
         ) : (
-          <Text variant="bodySm">No returns pending.</Text>
+          <Text variant="bodySm" as="span">No returns pending.</Text>
         )}
-      </Card.Section>
+      </BlockStack>
     </Card>
   );
 }
@@ -1669,8 +1667,9 @@ function OperationalNotes({
   alerts: string[];
 }) {
   return (
-    <Card title="Operational notes">
-      <Card.Section>
+    <Card>
+      <BlockStack gap="200">
+        <Text variant="headingSm" as="h3">Operational notes</Text>
         <BlockStack gap="200">
           <Text variant="headingSm" as="h3">
             Inventory blocks
@@ -1688,10 +1687,10 @@ function OperationalNotes({
                         </Text>
                         <InlineStack gap="150" wrap>
                           <Badge tone={inventoryHoldTone(item)}>
-                            {item.ordersWaiting} waiting
+                            {`${item.ordersWaiting} waiting`}
                           </Badge>
                           <Badge tone={item.onHand > 0 ? "info" : "critical"}>
-                            {item.onHand} on hand
+                            {`${item.onHand} on hand`}
                           </Badge>
                           <Text tone="subdued" variant="bodySm" as="span">
                             ETA {formatDate(item.eta)}
@@ -1713,24 +1712,22 @@ function OperationalNotes({
               ))}
             </BlockStack>
           ) : (
-            <Text variant="bodySm">No inventory holds.</Text>
+            <Text variant="bodySm" as="span">No inventory holds.</Text>
           )}
         </BlockStack>
-      </Card.Section>
       {alerts.length > 0 && (
-        <Card.Section>
+        <>
           <Text variant="headingSm" as="h3">
             Alerts
           </Text>
           <BlockStack gap="100">
             {alerts.map((alert, index) => (
-              <Text key={index} variant="bodySm">
-                • {alert}
-              </Text>
+              <Text key={index} variant="bodySm" as="span">• {alert}</Text>
             ))}
           </BlockStack>
-        </Card.Section>
+        </>
       )}
+      </BlockStack>
     </Card>
   );
 }
@@ -1771,7 +1768,7 @@ function OrderDetailModal({ order, onClose }: { order: Order | null; onClose: ()
             </BlockStack>
             <Badge tone={PRIORITY_TONE[order.priority]}>{order.priority}</Badge>
           </InlineStack>
-          <Grid columns={{ xs: 1, sm: 2 }} gap="200">
+        <Grid columns={{ xs: 1, sm: 2 }}>
             <Grid.Cell>
               <BlockStack gap="050">
                 <Text tone="subdued" variant="bodySm" as="span">
@@ -1780,7 +1777,7 @@ function OrderDetailModal({ order, onClose }: { order: Order | null; onClose: ()
                 <InlineStack gap="100" blockAlign="center">
                   <Badge tone={STATUS_TONE[order.status]}>{order.status}</Badge>
                   <Badge tone={FULFILLMENT_TONE[order.fulfillmentStatus]}>
-                    Fulfillment: {order.fulfillmentStatus}
+                    {`Fulfillment: ${order.fulfillmentStatus}`}
                   </Badge>
                 </InlineStack>
               </BlockStack>
@@ -1937,7 +1934,7 @@ function OrderDetailModal({ order, onClose }: { order: Order | null; onClose: ()
 
 type UseOptimisticOrdersParams = {
   baseOrders: Order[];
-  submission: ReturnType<typeof useFetcher<OrdersActionResponse>>["submission"];
+  submission: { formData: FormData } | undefined | null;
   response: OrdersActionResponse | undefined;
 };
 
@@ -2038,7 +2035,6 @@ function applyOptimisticSubmission({
                 type: "fulfillment" as const,
                 message: messageParts.join(" · "),
                 occurredAt: timestamp,
-                state: "fulfilled",
               },
               ...order.timeline,
             ];

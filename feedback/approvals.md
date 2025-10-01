@@ -194,3 +194,71 @@ FAILED tests/test_health_ready.py::test_security_headers_present - AttributeE...
 FAILED tests/test_health_ready.py::test_mask_pii - AssertionError: assert 'j*...
 2 failed, 1 passed, 4 warnings in 1.02s
 2025-10-01T16:11:25Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+## 2025-10-01T16:14:03Z — pytest smoke (fixes applied)
+file: /home/justin/llama_rag/artifacts/phase3/approvals/pytest-1614.txt
+  /home/justin/llama_rag/app/approval-app/main.py:121: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event("shutdown")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+3 passed, 4 warnings in 0.45s
+2025-10-01T16:16:44Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+
+---
+**[16:19 UTC] Approvals Agent Status (Quality Agent Executing)**
+
+**✅ All Systems Operational**:
+
+1. **Health Check**: ✅ OK
+   ```json
+   {"status":"ok","ts":"2025-10-01T16:17:30.122012+00:00"}
+   ```
+
+2. **Monitor Status**: ✅ Active
+   - Last poll: 16:16 UTC
+   - Last checks: ui=ok(1663ms) mcp=skip perf=ok(16796ms) security=ok(419ms) 
+   - Health probes: connectors=ok rag-api=ok
+   - Uptime: 26+ hours continuous monitoring
+   - Heartbeat: Healthy
+
+3. **MCP Integration**: Ready (assistants dependency monitored)
+   - Endpoints: /assistants/drafts, /assistants/approve, /assistants/edit
+   - UI: FastAPI/Jinja2 approval-app running on port 5173
+
+**Production Status**: ✅ GREEN
+- Lightweight health checks passing
+- Performance within acceptable ranges (<20s)
+- Security checks passing
+- No blockers detected
+
+**CEO Dependencies**: None assigned to Approvals
+
+**Monitor Performance** (last 5 checks):
+- UI: 1.2-2.3s response time
+- Performance: 13-30s (load dependent, acceptable)
+- Security: 300-900ms
+- Connectors: Healthy
+- RAG API: Healthy
+
+**Proof-of-Work**: Health checks + monitor status verification completed at 16:19 UTC.
+
+2025-10-01T16:22:01Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T16:27:17Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T16:32:33Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T16:37:52Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T16:43:14Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T16:48:35Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T16:53:55Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T16:59:25Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T17:04:47Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T17:10:06Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T17:15:25Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T17:20:41Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T17:25:57Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T17:31:15Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T17:36:31Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T17:41:49Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok

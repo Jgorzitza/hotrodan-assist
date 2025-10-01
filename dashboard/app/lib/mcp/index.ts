@@ -99,12 +99,12 @@ export const getMcpClient = (
 
   const runtimeOverrides = stripPersistedKeys(overrides) ?? {};
 
-  const baseConfig = resolveMcpConfigFromEnv(overrides);
   return createMcpClient({
-    ...baseConfig,
+    ...resolveMcpConfigFromEnv(overrides),
     ...runtimeOverrides,
     useMocks: false,
-    telemetry: createMcpTelemetryHooks({ endpoint: baseConfig.endpoint }),
+    // inject default telemetry that emits Prometheus counters
+    telemetry: (runtimeOverrides as any)?.telemetry ?? require("./telemetry.server").buildMcpMetricsTelemetry(),
   });
 };
 

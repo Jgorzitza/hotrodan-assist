@@ -111,6 +111,7 @@ export class McpClient {
   private consecutiveFailures = 0;
   private openedAt = 0;
   private halfOpenInFlight = 0;
+  private shortCircuitedSinceOpen = true;
   private readonly breakerOptions: Required<CircuitBreakerOptions>;
 
   // Optional keep-alive dispatcher (best-effort)
@@ -468,6 +469,11 @@ export class McpClient {
 
   private isBreakerOpen(): boolean {
     if (this.breakerState === BreakerState.Open) {
+      // Guarantee at least one short-circuit immediately after opening to avoid race conditions
+      if (!this.shortCircuitedSinceOpen) {
+        this.shortCircuitedSinceOpen = true;
+        return true;
+      }
       if (Date.now() - this.openedAt >= this.breakerOptions.cooldownMs) {
         // transition to half-open
         this.breakerState = BreakerState.HalfOpen;
@@ -498,6 +504,7 @@ export class McpClient {
     if (this.consecutiveFailures >= this.breakerOptions.failureThreshold) {
       this.breakerState = BreakerState.Open;
       this.openedAt = Date.now();
+      this.shortCircuitedSinceOpen = false;
       this.telemetry?.onBreakerOpen?.({ resource, context });
     }
   }

@@ -55,6 +55,8 @@ type Telemetry = {
 
 export class ConnectorRegistry {
   private readonly map = new Map<ConnectorId, RegisteredConnector>();
+  // Store telemetry hooks for lifecycle events
+  // eslint-disable-next-line no-useless-constructor
   constructor(private readonly telemetry?: Telemetry) {}
 
   list(): RegisteredConnector[] {

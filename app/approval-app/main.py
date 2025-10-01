@@ -10,6 +10,7 @@ from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.types import ASGIApp, Receive, Scope, Send
 import logging
 import re
 
@@ -45,6 +46,29 @@ class AuditPIIMiddleware(BaseHTTPMiddleware):
         return response
 
 app.add_middleware(AuditPIIMiddleware)
+
+# --- Security headers / CSP hardening ---
+class SecurityHeadersMiddleware:
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        async def send_wrapper(event):
+            if event.get("type") == "http.response.start":
+                headers = event.setdefault("headers", [])
+                def add(name: str, value: str):
+                    headers.append((name.encode("latin-1"), value.encode("latin-1")))
+                # Basic protections (tune as needed for dev)
+                add("x-frame-options", "DENY")
+                add("x-content-type-options", "nosniff")
+                add("referrer-policy", "no-referrer")
+                # CSP: allow self by default; expand in dev if needed
+                csp = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"
+                add("content-security-policy", csp)
+            await send(event)
+        await self.app(scope, receive, send_wrapper)
+
+app.add_middleware(SecurityHeadersMiddleware)
 
 ASSISTANTS_BASE = os.getenv("ASSISTANTS_BASE", "http://assistants:8002")
 

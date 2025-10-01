@@ -29,7 +29,7 @@ jobs:
           context: ${{ matrix.service }}
           push: false
           load: true
-          tags: local/${{ matrix.service##*/ }}:ci
+          tags: local/${{ last(split(matrix.service, '/')) }}:ci
       - name: Verify health endpoint (python services)
         if: ${{ matrix.service != 'app/approval-app' }}
         run: |

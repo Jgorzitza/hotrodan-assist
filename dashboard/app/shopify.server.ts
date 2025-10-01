@@ -71,15 +71,26 @@ async function ensureWebhookSubscriptions(session: Session) {
   }
 }
 
+const IS_CUSTOM_APP = String(process.env.SHOPIFY_CUSTOM_APP || "false").toLowerCase() === "true";
+
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
   apiVersion: ApiVersion.January25,
   scopes: process.env.SCOPES?.split(","),
   appUrl: process.env.SHOPIFY_APP_URL || "",
-  authPathPrefix: "/auth",
-  sessionStorage: new PrismaSessionStorage(prisma),
-  distribution: AppDistribution.AppStore,
+  ...(IS_CUSTOM_APP
+    ? {
+        // Merchant custom app configuration: no OAuth flow; use an Admin API access token
+        distribution: AppDistribution.ShopifyAdmin,
+        adminApiAccessToken: process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN || "",
+      }
+    : {
+        // App Store/Partner-style configuration (OAuth)
+        authPathPrefix: "/auth",
+        sessionStorage: new PrismaSessionStorage(prisma),
+        distribution: AppDistribution.AppStore,
+      }),
   future: {
     unstable_newEmbeddedAuthStrategy: true,
     removeRest: true,
@@ -88,11 +99,15 @@ const shopify = shopifyApp({
     ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
     : {}),
   webhooks: SHOPIFY_WEBHOOK_REGISTRATION,
-  hooks: {
-    afterAuth: async ({ session }) => {
-      await ensureWebhookSubscriptions(session);
-    },
-  },
+  ...(IS_CUSTOM_APP
+    ? {}
+    : {
+        hooks: {
+          afterAuth: async ({ session }) => {
+            await ensureWebhookSubscriptions(session);
+          },
+        },
+      }),
 });
 
 export default shopify;

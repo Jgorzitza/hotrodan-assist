@@ -1,4 +1,4 @@
-import { ConnectorRegistry, type ConnectorMetadata, ConnectorConfigSchema } from "~/lib/connectors/registry.server";
+import { ConnectorRegistry, type ConnectorMetadata } from "~/lib/connectors/registry.server";
 
 export const buildDefaultConnectorRegistry = () => {
   const registry = new ConnectorRegistry();

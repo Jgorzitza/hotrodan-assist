@@ -66,3 +66,26 @@
   - Two dashboard directories (dashboard/ and dashboard/dashboard/); treated top-level as canonical.
 - Ask
   - Approve PR #5 to unblock downstream integration; confirm preferred error tracking stack (Sentry vs OTLP-only).
+
+## 2025-10-01T16:18Z — UI test lane Path B kickoff
+- Plan: jsdom test environment + setup file; alias stubs for @shopify/polaris and @shopify/app-bridge-react; install jsdom/@faker-js/faker/bullmq for test lane; ensure prisma generate precedes dashboard tests in CI; upload artifacts
+- Proof-of-work next cycle: paste vitest config diff and test summary (files/tests passed), or first failing error line if any
+- Maintain server-only subsets green while UI lane stabilizes
+
+## 2025-10-01T16:45Z — PR gating check (artifacts)
+- Observed CI: Playwright report is uploaded (upload-artifact) but Vitest and ESLint artifacts are not persisted.
+- Request: add upload steps to .github/workflows/ci.yml for:
+  - Vitest results (JUnit or JSON) → name: vitest-report → path: test-results/
+  - ESLint (SARIF) → name: eslint-report → path: eslint-report.sarif and enable code scanning upload if desired
+- Acceptance: PRs show downloadable artifacts for lint/tests; gate ready with clear evidence.
+
+## 2025-10-01T16:41Z — Polaris v12 migration (dashboard routes)
+- Commands:
+  - tsc: npx tsc -p dashboard/tsconfig.json --noEmit (snapshot below)
+- Changes:
+  - app/routes/app.orders.tsx: removed TitleBar; removed Card.Section/title; fixed Text `as`; Badge children strings; Grid gap typing; safe `fetcher.submission`; removed sync call generics; JSX fixes
+  - app/routes/app.inventory.tsx: removed TitleBar; replaced Card.Section/title/sectioned with in-card headings; added Text `as`; TextField `autoComplete="off"`; Badge children strings; removed Box `background` alias; guarded nullable stats; JSX fixes
+- Snapshot (post-inventory):
+  - Inventory structural/type issues resolved. Remaining errors are isolated to app/_index.tsx, app/inbox.tsx, app.sales.tsx, app.seo.tsx, app.settings.tsx, and shared libs/tests (URLSearchParamsInit, Prisma value-vs-type enums, mocks strict types).
+- Next:
+  - Migrate app/inbox.tsx and app.sales.tsx to Polaris v12; follow with settings/seo routes; then shared lib/test fixes.

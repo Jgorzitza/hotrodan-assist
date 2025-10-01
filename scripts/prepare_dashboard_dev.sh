@@ -21,11 +21,12 @@ APP_PORT="${APP_PORT:-8080}"                      # your app’s local port
 TUNNEL_TOOL="${TUNNEL_TOOL:-cloudflared}"        # cloudflared | ngrok
 TUNNEL_URL="${TUNNEL_URL:-}"                     # allow override (CI, manual)
 RUN_CHECKS="${RUN_CHECKS:-0}"                     # set to 1 to run lint/tests at end
+SKIP_PRISMA="${SKIP_PRISMA:-0}"                    # set to 1 to skip prisma generate
 # ------------------------------------------
 
-log() { printf "\033[1;36m%s\033[0m\n" "-- $*"; }
-warn() { printf "\033[1;33m%s\033[0m\n" "!! $*"; }
-fail() { printf "\033[1;31m%s\033[0m\n" "xx $*"; exit 1; }
+log() { printf "\033[1;36m%s\033[0m\n" "-- $*" >&2; }
+warn() { printf "\033[1;33m%s\033[0m\n" "!! $*" >&2; }
+fail() { printf "\033[1;31m%s\033[0m\n" "xx $*" >&2; exit 1; }
 
 repo_root() { git rev-parse --show-toplevel 2>/dev/null || pwd; }
 
@@ -57,8 +58,26 @@ See template below and open a PR before proceeding."
 }
 
 run_prisma_generate() {
-  log "Running prisma generate..."
-  npx prisma generate --schema "$PRISMA_SCHEMA" >/dev/null
+  if [[ "$SKIP_PRISMA" == "1" ]]; then
+    warn "SKIP_PRISMA=1 set; skipping prisma generate."
+    return 0
+  fi
+  if [[ -f "$PRISMA_SCHEMA" ]]; then
+    if npx --yes prisma --version >/dev/null 2>&1; then
+      log "Running prisma generate..."
+      set +e
+      npx prisma generate --schema "$PRISMA_SCHEMA" >/dev/null 2>&1
+      code=$?
+      set -e
+      if [[ $code -ne 0 ]]; then
+        warn "Prisma generate failed; continuing. Ensure CI runs prisma generate before tests."
+      fi
+    else
+      warn "Prisma CLI not available; skipping generate."
+    fi
+  else
+    warn "Schema not found; skipping prisma generate: $PRISMA_SCHEMA"
+  fi
 }
 
 start_or_detect_tunnel() {
@@ -70,12 +89,13 @@ start_or_detect_tunnel() {
 
   case "$TUNNEL_TOOL" in
     cloudflared)
-      command -v cloudflared >/dev/null || fail "cloudflared not found. Install it or set TUNNEL_URL."
+      CLOUDFLARE_CMD="${CLOUDFLARED_BIN:-cloudflared}"
+      command -v "$CLOUDFLARE_CMD" >/dev/null 2>&1 || fail "cloudflared not found. Install it, set CLOUDFLARED_BIN to a local binary, or set TUNNEL_URL."
       log "Starting cloudflared tunnel to http://localhost:${APP_PORT} ..."
       # Start in background and capture first HTTPS URL
       # Note: we keep it running in background for the session.
       TMP_LOG="$(mktemp)"
-      cloudflared tunnel --url "http://localhost:${APP_PORT}" >"$TMP_LOG" 2>&1 &
+      "$CLOUDFLARE_CMD" tunnel --url "http://localhost:${APP_PORT}" >"$TMP_LOG" 2>&1 &
       CF_PID=$!
 
       # Wait up to ~10s for a URL to appear
@@ -126,23 +146,22 @@ update_shopify_toml() {
   [[ -f "$file" ]] || { warn "Missing $file (skipping)"; return 0; }
 
   log "Updating application_url and redirect_urls in $file ..."
-  # application_url = "https://...."
-  # redirect_urls = ["https://.../auth/callback", "https://.../auth/callback/online"]
-  sed -i.bak -E \
-    -e "s|^(\s*application_url\s*=\s*\").*(\")|\1${url}\2|g" \
-    -e "s|(https://)[^\"/]*/auth/callback|\1$(echo "$url" | sed -E 's#^https?://##')/auth/callback|g" \
-    -e "s|(https://)[^\"/]*/auth/callback/online|\1$(echo "$url" | sed -E 's#^https?://##')/auth/callback/online|g" \
-    "$file"
+  local domain
+  domain="$(echo "$url" | sed -E 's#^https?://##')"
 
-  # If redirect_urls is an empty array, populate standard callbacks
-  if grep -qE "^\s*\[auth\]" "$file" && grep -qE "^\s*redirect_urls\s*=\s*\[\s*\]" "$file"; then
-    domain="$(echo "$url" | sed -E 's#^https?://##')"
-    sed -i.bak -E \
-      -e "s|^(\s*redirect_urls\s*=\s*)\[\s*\]$|\1[ \"https://${domain}/auth/callback\", \"https://${domain}/auth/callback/online\" ]|" \
-      "$file"
-  fi
-
-  rm -f "$file.bak"
+  # Replace application_url and redirect_urls lines using awk (robust to quoting)
+  awk -v url="$url" -v domain="$domain" '
+    BEGIN { }
+    {
+      if ($0 ~ /^[ \t]*application_url[ \t]*=/) {
+        print "application_url = \"" url "\""
+      } else if ($0 ~ /^[ \t]*redirect_urls[ \t]*=/) {
+        print "redirect_urls = [ \"https://" domain "/auth/callback\", \"https://" domain "/auth/callback/online\" ]"
+      } else {
+        print $0
+      }
+    }
+  ' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 }
 
 set_assistants_base() {

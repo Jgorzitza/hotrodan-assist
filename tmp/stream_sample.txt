@@ -1,0 +1,1 @@
+{"detail":"RAG query failed: 1 validation error for TextNode\ntext\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.11/v/string_type"}

@@ -13,7 +13,8 @@ vi.mock("../persistence.server", () => ({
 }));
 
 vi.mock("../queue.server", async () => {
-  const actual = await vi.importActual<typeof import("../queue.server")>("../queue.server");
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+  const actual = (await vi.importActual("../queue.server")) as typeof import("../queue.server");
   return {
     ...actual,
     purgeShopJobs: (shop: string) => purgeShopJobsMock(shop),

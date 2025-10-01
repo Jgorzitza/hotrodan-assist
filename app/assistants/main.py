@@ -17,14 +17,23 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import JSON, Boolean, DateTime, Float, Integer, String, Text, create_engine, func, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 from prometheus_client import generate_latest
-from opentelemetry import trace
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+# Optional telemetry; disable if not installed
+try:
+    from opentelemetry import trace  # type: ignore
+    from opentelemetry.sdk.resources import Resource  # type: ignore
+    from opentelemetry.sdk.trace import TracerProvider  # type: ignore
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor  # type: ignore
+    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter  # type: ignore
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor  # type: ignore
+    _OTEL_AVAILABLE = True
+except Exception:  # pragma: no cover - optional dependency
+    _OTEL_AVAILABLE = False
 
-from .adapters import DeliveryAdapterRegistry
+try:
+    from .adapters import DeliveryAdapterRegistry
+except Exception:
+    # Fallback when running without package context
+    from adapters import DeliveryAdapterRegistry
 
 
 # ---------------------------------------------------------------------------
@@ -854,6 +863,8 @@ registry = DeliveryAdapterRegistry()
 
 
 def _maybe_setup_tracing(service_name: str) -> None:
+    if not _OTEL_AVAILABLE:
+        return
     endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
     if not endpoint:
         return

@@ -12,11 +12,12 @@ export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
 
-  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+  const isCustom = String(process.env.SHOPIFY_CUSTOM_APP || "false").toLowerCase() === "true";
+  return { apiKey: process.env.SHOPIFY_API_KEY || "", isCustom };
 };
 
 export default function App() {
-  const { apiKey } = useLoaderData<typeof loader>();
+  const { apiKey, isCustom } = useLoaderData<typeof loader>();
   const location = useLocation();
 
   const navItems = [
@@ -29,23 +30,25 @@ export default function App() {
     { label: "Settings", to: "/app/settings" },
   ];
 
-  return (
-    <AppProvider isEmbeddedApp apiKey={apiKey}>
-      <NavMenu>
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.to;
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              prefetch="intent"
-              style={isActive ? { fontWeight: 600 } : undefined}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
-      </NavMenu>
+return (
+    <AppProvider isEmbeddedApp={!isCustom} apiKey={apiKey}>
+      {!isCustom ? (
+        <NavMenu>
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.to;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                prefetch="intent"
+                style={isActive ? { fontWeight: 600 } : undefined}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </NavMenu>
+      ) : null}
       <Outlet />
     </AppProvider>
   );

@@ -1,3 +1,44 @@
+import { inc } from "~/lib/metrics/metrics.server";
+import type { TelemetryHooks } from "./client.server";
+import { McpResourceType } from "./types";
+
+const key = (name: string, tags: Record<string, string | number | undefined>) => {
+  const parts = Object.entries(tags)
+    .filter(([, v]) => v !== undefined)
+    .map(([k, v]) => `${k}=${String(v)}`)
+    .join(",");
+  return parts ? `${name}{${parts}}` : name;
+};
+
+export const buildMcpMetricsTelemetry = (): TelemetryHooks => ({
+  onRequest: ({ resource }) => {
+    inc(key("mcp_requests_total", { resource, phase: "request" }));
+  },
+  onResponse: ({ resource, status }) => {
+    const outcome = status && status >= 200 && status < 400 ? "success" : "error";
+    inc(key("mcp_requests_total", { resource, phase: "response", outcome }));
+  },
+  onRetry: ({ resource, attempt }) => {
+    inc(key("mcp_retries_total", { resource }));
+    inc(key("mcp_retries_attempt_total", { resource, attempt }));
+  },
+  onError: ({ resource }) => {
+    inc(key("mcp_errors_total", { resource }));
+  },
+  onRateLimitDelay: ({ context }) => {
+    inc(key("mcp_rate_limit_delays_total", { shop: context.shopDomain }));
+  },
+  onBreakerOpen: ({ context, resource }) => {
+    inc(key("mcp_breaker_open_total", { shop: context.shopDomain, resource }));
+  },
+  onBreakerHalfOpen: ({ context, resource }) => {
+    inc(key("mcp_breaker_half_open_total", { shop: context.shopDomain, resource }));
+  },
+  onBreakerClose: ({ context, resource }) => {
+    inc(key("mcp_breaker_close_total", { shop: context.shopDomain, resource }));
+  },
+});
+
 import { publishInboxActionEvent } from "~/lib/inbox/events.server";
 import type { TelemetryHooks } from "./client.server";
 import type { McpTelemetryEvent } from "./types";

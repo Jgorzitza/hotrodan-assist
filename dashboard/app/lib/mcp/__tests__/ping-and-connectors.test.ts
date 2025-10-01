@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import { getMcpConnectorStatus, listConnectors } from "../connectors.server";
 
 const originalEnv = process.env;

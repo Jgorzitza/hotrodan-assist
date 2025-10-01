@@ -24,7 +24,6 @@ import {
   SkeletonThumbnail,
   Text,
 } from "@shopify/polaris";
-import { TitleBar } from "@shopify/app-bridge-react";
 import { PolarisVizProvider, SparkLineChart } from "@shopify/polaris-viz";
 import type { DataPoint } from "@shopify/polaris-viz-core";
 
@@ -192,12 +191,12 @@ export default function DashboardRoute() {
   const metricCount = data.metrics.length || 4;
   const metricsContent = showSkeleton
     ? Array.from({ length: metricCount }, (_, index) => (
-        <Card key={`metric-skeleton-${index}`} sectioned>
+        <Card key={`metric-skeleton-${index}`}>
           <MetricTileSkeleton />
         </Card>
       ))
     : data.metrics.map((metric) => (
-        <Card key={metric.id} sectioned>
+        <Card key={metric.id}>
           <BlockStack gap="100">
             <Text as="span" variant="bodySm" tone="subdued">
               {metric.label}
@@ -214,11 +213,7 @@ export default function DashboardRoute() {
 
   return (
     <PolarisVizProvider>
-      <Page>
-        <TitleBar
-          title="Operations dashboard"
-          primaryAction={{ content: "Settings", url: "/app/settings" }}
-        />
+      <Page title="Operations dashboard">
         <BlockStack gap="500">
           {useMockData && (
             <Banner
@@ -247,7 +242,7 @@ export default function DashboardRoute() {
                   >
                     View sales
                   </Button>
-                  <ButtonGroup segmented>
+                  <ButtonGroup>
                     {HOME_RANGE_KEYS.map((option) => (
                       <Button
                         key={option}
@@ -278,9 +273,10 @@ export default function DashboardRoute() {
           </Card>
 
           <Layout>
-            <Layout.Section oneHalf>
-              <Card title="Orders attention" sectioned>
+            <Layout.Section>
+              <Card>
                 <BlockStack gap="300">
+                  <Text as="h2" variant="headingLg">Orders attention</Text>
                   {(showSkeleton
                     ? Array.from({ length: data.orders.length || 3 }, (_, index) => (
                         <OrderBucketSkeleton key={`order-skeleton-${index}`} />
@@ -319,163 +315,144 @@ export default function DashboardRoute() {
                 </BlockStack>
               </Card>
             </Layout.Section>
-            <Layout.Section secondary>
-              <Card title="Inbox" sectioned>
-                {showSkeleton ? (
-                  <InboxSnapshotSkeleton />
-                ) : (
-                  <BlockStack gap="200">
-                    <InlineStack align="space-between">
-                      <Text variant="bodyMd" as="span">
-                        Outstanding
-                      </Text>
-                      <Text variant="headingMd" as="span">
-                        {data.inbox.outstanding}
-                      </Text>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text variant="bodyMd" as="span">
-                        Overdue &gt;12h
-                      </Text>
-                      <Text variant="headingMd" as="span">
-                        {data.inbox.overdueHours}
-                      </Text>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text variant="bodyMd" as="span">
-                        AI approvals pending
-                      </Text>
-                      <Text variant="headingMd" as="span">
-                        {data.inbox.approvalsPending}
-                      </Text>
-                    </InlineStack>
-                    <Button
-                      url={withDashboardRangeParam("/app/inbox", activeRange, sharedLinkOptions)}
-                      tone="primary"
-                      variant="plain"
-                    >
-                      Go to inbox
-                    </Button>
-                  </BlockStack>
-                )}
+            <Layout.Section>
+              <Card>
+                <BlockStack gap="200">
+                  <Text as="h2" variant="headingLg">Inbox</Text>
+                  {showSkeleton ? (
+                    <InboxSnapshotSkeleton />
+                  ) : (
+                    <BlockStack gap="200">
+                      <InlineStack align="space-between">
+                        <Text variant="bodyMd" as="span">Outstanding</Text>
+                        <Text variant="headingMd" as="span">{data.inbox.outstanding}</Text>
+                      </InlineStack>
+                      <InlineStack align="space-between">
+                        <Text variant="bodyMd" as="span">Overdue &gt;12h</Text>
+                        <Text variant="headingMd" as="span">{data.inbox.overdueHours}</Text>
+                      </InlineStack>
+                      <InlineStack align="space-between">
+                        <Text variant="bodyMd" as="span">AI approvals pending</Text>
+                        <Text variant="headingMd" as="span">{data.inbox.approvalsPending}</Text>
+                      </InlineStack>
+                      <Button
+                        url={withDashboardRangeParam("/app/inbox", activeRange, sharedLinkOptions)}
+                        variant="plain"
+                      >
+                        Go to inbox
+                      </Button>
+                    </BlockStack>
+                  )}
+                </BlockStack>
               </Card>
             </Layout.Section>
           </Layout>
 
           <Layout>
             <Layout.Section>
-              <Card title="Inventory snapshot" sectioned>
-                {showSkeleton ? (
-                  <BlockStack gap="200">
-                    <InlineStack gap="400">
-                      {Array.from({ length: 3 }, (_, index) => (
-                        <MetricTileSkeleton key={`inventory-skeleton-${index}`} />
-                      ))}
-                    </InlineStack>
-                    <SkeletonDisplayText size="small" />
-                  </BlockStack>
-                ) : (
-                  <>
-                    <InlineStack gap="400">
-                      <MetricTile label="Low stock" value={data.inventory.lowStock} />
-                      <MetricTile
-                        label="POs in flight"
-                        value={data.inventory.purchaseOrdersInFlight}
-                      />
-                      <MetricTile label="Overstock" value={data.inventory.overstock} />
-                    </InlineStack>
-                    <Button
-                      url={withDashboardRangeParam("/app/inventory", activeRange, sharedLinkOptions)}
-                      accessibilityLabel="View inventory planner"
-                    >
-                      Open inventory planner
-                    </Button>
-                  </>
-                )}
+              <Card>
+                <BlockStack gap="200">
+                  <Text as="h2" variant="headingLg">Inventory snapshot</Text>
+                  {showSkeleton ? (
+                    <BlockStack gap="200">
+                      <InlineStack gap="400">
+                        {Array.from({ length: 3 }, (_, index) => (
+                          <MetricTileSkeleton key={`inventory-skeleton-${index}`} />
+                        ))}
+                      </InlineStack>
+                      <SkeletonDisplayText size="small" />
+                    </BlockStack>
+                  ) : (
+                    <>
+                      <InlineStack gap="400">
+                        <MetricTile label="Low stock" value={data.inventory.lowStock} />
+                        <MetricTile
+                          label="POs in flight"
+                          value={data.inventory.purchaseOrdersInFlight}
+                        />
+                        <MetricTile label="Overstock" value={data.inventory.overstock} />
+                      </InlineStack>
+                      <Button
+                        url={withDashboardRangeParam("/app/inventory", activeRange, sharedLinkOptions)}
+                        accessibilityLabel="View inventory planner"
+                      >
+                        Open inventory planner
+                      </Button>
+                    </>
+                  )}
+                </BlockStack>
               </Card>
             </Layout.Section>
           </Layout>
 
           <Layout>
-            <Layout.Section oneHalf>
-              <Card title="SEO highlights" sectioned>
-                {showSkeleton ? (
-                  <SeoHighlightsSkeleton />
-                ) : (
-                  <BlockStack gap="200">
-                    <Text as="span" variant="bodyMd">
-                      Traffic Δ
-                    </Text>
-                    <Badge tone="success">+{data.seo.trafficDelta}%</Badge>
-                    <Text as="p" variant="bodySm">
-                      {data.seo.summary}
-                    </Text>
-                    <InlineStack gap="300">
-                      <Text variant="bodyMd" as="span">
-                        Rising queries
-                      </Text>
-                      <Text variant="headingMd" as="span">
-                        {data.seo.risingQueries}
-                      </Text>
-                    </InlineStack>
-                    <InlineStack gap="300">
-                      <Text variant="bodyMd" as="span">
-                        Rising pages
-                      </Text>
-                      <Text variant="headingMd" as="span">
-                        {data.seo.risingPages}
-                      </Text>
-                    </InlineStack>
-                    <InlineStack gap="300">
-                      <Text variant="bodyMd" as="span">
-                        Critical issues
-                      </Text>
-                      <Text variant="headingMd" tone="critical" as="span">
-                        {data.seo.criticalIssues}
-                      </Text>
-                    </InlineStack>
-                    <Button
-                      url={withDashboardRangeParam("/app/seo", activeRange, sharedLinkOptions)}
-                      variant="plain"
-                    >
-                      Dive into SEO
-                    </Button>
-                  </BlockStack>
-                )}
+            <Layout.Section>
+              <Card>
+                <BlockStack gap="200">
+                  <Text as="h2" variant="headingLg">SEO highlights</Text>
+                  {showSkeleton ? (
+                    <SeoHighlightsSkeleton />
+                  ) : (
+                    <BlockStack gap="200">
+                      <Text as="span" variant="bodyMd">Traffic Δ</Text>
+                      <Badge tone="success">{`+${data.seo.trafficDelta}%`}</Badge>
+                      <Text as="p" variant="bodySm">{data.seo.summary}</Text>
+                      <InlineStack gap="300">
+                        <Text variant="bodyMd" as="span">Rising queries</Text>
+                        <Text variant="headingMd" as="span">{data.seo.risingQueries}</Text>
+                      </InlineStack>
+                      <InlineStack gap="300">
+                        <Text variant="bodyMd" as="span">Rising pages</Text>
+                        <Text variant="headingMd" as="span">{data.seo.risingPages}</Text>
+                      </InlineStack>
+                      <InlineStack gap="300">
+                        <Text variant="bodyMd" as="span">Critical issues</Text>
+                        <Text variant="headingMd" tone="critical" as="span">{data.seo.criticalIssues}</Text>
+                      </InlineStack>
+                      <Button
+                        url={withDashboardRangeParam("/app/seo", activeRange, sharedLinkOptions)}
+                        variant="plain"
+                      >
+                        Dive into SEO
+                      </Button>
+                    </BlockStack>
+                  )}
+                </BlockStack>
               </Card>
             </Layout.Section>
-            <Layout.Section secondary>
-              <Card title="MCP insight" sectioned>
-                {showSkeleton ? (
-                  <McpInsightSkeleton />
-                ) : (
-                  <BlockStack gap="200">
-                    <Text as="p" variant="bodyMd">
-                      {data.mcpRecommendation}
-                    </Text>
-                    {!mcp.enabled && (
-                      <Text as="p" variant="bodySm" tone="subdued">
-                        Configure credentials and enable the MCP toggle in Settings to load live data.
-                      </Text>
-                    )}
-                    {mcp.usingMocks && (
-                      <Text as="p" variant="bodySm" tone="subdued">
-                        Showing mock data while `USE_MOCK_DATA` is enabled.
-                      </Text>
-                    )}
-                    {mcp.generatedAt && (
-                      <Text as="p" variant="bodySm" tone="subdued">
-                        Last updated {new Date(mcp.generatedAt).toLocaleString()} • {mcp.source ?? "mock"}
-                      </Text>
-                    )}
-                    <Button
-                      url={withDashboardRangeParam("/app/settings", activeRange, sharedLinkOptions)}
-                      variant="plain"
-                    >
-                      Manage MCP toggles
-                    </Button>
-                  </BlockStack>
-                )}
+            <Layout.Section>
+              <Card>
+                <BlockStack gap="200">
+                  <Text as="h2" variant="headingLg">MCP insight</Text>
+                  {showSkeleton ? (
+                    <McpInsightSkeleton />
+                  ) : (
+                    <BlockStack gap="200">
+                      <Text as="p" variant="bodyMd">{data.mcpRecommendation}</Text>
+                      {!mcp.enabled && (
+                        <Text as="p" variant="bodySm" tone="subdued">
+                          Configure credentials and enable the MCP toggle in Settings to load live data.
+                        </Text>
+                      )}
+                      {mcp.usingMocks && (
+                        <Text as="p" variant="bodySm" tone="subdued">
+                          Showing mock data while `USE_MOCK_DATA` is enabled.
+                        </Text>
+                      )}
+                      {mcp.generatedAt && (
+                        <Text as="p" variant="bodySm" tone="subdued">
+                          Last updated {new Date(mcp.generatedAt).toLocaleString()} • {mcp.source ?? "mock"}
+                        </Text>
+                      )}
+                      <Button
+                        url={withDashboardRangeParam("/app/settings", activeRange, sharedLinkOptions)}
+                        variant="plain"
+                      >
+                        Manage MCP toggles
+                      </Button>
+                    </BlockStack>
+                  )}
+                </BlockStack>
               </Card>
             </Layout.Section>
           </Layout>

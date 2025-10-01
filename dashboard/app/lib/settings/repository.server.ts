@@ -1,8 +1,4 @@
-import {
-  ConnectionEventStatus,
-  IntegrationProvider,
-  SettingsSecretProvider,
-} from "@prisma/client";
+import prismaPkg from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
 import {
@@ -30,6 +26,7 @@ import { getSecretsAdapter } from "../security/secrets-adapter.server";
 import { recordAuditEvent } from "../security/audit.server";
 import { isMockMode } from "../env.server";
 import prisma from "../../db.server";
+const { ConnectionEventStatus, IntegrationProvider, SettingsSecretProvider } = prismaPkg;
 
 const PROVIDERS: SettingsProvider[] = ["ga4", "gsc", "bing", "mcp"];
 
