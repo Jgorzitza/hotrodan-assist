@@ -57,7 +57,6 @@ import {
   resolveDashboardRangeKey,
 } from "~/lib/date-range";
 import { fetchSalesAnalyticsWithCache } from "~/lib/sales/cache.server";
-import { fetchEnhancedSalesAnalytics } from "~/lib/sales/enhanced-analytics.server";
 import { buildSalesFixtureDataset } from "~/lib/sales/fixtures.server";
 
 const GRANULARITY_VALUES = ["daily", "weekly", "monthly"] as const;
