@@ -30,3 +30,29 @@
 - Tests: root and dashboard Vitest PASS (4 files, 12 tests each).
 - Goldens: OFFLINE_CORRECTIONS_ONLY=1 passed.
 - Next: rely on CI for Node 20, Playwright smoke; proceed with further cleanup tasks while PR runs.
+
+## 2025-10-01T08:50Z — End-of-day manager update
+- Branch/PR
+  - Branch: chore/repo-canonical-layout
+  - PR: https://github.com/Jgorzitza/hotrodan-assist/pull/5
+- Tooling progress (proof-of-work)
+  - Dashboard: Reduced ESLint errors to 0; fixed jsx-key, unused imports/vars; tests remain green.
+  - Sync: Added /health endpoint; docker healthcheck; Prometheus /prometheus; optional OpenTelemetry tracing.
+  - Assistants: Prometheus /prometheus endpoint; optional OpenTelemetry tracing.
+  - Connectors: Prometheus /prometheus and /ready; optional OpenTelemetry tracing; docker healthcheck.
+  - Docker/Compose: Added HEALTHCHECK to dashboard/rag_api/approval-app/connectors; added healthchecks and restart policies to compose; sync/assistants healthchecks.
+  - CI: Added docker-build workflow (build + run health probe per service); added python-lint (ruff) workflow.
+  - Metrics: rag_api already exposed /prometheus; confirmed; added to others for parity.
+- Validation
+  - Node: Root and dashboard Vitest PASS; typecheck PASS.
+  - Python: Goldens (offline) PASS; services build in CI workflow.
+- Remaining (Next 5 Tasks alignment)
+  - CI lane: ensure artifact upload for tests; confirm prisma generate before MCP tests (dashboard workflow already runs typecheck/tests; can add artifact upload next).
+  - Error tracking/alerts + SLO dashboards (not yet wired; proposal: Sentry/OTel collector + Alertmanager with basic routes).
+  - Readiness/liveness docs for deploy/k8s (draft tomorrow).
+  - Security/perf baselines: add ruff/mypy/pytest/locust reports to test-results/.
+- Risks/notes
+  - Node 22 locally vs Node 20 CI; no parity issues observed; maintain Node 20 in CI.
+  - Two dashboard directories (dashboard/ and dashboard/dashboard/); treated top-level as canonical.
+- Ask
+  - Approve PR #5 to unblock downstream integration; confirm preferred error tracking stack (Sentry vs OTLP-only).
