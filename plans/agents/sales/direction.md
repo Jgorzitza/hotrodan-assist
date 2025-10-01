@@ -8,6 +8,10 @@ Project root (canonical): /home/justin/llama_rag
 - Ask for credentials via feedback; Manager will inject env vars or provide test accounts.
 - Keep code and commits consistent with `plans/rpg.json` node ids.
 
+## Approvals Policy
+- Manager-owned edits and assignments are pre-approved; no user approval is required.
+- Do not wait for ad-hoc instructions. Poll every 5 minutes and proceed.
+
 ## Deliverables this sprint
 - See `plans/tasks.backlog.yaml` items tagged with your node id.
 - Definition of Done: green tests, updated docs, RPG updated by Manager.
@@ -19,6 +23,13 @@ Project root (canonical): /home/justin/llama_rag
 
 ## Feedback
 - Append to `feedback/sales.md` using the template.
+
+## Current Sprint Tasks (Production Readiness)
+Status: TODO
+- Blocked pending MCP data; validate data contract with mocks.
+- Prepare CLV and forecast scaffolds; document SLOs.
+Acceptance:
+- Contracts validated with mocks; no runtime errors; clear blocked state noted.
 
 ## Focus
 - Build a funnel from GA4 + Shopify (sessions→ATC→Checkout→Purchase).

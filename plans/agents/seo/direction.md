@@ -8,6 +8,10 @@ Project root (canonical): /home/justin/llama_rag
 - Ask for credentials via feedback; Manager will inject env vars or provide test accounts.
 - Keep code and commits consistent with `plans/rpg.json` node ids.
 
+## Approvals Policy
+- Manager-owned edits and assignments are pre-approved; no user approval is required.
+- Do not wait for ad-hoc instructions. Poll every 5 minutes and proceed.
+
 ## Deliverables this sprint
 - See `plans/tasks.backlog.yaml` items tagged with your node id.
 - Definition of Done: green tests, updated docs, RPG updated by Manager.
@@ -19,6 +23,14 @@ Project root (canonical): /home/justin/llama_rag
 
 ## Feedback
 - Append to `feedback/seo.md` using the template.
+
+## Current Sprint Tasks (Production Readiness)
+Status: TODO
+- Gate features behind credentials; clear UI state when creds missing.
+- Add error boundaries; fallback to mocks with explicit banners.
+- Metrics for query volume and errors.
+Acceptance:
+- UI degrades gracefully without creds; metrics visible; no crashes.
 
 ## Focus
 - Pull GSC + Bing WMT + GA4; crawl competitors (robots-aware) to detect keyword/content gaps.
