@@ -11,7 +11,8 @@ from uuid import uuid4
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query, Request, status
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, PlainTextResponse
+from prometheus_client import generate_latest
 from sqlalchemy import JSON, DateTime, Integer, String, Text, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -137,6 +138,10 @@ async def health() -> Dict[str, Any]:
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }
 
+
+@app.get("/prometheus")
+async def prometheus_metrics() -> PlainTextResponse:
+    return PlainTextResponse(generate_latest().decode("utf-8"))
 
 async def _post_draft(client: httpx.AsyncClient, payload: Dict[str, Any]) -> Dict[str, Any]:
     try:

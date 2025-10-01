@@ -7,3 +7,4 @@ httpx
 sqlalchemy[asyncio]
 asyncpg
 pytest
+prometheus-client

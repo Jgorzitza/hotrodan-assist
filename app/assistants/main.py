@@ -12,10 +12,11 @@ from uuid import uuid4
 
 from fastapi import HTTPException, Request
 from fastapi.applications import FastAPI
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse, PlainTextResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import JSON, Boolean, DateTime, Float, Integer, String, Text, create_engine, func, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
+from prometheus_client import generate_latest
 
 from .adapters import DeliveryAdapterRegistry
 
@@ -865,6 +866,11 @@ def health() -> Dict[str, Any]:
         "timestamp": to_iso(utc_now()),
         "service": "assistants",
     }
+
+
+@app.get("/prometheus")
+def prometheus_metrics() -> PlainTextResponse:
+    return PlainTextResponse(generate_latest().decode("utf-8"))
 
 
 @app.get("/assistants/events")
