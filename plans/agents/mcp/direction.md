@@ -1,5 +1,6 @@
 # MCP Integrations Engineer — Direction (owned by Manager)
 
+Project root (canonical): /home/justin/llama_rag
 **Repo**: `~/llama_rag`  •  **Branch**: `chore/repo-canonical-layout`  •  **Sprint start**: 2025-09-28
 
 ## Guardrails
