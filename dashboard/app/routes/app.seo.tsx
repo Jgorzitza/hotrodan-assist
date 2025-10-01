@@ -34,7 +34,7 @@ import {
 import { z } from "zod";
 
 import { authenticate } from "../shopify.server";
-import { storeSettingsRepository } from "../lib/settings/repository.server";
+import { storeSettingsRepository } from "~/lib/settings/repository.server";
 import {
   getMcpSeoOpportunities,
   isMcpFeatureEnabled,
@@ -1056,6 +1056,10 @@ export default function SeoRoute() {
   }, [traffic]);
 
   const adapterList = useMemo(() => [adapters.ga4, adapters.gsc, adapters.bing], [adapters]);
+  const allAdaptersDisconnected = useMemo(
+    () => adapterList.every((a) => a.disabledByConnection),
+    [adapterList],
+  );
 
   return (
     <PolarisVizProvider>
@@ -1078,7 +1082,7 @@ export default function SeoRoute() {
         />
 
         <BlockStack gap="500">
-          {(dataset.alert || dataset.error || useMockData) && (
+          {(dataset.alert || dataset.error || useMockData || (!useMockData && allAdaptersDisconnected)) && (
             <BlockStack gap="200">
               {useMockData && (
                 <Banner
@@ -1086,6 +1090,14 @@ export default function SeoRoute() {
                   title={`Mock state: ${scenario}`}
                 >
                   <p>Adjust `mockState` in the query string to explore alternate UI states.</p>
+                </Banner>
+              )}
+              {!useMockData && allAdaptersDisconnected && (
+                <Banner tone="critical" title="No live SEO providers connected">
+                  <p>
+                    Connect GA4, Search Console, or Bing in Settings, then run connection tests. Until
+                    then, this view will show limited data.
+                  </p>
                 </Banner>
               )}
               {dataset.alert && !dataset.error && (
@@ -1133,7 +1145,16 @@ export default function SeoRoute() {
             <Divider borderColor="border" />
             <Card.Section>
               <BlockStack gap="100">
-                <Text as="h3" variant="headingSm">Live connection health</Text>
+                <InlineStack align="space-between" blockAlign="center">
+                  <Text as="h3" variant="headingSm">Live connection health</Text>
+                  <Button
+                    size="micro"
+                    loading={healthFetcher.state !== "idle"}
+                    onClick={() => healthFetcher.load("/api/seo/health")}
+                  >
+                    Refresh health
+                  </Button>
+                </InlineStack>
                 {healthFetcher.data ? (
                   <InlineStack gap="200" wrap>
                     {(["ga4","gsc","bing","mcp"] as const).map((key) => {

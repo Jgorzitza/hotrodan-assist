@@ -47,3 +47,22 @@ Next
 2025-10-01T08:24:57Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf fail security ok connectors ok rag-api fail
 2025-10-01T08:30:20Z approvals standby poll go changed dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
 2025-10-01T08:36:18Z approvals standby poll go changed dir changed ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T08:41:45Z approvals standby poll go changed dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+## 2025-10-01T08:44:54Z — approval-app health
+{
+  "status": "ok",
+  "ts": "2025-10-01T08:44:50.341394+00:00"
+}
+## 2025-10-01T08:44:54Z — approval-app ready
+{
+  "service": "approval-app",
+  "error": "ConnectError",
+  "ready": false,
+  "timestamp": "2025-10-01T08:44:54.375827+00:00"
+}
+## 2025-10-01T08:46:44Z — manager poll
+logged GO-SIGNAL/status/blockers heads and integration entry
+2025-10-01T08:47:17Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+## 2025-10-01T08:49:21Z — SSE soak
+file: /home/justin/llama_rag/artifacts/phase3/approvals/sse-soak-0849.log
+head: 

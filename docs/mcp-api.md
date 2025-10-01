@@ -16,6 +16,16 @@ This document describes how the dashboard MCP client interacts with an MCP servi
   - X-MCP-Features: breaker,rate-limit,cache (as enabled)
 
 Response envelope:
+
+Example request (POST /inventory/signals):
+{
+  "resource": "InventorySignal",
+  "params": { "limit": 10 },
+  "shopDomain": "demo-shop.myshopify.com",
+  "dateRange": { "start": "2025-09-01", "end": "2025-09-30" }
+}
+
+Example response:
 {
   "data": [...],
   "generatedAt": "ISO-8601",

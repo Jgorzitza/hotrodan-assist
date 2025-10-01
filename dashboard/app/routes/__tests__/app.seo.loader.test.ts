@@ -160,7 +160,7 @@ describe("app.seo loader", () => {
       }))
       .mockName("getSettings");
 
-    vi.doMock("../lib/settings/repository.server", () => ({
+    vi.doMock("~/lib/settings/repository.server", () => ({
       storeSettingsRepository: {
         getSettings: getSettingsMock,
       },

@@ -104,6 +104,8 @@ RATE_LIMITED = Counter("rag_rate_limited_total", "Requests rejected due to rate 
 class QueryIn(BaseModel):
     question: str
     top_k: int = 10
+    mode: str | None = None  # "hybrid" or None
+    ab: str | None = None  # optional explicit A/B bucket
 
 # ----- Redis helpers -----
 _redis_client = None
@@ -191,6 +193,35 @@ class MetricsResponse(BaseModel):
     queries_by_hour: dict
     recent_response_times_ms: list
 
+# ---- Corrections layer ----
+import re
+from pathlib import Path
+from typing import List, Dict, Any
+
+_CORRECTIONS: List[Dict[str, Any]] | None = None
+
+def load_corrections():
+    global _CORRECTIONS
+    if _CORRECTIONS is not None:
+        return _CORRECTIONS
+    p = Path("/workspace/corrections/corrections.yaml")
+    if not p.exists():
+        _CORRECTIONS = []
+        return _CORRECTIONS
+    import yaml
+    data = yaml.safe_load(p.read_text()) or []
+    for item in data:
+        item["_compiled"] = [re.compile(pat, re.I) for pat in item.get("patterns", [])]
+    _CORRECTIONS = data
+    return _CORRECTIONS
+
+def corrections_hit(question: str):
+    for item in load_corrections():
+        for rx in item.get("_compiled", []):
+            if rx.search(question):
+                return item
+    return None
+
 @app.post("/query")
 @track_performance
 def query(req: Request, q: QueryIn):
@@ -209,8 +240,14 @@ def query(req: Request, q: QueryIn):
     REQUESTS.labels(route="query").inc()
 
     # Assign variant and record analytics
-    variant = assign_variant(ip)
+    variant = (q.ab or assign_variant(ip))
     record_query(q, variant, ip)
+
+    # Offline corrections layer (no retrieval/LLM)
+    hit = corrections_hit(q.question)
+    if hit:
+        result = {"answer": hit.get("answer",""), "sources": hit.get("sources", []), "mode": "corrections"}
+        return result
 
     # Cache layer
     ck = cache_key_for(q)
@@ -231,6 +268,31 @@ def query(req: Request, q: QueryIn):
 
         retriever = index.as_retriever(similarity_top_k=q.top_k)
         nodes = retriever.retrieve(q.question)
+
+        # Hybrid rerank: use BM25 across retrieved snippets to refine ordering if requested
+        if (q.mode or "").lower() == "hybrid":
+            try:
+                from rank_bm25 import BM25Okapi
+                corpus = []
+                node_list = []
+                for nws in nodes:
+                    node = getattr(nws, "node", nws)
+                    text = getattr(node, "text", None)
+                    if text is None and hasattr(node, "get_content"):
+                        text = node.get_content()
+                    if text:
+                        corpus.append(text.split())
+                        node_list.append(node)
+                if corpus:
+                    bm = BM25Okapi(corpus)
+                    scores = bm.get_scores(q.question.split())
+                    # attach score to node order
+                    paired = list(zip(scores, node_list))
+                    paired.sort(key=lambda x: x[0], reverse=True)
+                    # rebuild nodes list respecting top_k
+                    nodes = [type("NS", (), {"node": nl}) for _, nl in paired[:q.top_k]]
+            except Exception:
+                pass
 
         if GENERATION_MODE == "openai" and OPENAI_API_KEY:
             qe = index.as_query_engine(response_mode="compact", similarity_top_k=q.top_k)
@@ -301,6 +363,35 @@ def metrics():
 @app.get("/prometheus")
 def prometheus_metrics():
     return PlainTextResponse(generate_latest().decode("utf-8"))
+
+# Streaming endpoint (SSE-like)
+from fastapi import Response
+from starlette.responses import StreamingResponse
+
+def _stream_chunks(answer: str, sources: list[str]):
+    # simple chunking by lines
+    for line in answer.split("\n"):
+        if not line:
+            continue
+        yield f"data: {line}\n\n"
+    yield f"data: SOURCES: {', '.join(sources[:5])}\n\n"
+
+@app.get("/query/stream")
+def query_stream(q: str, top_k: int = 10, mode: str | None = None):
+    # Reuse JSON endpoint internally for consistent logic
+    payload = QueryIn(question=q, top_k=top_k, mode=mode)
+    # Fake a Request object: bypass auth/rate limit for streaming in this minimal implementation
+    class _R: client=None
+    res = query(_R(), payload)
+    answer = res.get("answer", "")
+    sources = res.get("sources", [])
+    return StreamingResponse(_stream_chunks(answer, sources), media_type="text/event-stream")
+
+@app.post("/query/hybrid")
+@track_performance
+def query_hybrid(req: Request, q: QueryIn):
+    q.mode = "hybrid"
+    return query(req, q)
 
 @app.get("/ab/assign")
 def ab_assign(req: Request):

@@ -131,7 +131,7 @@ const ensureEncryptedSecrets = (
 
     PROVIDERS.forEach((provider) => {
       const seed = defaultSecretSeeds[provider];
-      seeds[provider] = seed ? getSecretsAdapter().encrypt(seed) : null;
+      seeds[provider] = seed ? adapter.encrypt(seed) : null;
     });
 
     encryptedSecretsStore.set(shopDomain, seeds);

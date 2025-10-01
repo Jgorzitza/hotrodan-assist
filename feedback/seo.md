@@ -14,12 +14,19 @@ Environment
 - Install (dashboard): OK
 
 Validation runs
-- Lint (dashboard): still failing (current snapshot: 4 errors, 11 warnings; non-SEO areas dominate). We’ll address SEO-touched files as needed and keep overall lint tracked.
+- Lint (dashboard): non-zero (unrelated areas). SEO UI change compiles; will clean up broader lint issues separately per direction.
 - Typecheck (root): PASSED
-- Targeted tests: PASSED
-  - dashboard/app/lib/settings/__tests__/connection-tests.test.ts
-  - dashboard/app/tests/msw/seo-handlers.test.ts
-- Full dashboard suite: PASSED (31 files, 175 tests). Fixed failing inbox mocks by enriching metrics and available scenarios.
+- Targeted SEO tests: PASSED
+  - app/routes/__tests__/app.seo.loader.test.ts
+  - app/routes/__tests__/api.seo.report.test.ts
+  - app/routes/__tests__/api.seo.keywords.test.ts
+  - app/lib/seo/__tests__/persistence.server.test.ts
+- Full dashboard suite: previously PASSED; will re-run after next batch of changes.
+
+Latest changes (08:46Z)
+- UI: Added Refresh health button on SEO page; confirms live connection-tests visibility.
+- Lint: Fixed unused adapter variable in settings repository; scoped lint now clean for changed files.
+- Tests: Targeted SEO suites still PASS after changes.
 
 Credentials status (BLOCKERS for live)
 - GA4: GA4_PROPERTY_ID, GA4_CLIENT_ID, GA4_CLIENT_SECRET, GA4_REFRESH_TOKEN — missing
@@ -29,17 +36,18 @@ Credentials status (BLOCKERS for live)
 - Mode: Mock-first until provided; helper scripts ready: add_ga4_credentials.sh, add_gsc_credentials.sh, add_bing_credentials.sh
 
 Changes landed
-- API routes updated with MCP overlay (feature-gated; mock-first):
-  - dashboard/app/routes/api/seo/alerts.ts → now returns optional mcp: { enabled, usingMocks, opportunities, source, generatedAt }
-  - dashboard/app/routes/api/seo/performance.ts (type=opportunities) → includes same optional MCP overlay
-- Notes files created/updated:
+- SEO UI: Added credentials gating banner when no providers connected; existing mock-state banner retained. Live connection health badges visible and sourced from /api/seo/health. Adapters are gated via Settings connection status and disabled accordingly.
+- API routes: MCP overlay retained (feature-gated; mock-first) in report endpoint; keywords/pages/actions unaffected.
+- Tests: Fixed app.seo loader test module resolution and stubbed heavy UI libs to avoid timeouts; all targeted suites pass.
+- Notes files updated:
   - coordination/inbox/integration/2025-10-01-notes.md (status, blockers, next steps)
 
 Next actions
 1) Optional: consider MCP advisory integration for optimize-content endpoint
 2) Ensure persistence behavior continues to align with advanced analytics action lifecycle
-3) Surface adapter/MCP health (connection-tests) prominently on SEO UI
-4) Iterate with lint/typecheck/targeted tests; then run broader suite
+3) Surface adapter/MCP health (connection-tests) prominently on SEO UI — DONE (live health badges + gating banner)
+4) Add credentials gating banner when no live providers are connected — DONE (critical banner with Settings guidance)
+5) Iterate with lint/typecheck/targeted tests; then run broader suite
 
 Polling
 - Five-minute polling active; logs in coordination/inbox/seo/2025-10-01-poll.log
