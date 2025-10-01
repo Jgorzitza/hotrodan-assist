@@ -63,6 +63,28 @@
 - Command: npm --prefix dashboard run -s build
 - Next: if approved, run docker build and deploy manifests; live MCP validation pending env injection
 
+2025-10-01T08:47:40Z — Container smoke (dashboard)
+- Built and started dashboard container via docker compose
+- Commands:
+  - docker compose build dashboard
+  - docker compose up -d dashboard
+- Health check: /app/metrics returned 2xx (empty body, as expected with no counters)
+- Next: stage deployment (deploy/k8s) and run MCP live validation when env is injected
+
+2025-10-01T15:20:30Z — MCP live validation (env-driven)
+- Command: USE_MOCK_DATA=false ENABLE_MCP=true MCP_FORCE_MOCKS=false MCP_API_URL=http://localhost:8080 MCP_API_KEY=*** npx --yes vitest run --root dashboard --config dashboard/vitest.config.ts --reporter=basic app/lib/mcp/__tests__/live-connection.test.ts
+- Result: PASS (1 test). Status accepted (success|warning|error). With dashboard as endpoint, ping returned non-OK -> error as expected. Harness validated.
+- Next: swap MCP_API_URL to real endpoint when provided and rerun; record status in settings history for demo-shop
+- Built and started dashboard container via docker compose
+- Commands:
+  - docker compose build dashboard
+  - docker compose up -d dashboard
+- Health check: /app/metrics returned 2xx (empty body, as expected with no counters)
+- Next: stage deployment (deploy/k8s) and run MCP live validation when env is injected
+- Built dashboard for production successfully (vite client + SSR bundles)
+- Command: npm --prefix dashboard run -s build
+- Next: if approved, run docker build and deploy manifests; live MCP validation pending env injection
+
 # MCP Integrations Engineer Feedback Log
 
 (Use the template in `templates/feedback-template.md`.)

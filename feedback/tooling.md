@@ -2,6 +2,16 @@
 
 (Use the template in `templates/feedback-template.md`.)
 
+## 2025-10-01T15:15Z — Dashboard tests green; lint ok; TypeScript issues enumerated
+- Command: npx vitest run --root dashboard
+- Result: 46 files, 203 tests, all passed
+- Lint: npm run lint — 0 errors, 2 warnings (no-useless-constructor in registry.server.ts, type-import note in webhooks test)
+- TypeScript: tsc --noEmit surfaced UI type errors (Polaris prop updates, Text 'as' prop required, Badge children expected string, deprecated Card.Section APIs, and misc test type assertions). Plan:
+  1) Fix EnhancedAnalyticsDashboard.tsx to use Polaris v12 props (Text requires 'as', Badge uses 'tone' and children string, remove unsupported props like 'large' on Modal, update InlineStack/BlockStack names).
+  2) Update app._index.tsx, app.orders.tsx, app.inventory.tsx to Polaris v12 props (Card.Section removals, Button props, layout prop names).
+  3) Address small type nits (URLSearchParamsInit types, optional chaining for possibly undefined fields).
+- Manager directive: scripts/prepare_dashboard_dev.sh noted; will run when authorized for tunnel validation; will coordinate with Dashboard on Partners app URL/redirects proof.
+- Next: begin with EnhancedAnalyticsDashboard.tsx Polaris props migration; iterate and re-run tsc; append diffs.
 ## 2025-10-01T07:19Z — Validation snapshot
 - Repo: /home/justin/llama_rag
 - TypeScript typecheck (root): exit=0 (clean)

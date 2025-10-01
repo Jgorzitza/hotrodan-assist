@@ -1,6 +1,6 @@
 # 🚀 GO-SIGNAL — High-Velocity Mode Active (2025-10-01)
 
-Last Updated: 2025-10-01 08:23 UTC • Next Sweep: 08:28 UTC
+Last Updated: 2025-10-01 15:58 UTC • Next Sweep: 16:03 UTC
 
 Project root (canonical): /home/justin/llama_rag
 
@@ -9,6 +9,14 @@ Project root (canonical): /home/justin/llama_rag
 - Do not wait for ad-hoc instructions. Poll every 5 minutes and proceed.
 
 ## Immediate Actions (Critical Path)
+
+CEO Directive — Production Today (2025-10-01)
+- Agents: Resume 5-minute polling for manager updates immediately
+- Read each cycle:
+  1) Production Today — Priority Override (2025-10-01)
+  2) CEO Dependencies — Today
+  3) Manager and Integration notes (coordination/inbox/manager|integration/2025-10-01-notes.md)
+- Continue executing current tasks; log progress in feedback/<agent>.md and coordination/inbox/<agent>/<date>-notes.md
 1) Tooling — Production Pipeline (DOING)
    - Containerize services; CI/CD; health checks; monitoring/alerts
 2) Dashboard — Live Data Integration (DOING)
