@@ -18,5 +18,7 @@ COPY connectors ./connectors
 
 EXPOSE 8003
 
+HEALTHCHECK --interval=30s --timeout=3s --retries=5 CMD curl -fsS http://localhost:8003/health || exit 1
+
 # Default command (compose overrides with an explicit command as well)
 CMD ["uvicorn", "connectors.main:app", "--host", "0.0.0.0", "--port", "8003"]

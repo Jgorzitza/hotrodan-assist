@@ -36,5 +36,7 @@ COPY --from=build /app/package-lock.json ./package-lock.json
 # Expose port (standardized to 8080)
 EXPOSE 8080
 
+HEALTHCHECK --interval=30s --timeout=3s --retries=5 CMD wget -qO- http://localhost:${PORT:-8080}/ || exit 1
+
 # Run server
 CMD ["npm", "run", "start"]
