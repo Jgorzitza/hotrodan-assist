@@ -50,6 +50,11 @@ npx vitest run --root dashboard --config dashboard/vitest.config.ts \
 - Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/inventory.md.
 - If blocked >1 minute, log blocker and start fallback; never idle.
 
+## Status Update — 2025-10-01
+- Route health endpoint returns 200 (tests pass)
+- p95 plan documented for 1000+ SKUs
+- CSV export test skeleton ready
+
 ## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
 1) Wire live Shopify inventory/orders; validate SKU/vendor mapping
 2) Add health endpoint + p95 targets for inventory routes
