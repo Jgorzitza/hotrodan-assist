@@ -15,6 +15,7 @@ import {
   ButtonGroup,
   Modal,
   ChoiceList,
+  FormLayout,
   Tabs,
   Spinner,
   Toast,
@@ -132,35 +133,6 @@ const EnhancedAnalyticsDashboard: React.FC<EnhancedAnalyticsDashboardProps> = ({
       loadAnalyticsData();
     }
   }, [skus, loadAnalyticsData]);
-    try {
-      setState(prev => ({ ...prev, isLoading: true }));
-
-      // Load all analytics data in parallel
-      const [forecasts, vendorMetrics, purchaseOrders, insights, performanceMetrics] = await Promise.all([
-        enhancedAnalyticsService.generateDemandForecasts(skus),
-        enhancedAnalyticsService.analyzeVendorPerformance(skus),
-        enhancedAnalyticsService.generatePurchaseOrderRecommendations(skus),
-        enhancedAnalyticsService.generateInsights(skus),
-        Promise.resolve(enhancedAnalyticsService.getPerformanceMetrics())
-      ]);
-
-      setState(prev => ({
-        ...prev,
-        forecasts,
-        vendorMetrics,
-        purchaseOrders,
-        insights,
-        performanceMetrics,
-        isLoading: false
-      }));
-
-      setToast({ content: 'Analytics data loaded successfully' });
-    } catch (error) {
-      console.error('Error loading analytics data:', error);
-      setToast({ content: 'Error loading analytics data', error: true });
-      setState(prev => ({ ...prev, isLoading: false }));
-    }
-  };
 
   const handleRefresh = () => {
     onRefresh();

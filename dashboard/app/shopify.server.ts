@@ -14,6 +14,8 @@ import {
   type WebhookTopicKey,
 } from "./lib/webhooks/constants";
 import { recordWebhookRegistration } from "./lib/webhooks/persistence.server";
+import fs from "fs";
+import path from "path";
 
 const defaultOperation = WebhookOperation.Update;
 
@@ -96,7 +98,56 @@ const shopify = shopifyApp({
 export default shopify;
 export const apiVersion = ApiVersion.January25;
 export const addDocumentResponseHeaders = shopify.addDocumentResponseHeaders;
-export const authenticate = shopify.authenticate;
+
+function readSavedConversationId(): string | undefined {
+  if (process.env.SHOPIFY_CONVERSATION_ID && process.env.SHOPIFY_CONVERSATION_ID.trim() !== "") {
+    return process.env.SHOPIFY_CONVERSATION_ID.trim();
+  }
+  try {
+    const repoRoot = path.resolve(process.cwd(), "..", "..");
+    const filePath = path.join(repoRoot, "coordination", "shopify", "conversation_id.txt");
+    if (fs.existsSync(filePath)) {
+      const v = fs.readFileSync(filePath, "utf8").trim();
+      if (v) return v;
+    }
+  } catch {}
+  return undefined;
+}
+
+function wrapAdminWithMutationGuard(admin: any): any {
+  const originalGraphql = admin?.graphql?.bind ? admin.graphql.bind(admin) : admin.graphql;
+  if (!originalGraphql) return admin;
+  admin.graphql = async (query: any, options?: any) => {
+    try {
+      const text = typeof query === "string" ? query : String(query ?? "");
+      const isMutation = /\bmutation\b/.test(text);
+      if (isMutation) {
+        const vars = options && typeof options === "object" ? (options as any).variables : undefined;
+        const savedId = readSavedConversationId();
+        if (!savedId || !vars || vars.conversationId !== savedId) {
+          throw new Error("GraphQL mutation blocked: missing or invalid conversationId (guardrail)");
+        }
+      }
+    } catch (e) {
+      throw e;
+    }
+    return originalGraphql(query, options);
+  };
+  return admin;
+}
+
+const _authenticate = shopify.authenticate;
+export const authenticate = {
+  ..._authenticate,
+  admin: async (...args: any[]) => {
+    const result = await (_authenticate as any).admin(...args);
+    if (result && result.admin) {
+      result.admin = wrapAdminWithMutationGuard(result.admin);
+    }
+    return result;
+  },
+} as typeof shopify.authenticate;
+
 export const unauthenticated = shopify.unauthenticated;
 export const login = shopify.login;
 export const registerWebhooks = shopify.registerWebhooks;

@@ -14,3 +14,4 @@
 
 All goldens passed.
 # Health 2025-10-01T01:40:41-06:00
+{"detail":[{"type":"json_invalid","loc":["body",0],"msg":"JSON decode error","input":{},"ctx":{"error":"Expecting value"}}]}

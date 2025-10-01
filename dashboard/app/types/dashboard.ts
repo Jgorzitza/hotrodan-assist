@@ -463,6 +463,13 @@ export type InboxMetrics = {
   closedToday: number;
   approvalsPending: number;
   ideaCandidates: number;
+  total: number;
+  confidenceHistogram: {
+    low: number;
+    medium: number;
+    high: number;
+    unscored: number;
+  };
 };
 
 export type InboxConversation = {
@@ -479,6 +486,7 @@ export type InboxData = {
   dataset: InboxDataset;
   metrics: InboxMetrics;
   conversations: InboxConversation[];
+  availableScenarios?: MockScenario[];
 };
 
 export type InboxActionEventType =

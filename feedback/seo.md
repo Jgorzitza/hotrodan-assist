@@ -19,6 +19,7 @@ Validation runs
 - Targeted tests: PASSED
   - dashboard/app/lib/settings/__tests__/connection-tests.test.ts
   - dashboard/app/tests/msw/seo-handlers.test.ts
+- Full dashboard suite: PASSED (31 files, 175 tests). Fixed failing inbox mocks by enriching metrics and available scenarios.
 
 Credentials status (BLOCKERS for live)
 - GA4: GA4_PROPERTY_ID, GA4_CLIENT_ID, GA4_CLIENT_SECRET, GA4_REFRESH_TOKEN — missing

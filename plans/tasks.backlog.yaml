@@ -92,3 +92,48 @@ tasks:
       - "pre-commit with black/ruff/isort"
       - "mypy on Python, tsconfig strict on dashboard"
       - "Playwright smoke test bound to `npm run test:e2e`"
+
+  # Production Readiness (added 2025-10-01)
+  - id: tooling.production-deployment
+    node: tooling
+    title: "Production deployment pipeline and monitoring"
+    status: DOING
+    deliverables:
+      - "Docker containerization for all services"
+      - "CI/CD pipeline with automated testing and deployment"
+      - "Health monitoring and alerting system"
+      - "Log aggregation and error tracking"
+    notes: "Owner: Tooling. Acceptance: green CI on PR, health endpoint 200, alerts configured."
+
+  - id: dashboard.live-data-integration
+    node: dashboard
+    title: "Remove mock data toggles and integrate live data"
+    status: DOING
+    deliverables:
+      - "Remove USE_MOCK_DATA toggles from all components"
+      - "Integrate live MCP connector data"
+      - "Real-time data updates and caching"
+      - "Error handling for live data failures"
+    notes: "Owner: Dashboard. Acceptance: mocks removed, live data renders, error boundaries in place."
+
+  - id: mcp.production-monitoring
+    node: mcp
+    title: "MCP connectors production monitoring and reliability"
+    status: DOING
+    deliverables:
+      - "Rate limiting and retry logic for all connectors"
+      - "Connection pooling and timeout management"
+      - "Error tracking and alerting for connector failures"
+      - "Performance metrics and dashboards"
+    notes: "Owner: MCP. Acceptance: rate limit + retry tested; SLO dashboard in place."
+
+  - id: rag.production-optimization
+    node: rag
+    title: "RAG system production optimization and scaling"
+    status: TODO
+    deliverables:
+      - "ChromaDB production configuration and persistence"
+      - "Embedding model optimization and caching"
+      - "Query performance tuning and indexing"
+      - "Define and meet p95 latency target under load"
+    notes: "Owner: RAG. Acceptance: goldens pass under load; p95 latency target met."
