@@ -9,8 +9,6 @@ import type { SettingsProvider } from "../../../types/settings";
 import { getMcpClientOverridesForShop } from "../../../lib/mcp/config.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const url = new URL(request.url);
-
   // Resolve shop domain for multi-tenant environments (mock-friendly)
   let shopDomain: string;
   if (isMockMode()) {
@@ -21,7 +19,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   // Fetch secrets for each provider
-  const providers: SettingsProvider[] = ["ga4", "gsc", "bing", "mcp"];
 
   const [ga4, gsc, bing, mcpKey] = await Promise.all([
     storeSettingsRepository.getDecryptedSecret(shopDomain, "ga4"),
