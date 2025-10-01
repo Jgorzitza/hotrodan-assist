@@ -38,6 +38,13 @@ Acceptance:
 - Provide explainable scores and allow manual overrides.
 
 ## First Actions Now
+- Refresh application_url via the prep script, then run SEO tests:
+```bash
+APP_PORT=8080 TUNNEL_TOOL=cloudflared scripts/prepare_dashboard_dev.sh
+npx vitest run --root dashboard --config dashboard/vitest.config.ts \
+  dashboard/app/routes/__tests__/app.seo*.test.ts?(x)
+```
+- Confirm UI shows gating banners when credentials are missing.
 
 ## Continuous Work Protocol
 - Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/seo.md.

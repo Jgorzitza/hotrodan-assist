@@ -26,6 +26,18 @@ Project root (canonical): /home/justin/llama_rag
 - CI recipe (GitHub Actions) for Python + Node jobs; artifact test reports under `test-results/`.
 
 ## First Actions Now
+- Adopt UI test lane Policy B (jsdom + shims) in vitest.config.ts and open a PR.
+- Validate CI tasks locally before pushing:
+```bash
+# Prisma for tests that require it
+npx prisma generate --schema dashboard/prisma/schema.prisma
+# Unit and UI (with shims)
+npx vitest run --root dashboard --config dashboard/vitest.config.ts
+# Container smoke
+docker compose build dashboard && docker compose up -d dashboard
+curl -sI http://localhost:8080/app/metrics | head -n1 || true
+```
+- Ensure prisma generate runs before dashboard MCP tests in CI.
 
 ## Continuous Work Protocol
 - Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/tooling.md.

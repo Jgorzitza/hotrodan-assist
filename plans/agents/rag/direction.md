@@ -42,6 +42,11 @@ Acceptance:
 - Endpoint `query_chroma_router.py` returns grounded answers with citations.
 
 ## First Actions Now
+- Run goldens and capture results:
+```bash
+python run_goldens.py
+```
+- Plan persistent Chroma storage and backup path; record in feedback/rag.md.
 
 ## Continuous Work Protocol
 - Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/rag.md.

@@ -38,6 +38,13 @@ Acceptance:
 - Surfaces: All, Vendor, Fast Movers; export CSV.
 
 ## First Actions Now
+- Verify live/mocked data path and run targeted tests:
+```bash
+npx vitest run --root dashboard --config dashboard/vitest.config.ts \
+  dashboard/app/components/inventory/**/__tests__/**/*.test.ts?(x) \
+  dashboard/app/routes/__tests__/app.inventory*.test.ts?(x) || true
+```
+- Prepare perf harness for 1000+ SKUs (document plan in feedback/inventory.md).
 
 ## Continuous Work Protocol
 - Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/inventory.md.

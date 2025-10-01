@@ -37,6 +37,13 @@ Acceptance:
 - CSV export and "impact/effort" scoring.
 
 ## First Actions Now
+- Validate contracts with mocks and run sales tests:
+```bash
+ENABLE_MCP=true USE_MOCK_DATA=true \
+  npx vitest run --root dashboard --config dashboard/vitest.config.ts \
+  dashboard/app/routes/__tests__/app.sales*.test.ts?(x)
+```
+- Document SLO candidates in feedback/sales.md.
 
 ## Continuous Work Protocol
 - Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/sales.md.

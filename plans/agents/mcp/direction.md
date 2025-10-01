@@ -38,6 +38,21 @@ Acceptance:
 - Provide typed DTOs and minimal caching (ETag/If-Modified-Since where applicable).
 
 ## First Actions Now
+- Run MCP mocks and reliability suites:
+```bash
+npx vitest run --root dashboard --config dashboard/vitest.config.ts \
+  dashboard/app/lib/mcp/__tests__/*.test.ts \
+  dashboard/app/lib/connectors/__tests__/registry.server.test.ts \
+  dashboard/app/lib/streaming/__tests__/*.test.ts
+```
+- Live validation (requires secrets provided):
+```bash
+npx prisma generate --schema dashboard/prisma/schema.prisma
+ENABLE_MCP=true USE_MOCK_DATA=false \
+MCP_API_URL={{MCP_API_URL}} MCP_API_KEY={{MCP_API_KEY}} \
+  npx vitest run --root dashboard --config dashboard/vitest.config.ts \
+  dashboard/app/lib/mcp/__tests__/live-connection.test.ts
+```
 
 ## Continuous Work Protocol
 - Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/mcp.md.

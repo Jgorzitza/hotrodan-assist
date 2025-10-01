@@ -38,6 +38,15 @@ Acceptance:
 - Integration: reads drafts from `rag` and posts decisions back to storage.
 
 ## First Actions Now
+- Set ASSISTANTS_BASE for local dev and run SSE smoke:
+```bash
+export ASSISTANTS_BASE=http://127.0.0.1:8002
+curl -N --max-time 3 "$ASSISTANTS_BASE/assistants/events" | head -n1 || true
+```
+- When the assistants service is reachable, smoke the Approve/Edit flow (expects 303 redirects):
+```bash
+# GET drafts -> render in UI (manual browser check), then POST approve/edit endpoints
+```
 
 ## Continuous Work Protocol
 - Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/approvals.md.

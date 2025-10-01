@@ -38,6 +38,27 @@ Acceptance:
 - Keep Playwright tests updated; use Polaris primitives and Shopify CLI for dev/dev-tunnel.
 
 ## First Actions Now
+- Run the dashboard prep (captures Cloudflare tunnel, updates application_url + redirects, sets ASSISTANTS_BASE, optional lint/tests):
+
+```bash
+APP_PORT=8080 TUNNEL_TOOL=cloudflared RUN_CHECKS=1 \
+  scripts/prepare_dashboard_dev.sh
+```
+
+- Run dashboard vitest subsets (server + UI with shims) and MCP mocks:
+```bash
+npx prisma generate --schema dashboard/prisma/schema.prisma
+ENABLE_MCP=true USE_MOCK_DATA=true MCP_FORCE_MOCKS=true \
+  npx vitest run --root dashboard --config dashboard/vitest.config.ts \
+  "dashboard/app/**/__tests__/**/*.test.ts?(x)"
+```
+
+- Minimal E2E smoke (optional while UI deps policy B is in effect):
+```bash
+npm run -s test:e2e
+```
+
+- Then open the embedded Admin in a browser to validate the iframe loads using the printed tunnel URL.
 
 ## Continuous Work Protocol
 - Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/dashboard.md.
