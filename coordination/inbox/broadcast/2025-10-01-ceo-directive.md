@@ -30,3 +30,8 @@ Owners and deadlines
 - Integration Manager: Health grid every 5 minutes; metrics rollup w/ SLOs; E2E smoke orchestration; PR gating; credentials watch; readiness scoreboard.
 - MCP readiness: Ensure prisma generate, then run MCP client + settings tests (mock OK if live creds not present).
 - Next poll: Maintain 5-minute cadence; escalate blockers to coordination/blockers-log.md with owners + timestamps.
+
+## CEO GO-SIGNAL — Relaunch Now (2025-10-01T15:24:26-06:00)
+- All agents: GO. Read GO-SIGNAL and your direction; execute your launch commands now.
+- Proof-of-work cadence: append updates every 5 minutes to coordination/inbox/<agent>/2025-10-01-notes.md and feedback/<agent>.md.
+- Dashboard: keep going (already active). Others: follow your EOD tasks and integration manager health grid.

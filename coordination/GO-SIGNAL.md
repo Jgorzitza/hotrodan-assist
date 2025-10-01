@@ -38,3 +38,8 @@ head -40 plans/agents/[your-agent]/direction.md || true
 - If no proof-of-work appears in feedback within 10 minutes, the cycle is marked non-compliant and escalated in blockers-log.
 - Continuous work is mandatory: pick the next task immediately from “Next 5 Tasks” in your direction.
 - Automation: A scheduled monitor (Agent Proof Monitor) runs every 5 minutes to enforce proof-of-work and append escalations automatically.
+
+## Relaunch — GO (2025-10-01T15:24:26-06:00)
+- Relaunch approved: resume 5-minute cadence immediately.
+- All agents: read your direction (plans/agents/<agent>/direction.md) and execute launch commands in the latest broadcast.
+- Dashboard: continue current work (Partner CLI setup + embedded OAuth); do not stop.
