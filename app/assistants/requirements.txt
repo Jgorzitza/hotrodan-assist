@@ -8,3 +8,6 @@ sqlalchemy[asyncio]
 asyncpg
 pytest
 prometheus-client
+opentelemetry-sdk
+opentelemetry-exporter-otlp
+opentelemetry-instrumentation-fastapi

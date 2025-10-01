@@ -17,6 +17,12 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import JSON, Boolean, DateTime, Float, Integer, String, Text, create_engine, func, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 from prometheus_client import generate_latest
+from opentelemetry import trace
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from .adapters import DeliveryAdapterRegistry
 
@@ -845,6 +851,21 @@ def build_event_envelope(
 
 app = FastAPI(title="Assistants Service", version="0.3.0")
 registry = DeliveryAdapterRegistry()
+
+
+def _maybe_setup_tracing(service_name: str) -> None:
+    endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+    if not endpoint:
+        return
+    resource = Resource.create({"service.name": service_name})
+    provider = TracerProvider(resource=resource)
+    processor = BatchSpanProcessor(OTLPSpanExporter())
+    provider.add_span_processor(processor)
+    trace.set_tracer_provider(provider)
+    FastAPIInstrumentor.instrument_app(app)
+
+
+_maybe_setup_tracing("assistants")
 
 
 @app.get("/health")

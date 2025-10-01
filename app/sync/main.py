@@ -13,6 +13,12 @@ import httpx
 from fastapi import FastAPI, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse, PlainTextResponse
 from prometheus_client import generate_latest
+from opentelemetry import trace
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from sqlalchemy import JSON, DateTime, Integer, String, Text, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -120,6 +126,21 @@ app = FastAPI(title="Sync Service", version="0.3.0")
 ASSISTANTS_DRAFT_URL = os.getenv("ASSISTANTS_DRAFT_URL", "http://assistants:8002/assistants/draft")
 DEFAULT_CHANNEL = "email"
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
+
+
+def _maybe_setup_tracing(service_name: str) -> None:
+    endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+    if not endpoint:
+        return
+    resource = Resource.create({"service.name": service_name})
+    provider = TracerProvider(resource=resource)
+    processor = BatchSpanProcessor(OTLPSpanExporter())
+    provider.add_span_processor(processor)
+    trace.set_tracer_provider(provider)
+    FastAPIInstrumentor.instrument_app(app)
+
+
+_maybe_setup_tracing("sync")
 
 
 @app.get("/health")
