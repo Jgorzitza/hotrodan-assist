@@ -15,3 +15,4 @@
 All goldens passed.
 # Health 2025-10-01T01:40:41-06:00
 {"detail":[{"type":"json_invalid","loc":["body",0],"msg":"JSON decode error","input":{},"ctx":{"error":"Expecting value"}}]}{"detail":[{"type":"json_invalid","loc":["body",0],"msg":"JSON decode error","input":{},"ctx":{"error":"Expecting value"}}]}- 2025-10-01T02:05:38-06:00 Production rollout completed; service healthy.
+- 2025-10-01T02:13:50-06:00 Production hardening complete: restart policy, healthcheck, Prometheus metrics, ingest loop background task running.

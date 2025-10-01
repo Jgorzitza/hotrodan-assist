@@ -20,3 +20,9 @@
 - Added unit tests for breaker and rate limit behavior; validated MCP client tests pass (5 tests)
 - Command: npx vitest run --root dashboard --config vitest.config.ts dashboard/app/lib/mcp/__tests__/client.server.test.ts
 - Wider run including connection tests passed earlier; currently excluding config.server.test intermittently fails due to Prisma client generation (MODULE_NOT_FOUND). Will address in a subsequent pass with prisma generate in CI; core MCP tests remain green
+
+2025-10-01T08:11:33Z — Targeted MCP + connection tests
+- Command: npx vitest run (mcp + connection tests)
+- Result: 3 suites passed, 1 failed (config.server.test.ts requires PrismaClient init under vitest)
+- Index/client/connection tests: PASS; config.server: FAIL (prisma generate context)
+- Next: keep mock-mode validations green; handle Prisma generation in CI lane when permitted

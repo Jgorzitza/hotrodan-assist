@@ -320,13 +320,13 @@ const EnhancedAnalyticsDashboard: React.FC<EnhancedAnalyticsDashboardProps> = ({
               {po.status}
             </Badge>,
             <ButtonGroup key={`po-actions-${po.poId}`}>
-              <Button size="slim" onClick={() => handlePurchaseOrderAction('view', po)}>
+              <Button key={`po-view-${po.poId}`} size="slim" onClick={() => handlePurchaseOrderAction('view', po)}>
                 View
               </Button>
-              <Button size="slim" onClick={() => handlePurchaseOrderAction('approve', po)}>
+              <Button key={`po-approve-${po.poId}`} size="slim" onClick={() => handlePurchaseOrderAction('approve', po)}>
                 Approve
               </Button>
-              <Button size="slim" onClick={() => handlePurchaseOrderAction('reject', po)}>
+              <Button key={`po-reject-${po.poId}`} size="slim" onClick={() => handlePurchaseOrderAction('reject', po)}>
                 Reject
               </Button>
             </ButtonGroup>

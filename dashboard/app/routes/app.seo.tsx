@@ -812,6 +812,7 @@ export default function SeoRoute() {
   const navigate = useNavigate();
   const exportFetcher = useFetcher<{ filename: string; csv: string }>();
   const actionFetcher = useFetcher<{ ok: boolean }>();
+  const healthFetcher = useFetcher<{ shopDomain: string; results: Record<string, { status: string; durationMs: number; message?: string }> }>();
 
   const [keywordQuery, setKeywordQuery] = useState(filters.keywordSearch);
   const [pageQuery, setPageQuery] = useState(filters.pageSearch);
@@ -863,6 +864,12 @@ export default function SeoRoute() {
       URL.revokeObjectURL(url);
     }
   }, [exportFetcher.data]);
+
+  useEffect(() => {
+    if (healthFetcher.state === "idle" && !healthFetcher.data) {
+      healthFetcher.load("/api/seo/health");
+    }
+  }, [healthFetcher]);
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -1117,12 +1124,32 @@ export default function SeoRoute() {
                           !(adapter.toggled && !adapter.disabledByConnection),
                         )
                       }
-                    >
-                      {adapter.label}
+> {adapter.label}
                     </Button>
                   ))}
                 </ButtonGroup>
               </InlineStack>
+            </Card.Section>
+            <Divider borderColor="border" />
+            <Card.Section>
+              <BlockStack gap="100">
+                <Text as="h3" variant="headingSm">Live connection health</Text>
+                {healthFetcher.data ? (
+                  <InlineStack gap="200" wrap>
+                    {(["ga4","gsc","bing","mcp"] as const).map((key) => {
+                      const res = healthFetcher.data!.results[key] as { status: string; durationMs: number; message?: string } | undefined;
+                      const tone = res?.status === "success" ? "success" : res?.status === "warning" ? "warning" : "critical";
+                      return (
+                        <Badge key={key} tone={tone as any}>
+                          {key.toUpperCase()}: {res?.status ?? "error"}
+                        </Badge>
+                      );
+                    })}
+                  </InlineStack>
+                ) : (
+                  <Text variant="bodySm" tone="subdued">Checking provider health…</Text>
+                )}
+              </BlockStack>
             </Card.Section>
             <Divider borderColor="border" />
             <Card.Section>
