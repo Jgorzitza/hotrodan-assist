@@ -285,6 +285,44 @@ def check_docker(state: Dict[str, Any]) -> None:
                 )
 
 
+def check_proof_of_work() -> None:
+    feedback_dir = ROOT / "feedback"
+    if not feedback_dir.exists():
+        return
+    agents = [p.stem for p in feedback_dir.glob("*.md")]
+    now = datetime.now(timezone.utc)
+    for agent in agents:
+        fp = feedback_dir / f"{agent}.md"
+        try:
+            text = fp.read_text(encoding="utf-8", errors="ignore")
+        except Exception:
+            continue
+        # Heuristic: require activity within last 10 minutes
+        # Look for ISO timestamps in file
+        ts_matches = re.findall(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", text)
+        recent = False
+        for ts in ts_matches[::-1]:
+            try:
+                t = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                if (now - t).total_seconds() <= 600:
+                    recent = True
+                    break
+            except Exception:
+                continue
+        if not recent:
+            append_blocker(
+                owner=agent,
+                component="Proof-of-Work",
+                unit_key=f"pow:{agent}",
+                summary="No proof-of-work in last 10 minutes (diff/tests/artifacts)",
+                attempts=1,
+            )
+            append_note(
+                "integration",
+                f"[auto] Non-compliance: {agent} has no recent proof-of-work; escalated to blockers-log",
+            )
+
+
 def main() -> None:
     state = read_state()
     doing_labels = parse_status_dashboard_doing()
@@ -292,6 +330,7 @@ def main() -> None:
     check_pollers(state, doing_labels)
     check_mcp(state)
     check_docker(state)
+    check_proof_of_work()
     write_state(state)
 
 

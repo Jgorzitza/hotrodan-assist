@@ -46,3 +46,4 @@ Next
 2025-10-01T08:24:21Z approvals health probes: assistants fail approval-app fail
 2025-10-01T08:24:57Z approvals standby poll go unchanged dir unchanged ui ok mcp skip perf fail security ok connectors ok rag-api fail
 2025-10-01T08:30:20Z approvals standby poll go changed dir unchanged ui ok mcp skip perf ok security ok connectors ok rag-api ok
+2025-10-01T08:36:18Z approvals standby poll go changed dir changed ui ok mcp skip perf ok security ok connectors ok rag-api ok

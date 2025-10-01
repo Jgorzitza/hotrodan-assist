@@ -1,0 +1,28 @@
+name: Agent Proof Monitor
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  proof-monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run monitor
+        run: |
+          python3 scripts/monitor_agents.py || true
+      - name: Commit monitor updates
+        run: |
+          git config user.name "agent-monitor"
+          git config user.email "agent-monitor@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "ci(monitor): auto-append non-compliance and integration notes"
+            git push
+          fi

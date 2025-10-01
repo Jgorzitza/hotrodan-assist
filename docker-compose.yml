@@ -22,8 +22,9 @@ services:
     environment:
       - ENABLE_MCP=true
       - USE_MOCK_DATA=true
+      - PORT=8080
     ports:
-      - "3000:3000"
+      - "8080:8080"
 
   rag-api:
     build: ./app/rag_api

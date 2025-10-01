@@ -29,3 +29,4 @@ head -40 plans/agents/[your-agent]/direction.md || true
 ## Compliance Enforcement
 - If no proof-of-work appears in feedback within 10 minutes, the cycle is marked non-compliant and escalated in blockers-log.
 - Continuous work is mandatory: pick the next task immediately from “Next 5 Tasks” in your direction.
+- Automation: A scheduled monitor (Agent Proof Monitor) runs every 5 minutes to enforce proof-of-work and append escalations automatically.
