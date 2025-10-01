@@ -1,4 +1,5 @@
-import { Prisma, SeoInsightSeverity, SeoInsightStatus } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+import { SeoInsightSeverity, SeoInsightStatus } from "@prisma/client";
 
 import prisma from "~/db.server";
 import type {
