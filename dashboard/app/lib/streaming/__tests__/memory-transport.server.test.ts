@@ -56,4 +56,23 @@ describe("InMemoryStream", () => {
     expect(dlq.length).toBeGreaterThanOrEqual(1);
     expect(dlq[0]?.reason).toBe("permanent");
   });
+  it("processes 50 messages quickly (throughput sanity)", async () => {
+    const stream = new InMemoryStream<{ n: number }>();
+    const processed: number[] = [];
+
+    for (let i = 0; i < 50; i += 1) {
+      await stream.publish(topic, { id: `${i}`, key: "k", payload: { n: i }, timestamp: Date.now() });
+    }
+
+    setTimeout(() => {
+      void stream.consume(topic, async (batch) => {
+        for (const m of batch) {
+          processed.push(m.payload.n);
+        }
+      }, { maxBatch: 10, maxConcurrent: 2 });
+    }, 0);
+
+    await new Promise((r) => setTimeout(r, 500));
+    expect(processed.length).toBe(50);
+  });
 });

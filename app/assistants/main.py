@@ -118,14 +118,19 @@ CUSTOMER_DISPLAY_PATTERN = re.compile(r"^(.*?)(?:\s*<([^>]+)>)?$")
 
 
 class EventBroker:
-    """Minimal async pub/sub used to fan out approval events over SSE."""
+    """Minimal async pub/sub used to fan out approval events over SSE.
+
+    Bounded queue to prevent unbounded memory growth under backpressure.
+    Size can be tuned via EVENT_QUEUE_MAXSIZE env var (default: 1000).
+    """
 
     def __init__(self) -> None:
         self._listeners: Set[asyncio.Queue[str]] = set()
         self._lock = asyncio.Lock()
+        self._maxsize: int = int(os.getenv("EVENT_QUEUE_MAXSIZE", "1000"))
 
     async def subscribe(self) -> asyncio.Queue[str]:
-        queue: asyncio.Queue[str] = asyncio.Queue()
+        queue: asyncio.Queue[str] = asyncio.Queue(maxsize=self._maxsize)
         async with self._lock:
             self._listeners.add(queue)
         return queue
@@ -839,6 +844,27 @@ def build_event_envelope(
 
 app = FastAPI(title="Assistants Service", version="0.3.0")
 registry = DeliveryAdapterRegistry()
+
+
+@app.get("/health")
+def health() -> Dict[str, Any]:
+    """Lightweight health check for readiness/liveness probes.
+
+    Verifies database connectivity with a trivial SELECT 1 and returns
+    service metadata. Keeps it fast and side-effect free.
+    """
+    try:
+        with ENGINE.connect() as conn:
+            conn.execute(select(1))
+        db_ok = True
+    except Exception:
+        db_ok = False
+    return {
+        "status": "ok" if db_ok else "degraded",
+        "db": db_ok,
+        "timestamp": to_iso(utc_now()),
+        "service": "assistants",
+    }
 
 
 @app.get("/assistants/events")

@@ -21,6 +21,11 @@ Tests (dashboard)
 - 12 warnings, 0 errors
   - Examples: react/jsx-key in EnhancedAnalyticsDashboard.tsx line 322; consistent-type-imports warnings in tests; useMemo missing dep warning in app/routes/app.sales.tsx
 
+## 2025-10-01T08:20Z — Server-side test subset
+- Command: vitest run (orders/sales/date-range/settings connection)
+- Result: 4 files, 32 tests, all passed
+  - cache.server.test.ts (7), date-range.test.ts (15), sync.server.test.ts (6), connection-tests.test.ts (4)
+
 Next
 - Address warnings as time allows; prioritize failing test fix for mocks histogram
 - Tunnel capture remains manual (Shopify CLI flags rejected); confirm Admin load once dev URL is captured

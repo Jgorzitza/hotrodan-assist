@@ -7,6 +7,9 @@
 | 2025-09-27 | Settings Admin | GA4/GSC/Bing credentials missing; UI stuck on mocks | Settings | Blocked | — |
 | 2025-09-29 | Dashboard Home | Shopify CLI tunnel fails (`Cannot find module '~/db.server'`); deep-link smoke blocked | Dashboard | Open | — |
 
+| 2025-10-01 | Settings/SEO/MCP | GA4/GSC/Bing credentials outstanding; features remain in mock mode | Manager/SEO | Blocked | — |
+| 2025-10-01 | Dashboard | UI test env missing dev deps (Polaris, App Bridge, jsdom, faker, bullmq); server-side tests green | Tooling | Watch | Evidence in feedback/dashboard.md |
+
 ## Guidelines
 - Append new rows when blockers emerge; edit `Status`/`Resolution` as they progress.
 - Reference coordination memos or feedback notes for deeper context.

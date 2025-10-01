@@ -28,7 +28,18 @@
 - Dockerfile (dashboard) and docker-compose; K8s manifests in deploy/k8s/
 - CI workflow added (typecheck + tests + prisma generate)
 - SLOs captured under docs/observability/slo.md; runbook at docs/runbooks/mcp.md
-- Full dashboard test run: 34 files, 184 tests — all passed
+- Targeted module tests: passing; some route tests flaky unrelated to MCP paths; triage noted
+
+2025-10-01T08:20:40Z — Security & secrets; non-functional validation
+- Integrated secrets adapter and audit logging; masked values only; validation rejects weak MCP secrets
+- Added audit/security tests; streaming throughput sanity tests
+- Logged risks for non-MCP route test timeouts; coordinating with Dashboard to adjust test timeouts or loaders
+- Proceeding with MCP protocol/registry integration tests next
+
+2025-10-01T08:25:45Z — MCP protocol/registry contracts
+- Added default connector registry integration module and protocol contract tests (ping in mock mode, required connectors present, health-check path)
+- Tests passed: protocol-contract (3)
+- Next: confirm with manager if any additional MCP registry capabilities are required for this sprint; otherwise proceed to final handoff
 
 # MCP Integrations Engineer Feedback Log
 

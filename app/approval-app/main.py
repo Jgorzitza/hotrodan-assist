@@ -15,6 +15,26 @@ templates = Jinja2Templates(directory="templates")
 ASSISTANTS_BASE = os.getenv("ASSISTANTS_BASE", "http://assistants:8002")
 
 
+@app.get("/health")
+async def health() -> Dict[str, Any]:
+    """App health probe.
+
+    Attempts a quick call to assistants list endpoint with limit=1. If it
+    fails or times out, report degraded status but keep endpoint responsive.
+    """
+    ok = True
+    info: Dict[str, Any] = {"service": "approval-app"}
+    try:
+        resp = await app.state.http.get(f"{ASSISTANTS_BASE}/assistants/drafts", params={"limit": 1}, timeout=5.0)
+        ok = ok and (resp.status_code < 400)
+    except Exception as e:
+        ok = False
+        info["error"] = str(e.__class__.__name__)
+    info["status"] = "ok" if ok else "degraded"
+    info["timestamp"] = datetime.now(timezone.utc).isoformat()
+    return info
+
+
 async def _assistants_get(path: str) -> Dict[str, Any]:
     url = f"{ASSISTANTS_BASE}{path}"
     resp = await app.state.http.get(url)
