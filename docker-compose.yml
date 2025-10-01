@@ -71,6 +71,13 @@ services:
     depends_on:
       - db
       - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   approval-app:
     build: ./app/approval-app

@@ -121,6 +121,23 @@ DEFAULT_CHANNEL = "email"
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
 
 
+@app.get("/health")
+async def health() -> Dict[str, Any]:
+    """Liveness/readiness probe for Sync service."""
+    ok = True
+    try:
+        # Simple DB ping
+        async with ENGINE.begin() as conn:
+            await conn.run_sync(lambda c: None)
+    except Exception:
+        ok = False
+    return {
+        "status": "ok" if ok else "degraded",
+        "service": "sync",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+    }
+
+
 async def _post_draft(client: httpx.AsyncClient, payload: Dict[str, Any]) -> Dict[str, Any]:
     try:
         resp = await client.post(ASSISTANTS_DRAFT_URL, json=payload, timeout=20.0)
