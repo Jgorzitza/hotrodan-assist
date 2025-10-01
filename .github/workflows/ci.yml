@@ -17,7 +17,7 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
       - name: Install Python dependencies
-        run: pip install -U llama-index openai "chromadb>=0.5" llama-index-vector-stores-chroma llama-index-readers-web llama-index-readers-file pyyaml
+        run: pip install -U llama-index openai "chromadb>=0.5" llama-index-vector-stores-chroma llama-index-readers-web llama-index-readers-file llama-index-embeddings-fastembed fastembed pyyaml
       - name: Run golden tests
         run: OFFLINE_CORRECTIONS_ONLY=1 python run_goldens.py
 
@@ -63,7 +63,7 @@ jobs:
         run: npm run -s typecheck
       - name: Install dashboard dependencies
         working-directory: dashboard
-        run: npm ci --include=dev
+        run: npm install
       - name: Generate Prisma client
         working-directory: dashboard
         run: npm run -s prisma:generate

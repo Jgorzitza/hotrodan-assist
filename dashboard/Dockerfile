@@ -3,7 +3,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* .npmrc* ./
-RUN npm ci --include=dev
+RUN npm install
 
 FROM deps AS build
 WORKDIR /app
@@ -17,7 +17,7 @@ FROM node:20-alpine AS prod-deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
 # Install production dependencies only
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 FROM node:20-alpine AS runtime
 ENV NODE_ENV=production
