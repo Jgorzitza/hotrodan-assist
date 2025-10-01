@@ -35,3 +35,8 @@ Acceptance:
 - Build a funnel from GA4 + Shopify (sessions→ATC→Checkout→Purchase).
 - Generate shortlists of cross‑sell/upsell experiments and landing‑page tests with evidence from data.
 - CSV export and "impact/effort" scoring.
+
+## First Actions Now
+- Validate data contracts with mocks while blocked on MCP.
+- Prepare CLV + forecast scaffolds; define SLOs.
+- Append findings to feedback/sales.md.

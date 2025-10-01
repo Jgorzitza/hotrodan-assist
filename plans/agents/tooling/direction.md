@@ -24,3 +24,10 @@ Project root (canonical): /home/justin/llama_rag
 - Pre-commit with black/ruff/isort + mypy; Git hooks in `.githooks/`.
 - Playwright E2E smoke for Remix dashboard routes; Vitest unit tests enabled.
 - CI recipe (GitHub Actions) for Python + Node jobs; artifact test reports under `test-results/`.
+
+## First Actions Now
+- Prepare minimal Dockerfiles (non-root, small base) for services; add HEALTHCHECK.
+- Add CI job(s): lint, typecheck, unit, E2E; publish artifacts to test-results/.
+- Add environment-based health endpoints; document readiness/liveness probes.
+- Wire error tracking and log aggregation; add basic alert rules.
+- Append results to feedback/tooling.md after each push.

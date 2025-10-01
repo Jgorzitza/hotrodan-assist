@@ -40,3 +40,9 @@ Acceptance:
 ## Targets
 - `python run_goldens.py` passes.
 - Endpoint `query_chroma_router.py` returns grounded answers with citations.
+
+## First Actions Now
+- Configure persistent Chroma storage path and backups.
+- Add embedding caching; tune index params for query performance.
+- Define p95 latency target; run load and capture results.
+- Append results + charts to feedback/rag.md.

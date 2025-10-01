@@ -36,3 +36,10 @@ Acceptance:
 - Replace mock data progressively by wiring `dashboard/app/lib/*` to backend services.
 - Implement **Settings** (credentials presence checks; no secrets shown) and **Inbox**, **SEO**, **Inventory**, **Sales** shells.
 - Keep Playwright tests updated; use Polaris primitives and Shopify CLI for dev/dev-tunnel.
+
+## First Actions Now
+- Remove USE_MOCK_DATA toggles; route data through MCP-backed loaders.
+- Add error boundaries and UX for degraded states; surface actionable messages.
+- Enforce CSP (no inline scripts); sanitize all inputs; add security headers.
+- Update Playwright smoke to cover settings + one route per feature.
+- Append results to feedback/dashboard.md.

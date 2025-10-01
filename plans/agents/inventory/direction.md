@@ -36,3 +36,9 @@ Acceptance:
 - Compute reorder points with lead‑time demand and safety stock: `ROP = mu_d * L + z * sigma_d * sqrt(L)`.
 - Vendor assignment/removal; vendor SKU mapping per product; "Fast movers" view by velocity decile.
 - Surfaces: All, Vendor, Fast Movers; export CSV.
+
+## First Actions Now
+- Wire live Shopify inventory/orders; verify SKU/vendor mapping.
+- Add health endpoint for inventory routes; set p95 latency target.
+- Run perf on 1000+ SKUs; document bottlenecks + fixes.
+- Append results to feedback/inventory.md.

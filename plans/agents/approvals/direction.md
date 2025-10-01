@@ -36,3 +36,8 @@ Acceptance:
 - Inbox page that displays draft replies; Approve → send via Zoho; Edit → store human+machine pair.
 - Telemetry: approval rate, edit distance, average time-to-approve.
 - Integration: reads drafts from `rag` and posts decisions back to storage.
+
+## First Actions Now
+- Stabilize SSE provider: reconnect, backpressure, error surfaces.
+- Add audit logs; verify PII redaction.
+- Append soak test outcomes to feedback/approvals.md.

@@ -30,17 +30,23 @@ INDEX_ID = os.getenv("INDEX_ID", "hotrodan")
 GENERATION_MODE = os.getenv("RAG_GENERATION_MODE", "openai")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# Optionally configure OpenAI LLM for LlamaIndex if key is present
+# Configure LlamaIndex models
+from llama_index.core import Settings as LISettings
+
 if OPENAI_API_KEY and GENERATION_MODE == "openai":
     try:
-        from llama_index.core import Settings as LISettings
         from llama_index.llms.openai import OpenAI as OpenAI_LLM
+        from llama_index.embeddings.openai import OpenAIEmbedding
         LISettings.llm = OpenAI_LLM(model=os.getenv("RAG_LLM_MODEL", "gpt-4o-mini"))
+        LISettings.embed_model = OpenAIEmbedding(model=os.getenv("RAG_EMBED_MODEL", "text-embedding-3-small"))
     except Exception:
         GENERATION_MODE = "retrieval-only"
-
-if not OPENAI_API_KEY and GENERATION_MODE == "openai":
-    GENERATION_MODE = "retrieval-only"
+        from llama_index.embeddings.fastembed import FastEmbedEmbedding
+        LISettings.embed_model = FastEmbedEmbedding(model_name=os.getenv("FASTEMBED_MODEL", "BAAI/bge-small-en-v1.5"))
+else:
+    # retrieval-only (or missing key): ensure local embedding model for query vectors
+    from llama_index.embeddings.fastembed import FastEmbedEmbedding
+    LISettings.embed_model = FastEmbedEmbedding(model_name=os.getenv("FASTEMBED_MODEL", "BAAI/bge-small-en-v1.5"))
 
 _SYSTEM_HINT = (
     "Retail EFI specialist. Cover pump sizing (LPH vs hp & fuel), "

@@ -1,5 +1,7 @@
 # 🚀 GO-SIGNAL — High-Velocity Mode Active (2025-10-01)
 
+Last Updated: 2025-10-01 08:02 UTC • Next Sweep: 08:07 UTC
+
 Project root (canonical): /home/justin/llama_rag
 
 ## Approvals Policy

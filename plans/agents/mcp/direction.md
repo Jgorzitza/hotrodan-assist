@@ -36,3 +36,9 @@ Acceptance:
 - Build connectors (Shopify Admin, Zoho Mail, GSC, Bing WMT, GA4) as separate modules with consistent error envelopes.
 - Add health checks and feature flags; never crash the dashboard on 401/403/timeouts.
 - Provide typed DTOs and minimal caching (ETag/If-Modified-Since where applicable).
+
+## First Actions Now
+- Add rate limiting and retries to all connectors; set sane timeouts.
+- Implement connection pooling and circuit breaker where applicable.
+- Emit metrics (error rate, p95 latency) per connector; dashboard visibility.
+- Append test runs + metrics screenshots to feedback/mcp.md.

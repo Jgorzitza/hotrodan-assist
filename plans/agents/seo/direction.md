@@ -36,3 +36,8 @@ Acceptance:
 - Pull GSC + Bing WMT + GA4; crawl competitors (robots-aware) to detect keyword/content gaps.
 - Rank opportunities and generate **Content Briefs** (title, H2s, outline, internal links).
 - Provide explainable scores and allow manual overrides.
+
+## First Actions Now
+- Gate features when creds missing; add clear UI banners.
+- Add error boundaries and fallback to mocks; collect metrics.
+- Append results to feedback/seo.md.
