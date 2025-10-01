@@ -105,7 +105,7 @@ const buildTimeline = (
       type: "customer_message" as const,
       actor: ticket.customer.name,
       timestamp: ticket.createdAt,
-      body: faker.lorem.paragraphs({ min: 1, max: 2, separator: "\n\n" }),
+body: faker.lorem.paragraphs({ min: 1, max: 2 }),
       attachments,
     },
   ];
@@ -208,7 +208,7 @@ const buildBaseTickets = ({
   });
 
   const ticketsWithContext: InboxTicket[] = seededTickets.map((ticket, index) => {
-    const draftSeed = faker.lorem.paragraphs({ min: 1, max: 2, separator: "\n\n" });
+const draftSeed = faker.lorem.paragraphs({ min: 1, max: 2 });
     const draft = ensureDraftForTicket({
       ticketId: ticket.id,
       content: draftSeed,

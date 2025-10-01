@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { DeliveryMethod, RegisterReturn, WebhookOperation } from "@shopify/shopify-api";
 import prisma from "~/db.server";
 import { SHOPIFY_WEBHOOK_DESCRIPTIONS, type WebhookTopicKey } from "./constants";
+import type { Prisma } from "@prisma/client";
 
 type PrismaLikeClient = typeof prisma & Record<string, any>;
 
@@ -113,7 +114,7 @@ export const recordWebhookRegistration = async (
           deliveryMethod,
           operation,
           success,
-          result,
+          result: (result ?? undefined) as unknown as Prisma.InputJsonValue,
           description,
           callbackUrl,
           shopDomain: normalizedDomain,
@@ -127,7 +128,7 @@ export const recordWebhookRegistration = async (
           deliveryMethod,
           operation,
           success,
-          result,
+          result: (result ?? undefined) as unknown as Prisma.InputJsonValue,
           description,
           callbackUrl,
           recordedAt,
@@ -213,7 +214,7 @@ export const createWebhookEvent = async (
           webhookId,
           topic,
           shopDomain,
-          payload,
+          payload: payload as unknown as Prisma.InputJsonValue,
           status: "PENDING",
           receivedAt: timestamp,
           ...(store ? { storeId: store.id } : {}),
@@ -268,10 +269,14 @@ export const markWebhookEventStatus = async (
   record.errorMessage = errorMessage;
   record.updatedAt = updatedAt;
   if (status === "SUCCEEDED") {
-    record.payload = {
-      ...record.payload,
-      processedAt: updatedAt.toISOString(),
-    };
+    if (record.payload && typeof record.payload === "object" && !Array.isArray(record.payload)) {
+      record.payload = {
+        ...(record.payload as Record<string, unknown>),
+        processedAt: updatedAt.toISOString(),
+      };
+    } else {
+      record.payload = { processedAt: updatedAt.toISOString() } as Record<string, unknown>;
+    }
   }
 };
 
@@ -346,8 +351,8 @@ export const persistOrderFlag = async (
         await db.orderFlag.update({
           where: { id: existing.id },
           data: {
-            status,
-            metadata,
+            status: status as any,
+            metadata: (metadata ?? undefined) as unknown as Prisma.InputJsonValue,
             webhookEventId,
             updatedAt: timestamp,
           },
@@ -358,8 +363,8 @@ export const persistOrderFlag = async (
             storeId: store.id,
             shopifyOrderId,
             flagType,
-            status,
-            metadata,
+            status: status as any,
+            metadata: (metadata ?? undefined) as unknown as Prisma.InputJsonValue,
             webhookEventId,
           },
         });
@@ -430,7 +435,7 @@ export const persistProductVelocity = async (
           data: {
             averageDailySales,
             currentInventory,
-            metadata,
+            metadata: (metadata ?? undefined) as unknown as Prisma.InputJsonValue,
             webhookEventId,
             updatedAt: timestamp,
           },
@@ -443,7 +448,7 @@ export const persistProductVelocity = async (
             recordedFor,
             averageDailySales,
             currentInventory,
-            metadata,
+            metadata: (metadata ?? undefined) as unknown as Prisma.InputJsonValue,
             webhookEventId,
           },
         });
@@ -460,6 +465,7 @@ export const persistProductVelocity = async (
     shopDomain,
     sku,
     averageDailySales,
+    recordedFor,
     currentInventory,
     metadata,
     webhookEventId,
@@ -511,18 +517,22 @@ export const snapshotOrderFlags = async () => {
         },
         take: 100,
       });
-      return rows.map((row) => ({
-        id: row.id,
-        storeId: row.storeId,
-        shopDomain: row.store?.domain ?? row.store?.myShopifyDomain ?? "",
-        shopifyOrderId: row.shopifyOrderId,
-        flagType: row.flagType,
-        status: row.status,
-        metadata: row.metadata ?? undefined,
-        webhookEventId: row.webhookEventId ?? undefined,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-      } satisfies OrderFlagRecord));
+      return rows.map((row) => {
+        const md = row.metadata as unknown;
+        const metadataObj = md && typeof md === "object" && !Array.isArray(md) ? (md as Record<string, unknown>) : undefined;
+        return {
+          id: row.id,
+          storeId: row.storeId,
+          shopDomain: row.store?.domain ?? row.store?.myShopifyDomain ?? "",
+          shopifyOrderId: row.shopifyOrderId,
+          flagType: row.flagType,
+          status: row.status,
+          metadata: metadataObj,
+          webhookEventId: row.webhookEventId ?? undefined,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+        } satisfies OrderFlagRecord;
+      });
     } catch (error) {
       console.warn("[webhooks:persistence] Failed to load order flag snapshot", { error });
     }
@@ -548,19 +558,23 @@ export const snapshotVelocity = async () => {
         },
         take: 100,
       });
-      return rows.map((row) => ({
-        id: row.id,
-        storeId: row.storeId,
-        shopDomain: row.store?.domain ?? row.store?.myShopifyDomain ?? "",
-        sku: row.sku,
-        averageDailySales: row.averageDailySales,
-        currentInventory: row.currentInventory,
-        metadata: row.metadata ?? undefined,
-        webhookEventId: row.webhookEventId ?? undefined,
-        recordedFor: row.recordedFor,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-      } satisfies ProductVelocityRecord));
+      return rows.map((row) => {
+        const md = row.metadata as unknown;
+        const metadataObj = md && typeof md === "object" && !Array.isArray(md) ? (md as Record<string, unknown>) : undefined;
+        return {
+          id: row.id,
+          storeId: row.storeId,
+          shopDomain: row.store?.domain ?? row.store?.myShopifyDomain ?? "",
+          sku: row.sku,
+          averageDailySales: row.averageDailySales,
+          currentInventory: row.currentInventory,
+          metadata: metadataObj,
+          webhookEventId: row.webhookEventId ?? undefined,
+          recordedFor: row.recordedFor,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+        } satisfies ProductVelocityRecord;
+      });
     } catch (error) {
       console.warn("[webhooks:persistence] Failed to load product velocity snapshot", { error });
     }

@@ -73,3 +73,6 @@ dashboard/test-results/
 dashboard/.eslintcache
 dashboard/.cache/
 dashboard/.turbo/
+
+# Ignore stray workspace copies or large untracked app dirs
+apps/HRAN DASHBOARD/

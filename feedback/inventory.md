@@ -93,3 +93,7 @@
 - Proof-of-work (2025-10-01T12:27:55-06:00): inventory loader live mapping overlay integrated + test PASS.
 
 - Proof-of-work (2025-10-01T12:34:03-06:00): inventory perf harness added and PASS; p95 measured within target.
+
+- Proof-of-work (2025-10-01T12:37:19-06:00): 5-run perf harness PASS; p95 well under target.
+
+- 2025-10-01T15:02:21-06:00 — Manager status + next steps posted to coordination/inbox/manager/2025-10-01-notes.md (comprehensive).

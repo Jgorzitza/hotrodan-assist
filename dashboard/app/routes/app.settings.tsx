@@ -571,14 +571,6 @@ export default function SettingsRoute() {
   });
   const [mcpHealth, setMcpHealth] = useState<{ ok: boolean; generatedAt: string } | null>(null);
   const [connectionsApi, setConnectionsApi] = useState<any | null>(null);
-    endpoint: initialMcpOverrides.endpoint ?? "",
-    timeoutMs: initialMcpOverrides.timeoutMs
-      ? String(initialMcpOverrides.timeoutMs)
-      : "",
-    maxRetries: initialMcpOverrides.maxRetries
-      ? String(initialMcpOverrides.maxRetries)
-      : "",
-  });
 
   useEffect(() => {
     setThresholds(settings.thresholds);

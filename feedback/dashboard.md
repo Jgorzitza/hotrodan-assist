@@ -76,4 +76,22 @@ Next (tomorrow)
 - Changes:
   - api.seo.health.test.ts: moved loader import to top to satisfy import/first
   - McpClient breaker: added guard to guarantee one immediate short-circuit after open (stabilizes short cooldown timings)
+
+## 2025-10-01T21:00Z — Partner app scaffold + dev store update
+- Scaffolded official Partner app (React Router + TS): /home/justin/llama_rag/hran-dashboard
+- Linked to existing Partner app "HRAN-DASHBOARD" via `shopify app config link` (CLI confirmed success)
+- Updated hran-dashboard/shopify.app.toml:
+  - embedded = true
+  - [build].automatically_update_urls_on_dev = true
+  - [build].dev_store_url = "hotroddash.myshopify.com"
+- Root shopify.app.toml dev_store_url also set to "hotroddash.myshopify.com"
+- Attempted non-interactive `shopify app dev` (background + log capture) with bounded retry to capture trycloudflare URL.
+  - Initial attempts terminated due to a quoting/escaping error in a multi-line shell; no persistent side effects.
+  - Will retry with foreground `shopify app dev` in hran-dashboard, then I’ll capture/persist the tunnel, probe / and /api/health, and validate OAuth (redacted headers).
+- Next:
+  - When tunnel prints, persist to coordination/inbox/dashboard/current_tunnel_url.txt
+  - Append CURL HEAD results + OAuth chain to coordination/inbox/dashboard/2025-10-01-notes.md
+  - Run lint/tests in hran-dashboard and record counts
 POW 2025-10-01T12:32:58,272669705-06:00 f304992e Jdesktop
+POW 2025-10-01T12:36:13,754660516-06:00 a01ef89b Jdesktop
+POW 2025-10-01T12:41:52,266844993-06:00 17f0ed4e Jdesktop

@@ -103,12 +103,12 @@ const shopify = shopifyApp({
     ? {}
     : {
         hooks: {
-          afterAuth: async ({ session }) => {
+afterAuth: async ({ session }: any) => {
             await ensureWebhookSubscriptions(session);
           },
         },
       }),
-});
+} as any);
 
 export default shopify;
 export const apiVersion = ApiVersion.January25;
@@ -164,6 +164,5 @@ export const authenticate = {
 } as typeof shopify.authenticate;
 
 export const unauthenticated = shopify.unauthenticated;
-export const login = shopify.login;
 export const registerWebhooks = shopify.registerWebhooks;
 export const sessionStorage = shopify.sessionStorage;

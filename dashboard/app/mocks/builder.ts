@@ -1,11 +1,11 @@
 import type { DashboardMocks, MockScenario, ScenarioOptions } from "~/types/dashboard";
 
-import { getInboxScenario } from "./inbox.ts";
-import { getInventoryScenario } from "./inventory.ts";
-import { getKpiScenario } from "./kpis.ts";
-import { getOrdersScenario } from "./orders.ts";
-import { getSalesScenario } from "./sales.ts";
-import { getSeoCollections, getSeoScenario } from "./seo.ts";
+import { getInboxScenario } from "./inbox";
+import { getInventoryScenario } from "./inventory";
+import { getKpiScenario } from "./kpis";
+import { getOrdersScenario } from "./orders";
+import { getSalesScenario } from "./sales";
+import { getSeoCollections, getSeoScenario } from "./seo";
 import { getMockSettings } from "./settings";
 import { scenarioFromSearchParams } from "./shared";
 
@@ -38,8 +38,8 @@ export {
   approveInboxDraft,
   submitInboxDraftFeedback,
   listInboxDraftFeedback,
-} from "./inbox.ts";
-export { getInboxData } from "./inbox.ts";
+} from "./inbox";
+export { getInboxData } from "./inbox";
 export { getInventoryScenario };
 export { getKpiScenario };
 export { getOrdersScenario };

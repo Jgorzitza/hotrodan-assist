@@ -278,7 +278,7 @@ const buildInventoryHolds = (
     title: `${faker.commerce.productAdjective()} ${faker.commerce.productMaterial()} ${faker.commerce.product()}`,
     ordersWaiting: faker.number.int({ min: 1, max: 6 }),
     onHand: faker.number.int({ min: 0, max: 12 }),
-    eta: faker.datatype.boolean({ likelihood: 60 })
+eta: faker.datatype.boolean({ probability: 0.6 })
       ? faker.date.soon({ days: 5 + index * 2 }).toISOString()
       : undefined,
   }));

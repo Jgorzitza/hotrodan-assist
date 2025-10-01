@@ -38,19 +38,19 @@ jobs:
             app/assistants)
               docker run -d -p 18002:8002 --name assistants local/assistants:ci || true
               sleep 5
-              curl -fsS http://localhost:18002/health || (docker logs assistants; exit 1)
+              if ! curl -fsS http://localhost:18002/health; then docker logs assistants; exit 1; fi
               docker rm -f assistants
               ;;
             app/rag_api)
               docker run -d -p 18001:8001 --name rag local/rag_api:ci || true
               sleep 5
-              curl -fsS http://localhost:18001/health || (docker logs rag; exit 1)
+              if ! curl -fsS http://localhost:18001/health; then docker logs rag; exit 1; fi
               docker rm -f rag
               ;;
             app/connectors)
               docker run -d -p 18003:8003 --name connectors local/connectors:ci || true
               sleep 5
-              curl -fsS http://localhost:18003/health || (docker logs connectors; exit 1)
+              if ! curl -fsS http://localhost:18003/health; then docker logs connectors; exit 1; fi
               docker rm -f connectors
               ;;
             *)

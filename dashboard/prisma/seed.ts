@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import type { Prisma } from "@prisma/client";
 
 import {
   OrderFlagStatus,
@@ -14,16 +15,16 @@ import {
   WebhookProcessingStatus,
 } from "@prisma/client";
 
-import { buildDashboardRangeSelection } from "../app/lib/date-range.ts";
-import { mapAnalyticsResponse } from "../app/lib/sales/analytics.server.ts";
-import { encryptSecret, maskSecret } from "../app/lib/security/secrets.server.ts";
-import { BASE_SHOP_DOMAIN, getMockSettings } from "../app/mocks/settings.ts";
-import { analyticsSalesBase } from "../app/mocks/fixtures/analytics.sales.ts";
+import { buildDashboardRangeSelection } from "../app/lib/date-range";
+import { mapAnalyticsResponse } from "../app/lib/sales/analytics.server";
+import { encryptSecret, maskSecret } from "../app/lib/security/secrets.server";
+import { BASE_SHOP_DOMAIN, getMockSettings } from "../app/mocks/settings";
+import { analyticsSalesBase } from "../app/mocks/fixtures/analytics.sales";
 import {
   SETTINGS_SEED_ACCESS_TOKEN,
   SETTINGS_SECRET_SEEDS,
   buildSettingsPrismaSeed,
-} from "../app/lib/settings/fixtures.server.ts";
+} from "../app/lib/settings/fixtures.server";
 
 const prisma = new PrismaClient();
 
@@ -68,18 +69,18 @@ async function seedStore() {
   await prisma.storeSettings.upsert({
     where: { storeId: store.id },
     update: {
-      thresholds: seedPayload.storeSettings.thresholds,
-      featureFlags: seedPayload.storeSettings.featureFlags,
-      connectionMetadata,
+      thresholds: seedPayload.storeSettings.thresholds as unknown as Prisma.InputJsonValue,
+      featureFlags: seedPayload.storeSettings.featureFlags as unknown as Prisma.InputJsonValue,
+      connectionMetadata: connectionMetadata as unknown as Prisma.InputJsonValue,
       notificationEmails: seedPayload.storeSettings.notificationEmails,
       lastRotationAt: seedPayload.storeSettings.lastRotationAt,
       lastInventorySyncAt: seedPayload.storeSettings.lastInventorySyncAt,
     },
     create: {
       storeId: store.id,
-      thresholds: seedPayload.storeSettings.thresholds,
-      featureFlags: seedPayload.storeSettings.featureFlags,
-      connectionMetadata,
+      thresholds: seedPayload.storeSettings.thresholds as unknown as Prisma.InputJsonValue,
+      featureFlags: seedPayload.storeSettings.featureFlags as unknown as Prisma.InputJsonValue,
+      connectionMetadata: connectionMetadata as unknown as Prisma.InputJsonValue,
       notificationEmails: seedPayload.storeSettings.notificationEmails,
       lastRotationAt: seedPayload.storeSettings.lastRotationAt,
       lastInventorySyncAt: seedPayload.storeSettings.lastInventorySyncAt,
