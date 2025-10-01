@@ -27,6 +27,10 @@ Project root (canonical): /home/justin/llama_rag
 
 ## First Actions Now
 
+## Continuous Work Protocol
+- Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/tooling.md.
+- If blocked >1 minute, log blocker and start fallback; never idle.
+
 ## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
 1) Add minimal Dockerfiles and HEALTHCHECK for dashboard, rag_api, connectors, approval-app
 2) CI lane: lint, typecheck, unit, vitest, upload artifacts; prisma generate before MCP tests

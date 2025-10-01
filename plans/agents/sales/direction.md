@@ -38,6 +38,10 @@ Acceptance:
 
 ## First Actions Now
 
+## Continuous Work Protocol
+- Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/sales.md.
+- If blocked >1 minute, log blocker and start fallback; never idle.
+
 ## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
 1) Validate data contracts with mocks pending MCP
 2) Prepare CLV and forecast scaffolds with stubs

@@ -11,3 +11,6 @@ llama-index-embeddings-fastembed
 fastembed
 prometheus-client
 redis
+opentelemetry-sdk
+opentelemetry-exporter-otlp
+opentelemetry-instrumentation-fastapi

@@ -43,6 +43,10 @@ Acceptance:
 
 ## First Actions Now
 
+## Continuous Work Protocol
+- Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/rag.md.
+- If blocked >1 minute, log blocker and start fallback; never idle.
+
 ## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
 1) Persist Chroma indexes and set backup cadence
 2) Add embedding cache; tune HNSW params; record p95 targets

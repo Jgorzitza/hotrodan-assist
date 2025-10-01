@@ -23,5 +23,9 @@ head -40 plans/agents/[your-agent]/direction.md || true
 ```
 
 ## Report Progress
-- Append to feedback/[your-agent].md immediately when work completes.
+- Append to feedback/[your-agent].md every 5 minutes with proof-of-work (diff/test/artifact) or blocker + fallback started.
 - If blocked, state the blocker and proceed with fallback tasks from your direction file.
+
+## Compliance Enforcement
+- If no proof-of-work appears in feedback within 10 minutes, the cycle is marked non-compliant and escalated in blockers-log.
+- Continuous work is mandatory: pick the next task immediately from “Next 5 Tasks” in your direction.

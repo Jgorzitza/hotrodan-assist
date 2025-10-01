@@ -10,10 +10,12 @@ from dotenv import load_dotenv
 from hashlib import sha1
 import json
 import time
+from datetime import datetime
 
 import chromadb
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import PlainTextResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from llama_index.core import StorageContext, load_index_from_storage
@@ -23,6 +25,12 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 from monitor import track_performance, get_metrics, save_metrics
 from prometheus_client import Counter, generate_latest
 import redis
+
+# OpenTelemetry (optional)
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 # Load .env for container and local runs
 load_dotenv()
@@ -37,6 +45,8 @@ RAG_CACHE_TTL = int(os.getenv("RAG_CACHE_TTL", "600"))
 RAG_RATE_LIMIT_PER_MIN = int(os.getenv("RAG_RATE_LIMIT_PER_MIN", "120"))
 RAG_REQUIRE_AUTH = os.getenv("RAG_REQUIRE_AUTH", "false").lower() == "true"
 RAG_API_TOKEN = os.getenv("RAG_API_TOKEN", "")
+CORS_ALLOW_ORIGINS = os.getenv("CORS_ALLOW_ORIGINS", "*")
+AB_VARIANTS = [v.strip() for v in os.getenv("AB_VARIANTS", "A,B").split(",") if v.strip()]
 
 GENERATION_MODE = os.getenv("RAG_GENERATION_MODE", "openai")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -71,6 +81,23 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# CORS
+allow_origins = [o.strip() for o in CORS_ALLOW_ORIGINS.split(",")] if CORS_ALLOW_ORIGINS else ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allow_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# OpenTelemetry tracer (optional)
+if os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT"):
+    provider = TracerProvider()
+    processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"], insecure=True))
+    provider.add_span_processor(processor)
+    trace.set_tracer_provider(provider)
+
 REQUESTS = Counter("rag_requests_total", "Total RAG requests", ["route"])
 RATE_LIMITED = Counter("rag_rate_limited_total", "Requests rejected due to rate limiting")
 
@@ -92,7 +119,7 @@ def get_redis():
 
 
 def cache_key_for(q: QueryIn) -> str:
-    raw = f"{q.question}\n{k}".encode()
+    raw = f"{q.question}\n{q.top_k}".encode()
     return "rq:" + sha1(raw).hexdigest()
 
 
@@ -130,6 +157,31 @@ def ip_rate_limited(ip: str) -> bool:
     except Exception:
         return False
 
+# ----- A/B testing helpers -----
+def assign_variant(identifier: str) -> str:
+    if not AB_VARIANTS:
+        return "A"
+    h = int(sha1(identifier.encode()).hexdigest(), 16)
+    return AB_VARIANTS[h % len(AB_VARIANTS)]
+
+# ----- Analytics helpers -----
+def record_query(q: QueryIn, variant: str, ip: str):
+    r = get_redis()
+    if not r:
+        return
+    try:
+        rec = {
+            "ts": datetime.utcnow().isoformat(),
+            "q": q.question,
+            "top_k": q.top_k,
+            "variant": variant,
+            "ip": ip,
+        }
+        r.lpush("rag:queries", json.dumps(rec))
+        r.ltrim("rag:queries", 0, 999)
+    except Exception:
+        pass
+
 class MetricsResponse(BaseModel):
     query_count: int
     avg_response_time_ms: float
@@ -156,8 +208,12 @@ def query(req: Request, q: QueryIn):
 
     REQUESTS.labels(route="query").inc()
 
+    # Assign variant and record analytics
+    variant = assign_variant(ip)
+    record_query(q, variant, ip)
+
     # Cache layer
-    ck = "rq:" + sha1(f"{q.question}\n{q.top_k}".encode()).hexdigest()
+    ck = cache_key_for(q)
     cached = cache_get(ck)
     if cached:
         return cached
@@ -245,6 +301,42 @@ def metrics():
 @app.get("/prometheus")
 def prometheus_metrics():
     return PlainTextResponse(generate_latest().decode("utf-8"))
+
+@app.get("/ab/assign")
+def ab_assign(req: Request):
+    ip = req.client.host if req.client else "unknown"
+    return {"variant": assign_variant(ip)}
+
+@app.get("/analytics/queries")
+def analytics_queries(limit: int = 50):
+    r = get_redis()
+    out = []
+    if r:
+        try:
+            rows = r.lrange("rag:queries", 0, max(0, limit - 1))
+            out = [json.loads(x) for x in rows]
+        except Exception:
+            out = []
+    return {"queries": out}
+
+@app.post("/admin/clear-cache")
+def admin_clear_cache():
+    r = get_redis()
+    if not r:
+        return {"cleared": 0}
+    try:
+        total = 0
+        cursor = 0
+        while True:
+            cursor, keys = r.scan(cursor=cursor, match="rq:*", count=500)
+            if keys:
+                r.delete(*keys)
+                total += len(keys)
+            if cursor == 0:
+                break
+        return {"cleared": total}
+    except Exception:
+        return {"cleared": 0}
 
 @app.post("/metrics/save")
 def save_metrics_endpoint():

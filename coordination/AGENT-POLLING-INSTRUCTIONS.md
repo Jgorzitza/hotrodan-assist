@@ -8,6 +8,11 @@ Project root (canonical): /home/justin/llama_rag
 - Manager-owned edits and assignments are pre-approved; no user approval is required.
 - Do not wait for ad-hoc instructions. Poll every 5 minutes and proceed.
 
+## Proof-of-Work Requirement
+- Each cycle, append to feedback/[your-agent].md a short update containing:
+  - What you changed (paths) or test/lint outcomes, or blockers + fallback started.
+- Messages like “working on it” without evidence are non-compliant.
+
 ### Files to poll every 5 minutes
 1. coordination/GO-SIGNAL.md
 2. coordination/AGENT-INSTRUCTIONS.md

@@ -39,6 +39,10 @@ Acceptance:
 
 ## First Actions Now
 
+## Continuous Work Protocol
+- Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/mcp.md.
+- If blocked >1 minute, log blocker and start fallback; never idle.
+
 ## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
 1) Finalize rate limit/retry/pooling defaults; config via env
 2) Expose connector health and metrics to dashboard routes

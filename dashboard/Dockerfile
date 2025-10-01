@@ -1,49 +1,40 @@
 # syntax=docker/dockerfile:1
+# Multi-stage build for production-ready dashboard
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* .npmrc* ./
-RUN npm ci --include=dev || npm ci
+RUN npm ci --include=dev
 
 FROM deps AS build
 WORKDIR /app
 COPY . .
-RUN npm run prisma:generate || true
+# Generate Prisma client (fail fast if error)
+RUN npm run prisma:generate
+# Build application
 RUN npm run build
+
+FROM node:20-alpine AS prod-deps
+WORKDIR /app
+COPY package.json package-lock.json* ./
+# Install production dependencies only
+RUN npm ci --omit=dev
 
 FROM node:20-alpine AS runtime
 ENV NODE_ENV=production
-WORKDIR /app
-COPY --from=build /app/build ./build
-COPY --from=build /app/package.json ./package.json
-COPY --from=build /app/node_modules ./node_modules
-EXPOSE 3000
-CMD ["node", "./build/server/index.js"]
-
-# syntax=docker/dockerfile:1.6
-ARG NODE_VERSION=20
-FROM node:${NODE_VERSION}-bullseye AS base
-WORKDIR /app
-ENV NODE_ENV=production
 ENV PORT=8080
+WORKDIR /app
 
-FROM base AS deps
-COPY package.json package-lock.json ./
-RUN npm ci
-
-FROM deps AS build
-COPY . .
-RUN npm run build
-
-FROM deps AS prod-deps
-RUN npm prune --omit=dev
-
-FROM base AS runtime
+# Copy production dependencies
 COPY --from=prod-deps /app/node_modules ./node_modules
+# Copy build artifacts
 COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/package-lock.json ./package-lock.json
 
+# Expose port (standardized to 8080)
 EXPOSE 8080
+
+# Run server
 CMD ["npm", "run", "start"]
