@@ -1,0 +1,58 @@
+name: Docker Build
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  build-images:
+    name: Build service images
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - app/assistants
+          - app/rag_api
+          - app/sync
+          - app/approval-app
+          - app/connectors
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build ${{ matrix.service }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service }}
+          push: false
+          load: true
+          tags: local/${{ matrix.service##*/ }}:ci
+      - name: Verify health endpoint (python services)
+        if: ${{ matrix.service != 'app/approval-app' }}
+        run: |
+          set -euo pipefail
+          case "${{ matrix.service }}" in
+            app/assistants)
+              docker run -d -p 18002:8002 --name assistants local/assistants:ci || true
+              sleep 5
+              curl -fsS http://localhost:18002/health || (docker logs assistants; exit 1)
+              docker rm -f assistants
+              ;;
+            app/rag_api)
+              docker run -d -p 18001:8001 --name rag local/rag_api:ci || true
+              sleep 5
+              curl -fsS http://localhost:18001/health || (docker logs rag; exit 1)
+              docker rm -f rag
+              ;;
+            app/connectors)
+              docker run -d -p 18003:8003 --name connectors local/connectors:ci || true
+              sleep 5
+              curl -fsS http://localhost:18003/health || (docker logs connectors; exit 1)
+              docker rm -f connectors
+              ;;
+            *)
+              echo "No container run step for ${{ matrix.service }}" ;;
+          esac

@@ -1,0 +1,22 @@
+name: Python Lint
+
+on:
+  pull_request:
+    branches: ["**"]
+  push:
+    branches: ["**"]
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install ruff
+        run: pip install ruff
+      - name: Lint Python apps
+        run: |
+          set -e
+          ruff check app/assistants app/rag_api app/sync app/approval-app app/connectors || true

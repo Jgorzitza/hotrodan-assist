@@ -55,6 +55,13 @@ services:
       - db
       - redis
       - rag-api
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   sync:
     build: ./app/sync
@@ -72,6 +79,13 @@ services:
       - "5173:5173"
     depends_on:
       - assistants
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   connectors:
     build: ./app/connectors
@@ -81,7 +95,14 @@ services:
     depends_on:
       - db
       - redis
+    restart: unless-stopped
     command: python3 -m uvicorn connectors.main:app --host 0.0.0.0 --port 8003
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
 volumes:
   pgdata:
