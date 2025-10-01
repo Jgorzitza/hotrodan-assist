@@ -9,3 +9,4 @@ chromadb>=0.5
 python-dotenv
 llama-index-embeddings-fastembed
 fastembed
+prometheus-client

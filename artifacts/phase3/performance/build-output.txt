@@ -73,3 +73,13 @@ build/client/assets/PolarisVizProvider-BIxFCe9S.js            226.25 kB │ gzip
 ✓ built in 6.38s
 vite v6.3.6 building SSR bundle for production...
 transforming...
+✓ 80 modules transformed.
+[plugin vite:reporter] 
+(!) /home/justin/llama_rag/dashboard/app/shopify.server.ts is dynamically imported by /home/justin/llama_rag/dashboard/app/routes/app.orders.tsx, /home/justin/llama_rag/dashboard/app/routes/app.orders.tsx but also statically imported by /home/justin/llama_rag/dashboard/app/entry.server.tsx, /home/justin/llama_rag/dashboard/app/routes/_index/route.tsx, /home/justin/llama_rag/dashboard/app/routes/app._index.tsx, /home/justin/llama_rag/dashboard/app/routes/app.inbox.stream.ts, /home/justin/llama_rag/dashboard/app/routes/app.inbox.telemetry.ts, /home/justin/llama_rag/dashboard/app/routes/app.inbox.tsx, /home/justin/llama_rag/dashboard/app/routes/app.inventory.tsx, /home/justin/llama_rag/dashboard/app/routes/app.sales.tsx, /home/justin/llama_rag/dashboard/app/routes/app.seo.tsx, /home/justin/llama_rag/dashboard/app/routes/app.settings.tsx, /home/justin/llama_rag/dashboard/app/routes/app.tsx, /home/justin/llama_rag/dashboard/app/routes/auth.$.tsx, /home/justin/llama_rag/dashboard/app/routes/auth.login/route.tsx, /home/justin/llama_rag/dashboard/app/routes/webhooks.app.scopes_update.tsx, /home/justin/llama_rag/dashboard/app/routes/webhooks.app.uninstalled.tsx, /home/justin/llama_rag/dashboard/app/routes/webhooks.fulfillments.update.tsx, /home/justin/llama_rag/dashboard/app/routes/webhooks.orders.create.tsx, /home/justin/llama_rag/dashboard/app/routes/webhooks.orders.fulfilled.tsx, /home/justin/llama_rag/dashboard/app/routes/webhooks.products.update.tsx, dynamic import will not move module into another chunk.
+
+rendering chunks...
+build/server/.vite/manifest.json                 0.51 kB
+build/server/assets/server-build-TqOIn4DE.css    0.76 kB
+build/server/assets/styles-BeiPL2RV.css        444.11 kB
+build/server/index.js                          620.69 kB
+✓ built in 1.16s

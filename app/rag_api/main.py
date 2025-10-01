@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 
 import chromadb
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
 from llama_index.core import StorageContext, load_index_from_storage
@@ -17,6 +18,7 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 
 # Monitoring helpers
 from monitor import track_performance, get_metrics, save_metrics
+from prometheus_client import Counter, generate_latest
 
 # Load .env for container and local runs
 load_dotenv()
@@ -60,6 +62,8 @@ app = FastAPI(
     version="1.0.0",
 )
 
+REQUESTS = Counter("rag_requests_total", "Total RAG requests", ["route"])
+
 class QueryIn(BaseModel):
     question: str
     top_k: int = 10
@@ -76,6 +80,7 @@ class MetricsResponse(BaseModel):
 @app.post("/query")
 @track_performance
 def query(q: QueryIn):
+    REQUESTS.labels(route="query").inc()
     try:
         client = chromadb.PersistentClient(path=CHROMA_PATH)
         collection = client.get_or_create_collection(
@@ -140,6 +145,10 @@ def health():
 @app.get("/metrics", response_model=MetricsResponse)
 def metrics():
     return get_metrics()
+
+@app.get("/prometheus")
+def prometheus_metrics():
+    return PlainTextResponse(generate_latest().decode("utf-8"))
 
 @app.post("/metrics/save")
 def save_metrics_endpoint():

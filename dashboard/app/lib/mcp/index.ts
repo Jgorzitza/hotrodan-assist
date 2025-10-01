@@ -14,6 +14,7 @@ import {
   type ProductRecommendation,
   type SeoOpportunity,
 } from "./types";
+import { createMcpTelemetryHooks } from "./telemetry.server";
 import type { FeatureToggles } from "~/types/settings";
 
 const parseBoolean = (value: string | undefined, fallback: boolean) => {
@@ -98,10 +99,12 @@ export const getMcpClient = (
 
   const runtimeOverrides = stripPersistedKeys(overrides) ?? {};
 
+  const baseConfig = resolveMcpConfigFromEnv(overrides);
   return createMcpClient({
-    ...resolveMcpConfigFromEnv(overrides),
+    ...baseConfig,
     ...runtimeOverrides,
     useMocks: false,
+    telemetry: createMcpTelemetryHooks({ endpoint: baseConfig.endpoint }),
   });
 };
 

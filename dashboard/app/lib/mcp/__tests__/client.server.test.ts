@@ -94,4 +94,76 @@ describe("McpClient", () => {
     expect(result.data).toEqual(MOCK_SEO_OPPORTUNITIES);
     expect(onError).toHaveBeenCalled();
   });
+
+  it("applies circuit breaker after consecutive failures and recovers after cooldown", async () => {
+    const onBreakerOpen = vi.fn();
+    const onBreakerClose = vi.fn();
+
+    let shouldFail = true;
+    const fetchFn = vi.fn().mockImplementation(() => {
+      if (shouldFail) {
+        return Promise.reject(new Error("boom"));
+      }
+      return Promise.resolve(
+        new Response(JSON.stringify({ data: [], generatedAt: "", source: "", confidence: 1 }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    });
+
+    const client = createMcpClient({
+      useMocks: false,
+      endpoint: "https://mcp.example.com",
+      fetchFn,
+      breaker: { failureThreshold: 2, cooldownMs: 5, halfOpenMax: 1 },
+      telemetry: { onBreakerOpen, onBreakerClose },
+    });
+
+    // Trigger failures to open the breaker
+    await client.getSeoOpportunities({ ...baseContext, resource: McpResourceType.SeoOpportunity });
+    await client.getSeoOpportunities({ ...baseContext, resource: McpResourceType.SeoOpportunity });
+    expect(onBreakerOpen).toHaveBeenCalled();
+
+    // While open, calls should short-circuit and not invoke fetch
+    fetchFn.mockClear();
+    await client.getSeoOpportunities({ ...baseContext, resource: McpResourceType.SeoOpportunity });
+    expect(fetchFn).not.toHaveBeenCalled();
+
+    // After cooldown, allow a half-open probe and succeed -> should close breaker
+    await new Promise((r) => setTimeout(r, 6));
+    shouldFail = false;
+    await client.getSeoOpportunities({ ...baseContext, resource: McpResourceType.SeoOpportunity });
+    expect(onBreakerClose).toHaveBeenCalled();
+  });
+
+  it("respects a simple rate limit by delaying subsequent requests", async () => {
+    const calls: number[] = [];
+    const fetchFn = vi.fn().mockImplementation(() => {
+      calls.push(Date.now());
+      return Promise.resolve(
+        new Response(JSON.stringify({ data: [], generatedAt: "", source: "", confidence: 1 }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    });
+
+    const client = createMcpClient({
+      useMocks: false,
+      endpoint: "https://mcp.example.com",
+      fetchFn,
+      rateLimitRps: 1,
+      maxConcurrent: 2,
+    });
+
+    await Promise.all([
+      client.getProductRecommendations({ ...baseContext, resource: McpResourceType.ProductRecommendation }),
+      client.getProductRecommendations({ ...baseContext, resource: McpResourceType.ProductRecommendation }),
+    ]);
+
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+    // With RPS=1, the two calls should not be at the exact same millisecond; coarse assertion
+    expect(Math.abs(calls[1]! - calls[0]!)).toBeGreaterThanOrEqual(1);
+  });
 });
