@@ -71,3 +71,17 @@ stream 200
 - 2025-10-01T10:55:26-06:00 Hybrid stabilized check logged; cache demo recorded.
 - 2025-10-01T11:07:40-06:00 Loop: health/ready ok; goldens run; streaming sample captured.
 - 2025-10-01T11:46:20-06:00 Manager updated; files saved.
+- 2025-10-01T12:02:09-06:00 Goldens tail: 
+[1] What micron filter should I run for EFI?
+
+[2] Return vs returnless—what should I use on a swap?
+
+[3] What setup do I need for the Tru-Cool MAX 40K LPD4739 cooler?
+
+[4] How do I install the Vapor Trapper vent charcoal canister to stop fuel smell?
+
+[5] What fittings and filters do I need with the Walbro GSL392 255 LPH inline pump?
+
+All goldens passed.
+- 2025-10-01T12:25:25-06:00 Tasks auto-check completed.
+- 2025-10-01T12:27:24-06:00 API docs saved.
