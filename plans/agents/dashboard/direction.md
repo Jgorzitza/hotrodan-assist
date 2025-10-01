@@ -38,6 +38,13 @@ Acceptance:
 - Keep Playwright tests updated; use Polaris primitives and Shopify CLI for dev/dev-tunnel.
 
 ## First Actions Now
+
+## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
+1) Remove USE_MOCK_DATA from routes; MCP-backed loaders behind feature flags
+2) Fix failing mocks histogram test; expand Playwright smoke (settings + one route each)
+3) Enforce CSP and headers; remediate any inline usage
+4) Add /api/health, /app/metrics routes fully verified
+5) Tunnel capture procedure doc; verify Admin loads end-to-end
 - Remove USE_MOCK_DATA toggles; route data through MCP-backed loaders.
 - Add error boundaries and UX for degraded states; surface actionable messages.
 - Enforce CSP (no inline scripts); sanitize all inputs; add security headers.

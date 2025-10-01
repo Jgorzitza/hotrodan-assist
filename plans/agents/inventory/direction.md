@@ -38,6 +38,13 @@ Acceptance:
 - Surfaces: All, Vendor, Fast Movers; export CSV.
 
 ## First Actions Now
+
+## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
+1) Wire live Shopify inventory/orders; validate SKU/vendor mapping
+2) Add health endpoint + p95 targets for inventory routes
+3) Optimize queries for 1000+ SKUs; measure and iterate
+4) Implement CSV export with pagination
+5) Record results in feedback/inventory.md
 - Wire live Shopify inventory/orders; verify SKU/vendor mapping.
 - Add health endpoint for inventory routes; set p95 latency target.
 - Run perf on 1000+ SKUs; document bottlenecks + fixes.

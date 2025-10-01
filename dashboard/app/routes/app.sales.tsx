@@ -1279,7 +1279,6 @@ export default function SalesRoute() {
       default:
         return { headings: [], rows: [], columnTypes: [] as Array<"text" | "numeric"> };
     }
-];
   }, [drilldown, buildClientHref, prefetchDrilldown]);
   const trendRows = useMemo(
     () =>

@@ -8,6 +8,15 @@ import {
   mockSeoOpportunities,
 } from "./mocks";
 import {
+  InventorySignalSchema,
+  McpResponseSchema,
+  ProductRecommendationSchema,
+  SeoOpportunitySchema,
+  sanitizeInventorySignal,
+  sanitizeProductRecommendation,
+  sanitizeSeoOpportunity,
+} from "./schema.server";
+import {
   McpResourceType,
   type InventorySignal,
   type McpRequestContext,
@@ -67,6 +76,8 @@ export type McpClientConfig = {
   rateLimitRps?: number; // requests per second; 0 disables
   breaker?: CircuitBreakerOptions;
   keepAlive?: boolean; // hint for connection pooling
+  cacheTtlMs?: number; // optional response cache TTL
+  cacheSize?: number; // optional LRU size
 };
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -105,6 +116,11 @@ export class McpClient {
   // Optional keep-alive dispatcher (best-effort)
   private readonly dispatcher: unknown | undefined;
 
+  // Simple response cache
+  private readonly cacheTtlMs: number;
+  private readonly cacheSize: number;
+  private cache = new Map<string, { expiresAt: number; value: unknown }>();
+
   constructor(private readonly config: McpClientConfig = {}) {
     this.fetchFn = config.fetchFn ?? fetch;
     this.maxRetries = config.maxRetries ?? DEFAULT_MAX_RETRIES;
@@ -132,6 +148,9 @@ export class McpClient {
         this.dispatcher = undefined;
       }
     }
+
+    this.cacheTtlMs = Math.max(0, config.cacheTtlMs ?? 0);
+    this.cacheSize = Math.max(0, config.cacheSize ?? 0);
   }
 
   async getProductRecommendations(
@@ -284,6 +303,14 @@ export class McpClient {
       dateRange: context.dateRange,
     } satisfies Omit<McpRequestContext, "resource"> & { resource: McpResourceType };
 
+    const cacheKey = this.buildCacheKey(path, payload);
+    if (this.cacheTtlMs > 0 && this.cacheSize > 0) {
+      const hit = this.cache.get(cacheKey);
+      if (hit && hit.expiresAt > Date.now()) {
+        return hit.value as McpResponse<T>;
+      }
+    }
+
     // Rate limiting (RPS) — simple sliding window over last second
     const rateDelay = this.computeRateLimitDelay();
     if (rateDelay > 0) {
@@ -331,12 +358,25 @@ export class McpClient {
           requestId,
         });
 
+        if (response.status === 429) {
+          const retryAfter = Number(response.headers.get("retry-after"));
+          if (Number.isFinite(retryAfter) && retryAfter > 0) {
+            await wait(withJitter(Math.min(retryAfter * 1000, 10_000)));
+          }
+          throw new Error("rate_limited");
+        }
+
         if (!response.ok) {
           throw new Error(`MCP request failed with status ${response.status}`);
         }
 
-        const data = (await response.json()) as McpResponse<T>;
+        const raw = await response.json();
+        const data = this.validateAndSanitize<T>(resource, raw);
         this.noteSuccessfulRequest();
+        if (this.cacheTtlMs > 0 && this.cacheSize > 0) {
+          this.ensureCacheSize();
+          this.cache.set(cacheKey, { expiresAt: Date.now() + this.cacheTtlMs, value: data });
+        }
         return data;
       } catch (error) {
         if (attempt >= this.maxRetries) {
@@ -378,6 +418,16 @@ export class McpClient {
     if (context?.requestId) {
       headers["X-Request-Id"] = context.requestId;
     }
+
+    // Versioning and feature hints
+    headers["X-MCP-Client-Version"] = "1.0.0";
+    headers["X-MCP-Features"] = [
+      this.rateLimitRps > 0 ? "rate-limit" : null,
+      this.breakerOptions.failureThreshold > 0 ? "breaker" : null,
+      this.cacheTtlMs > 0 ? "cache" : null,
+    ]
+      .filter(Boolean)
+      .join(",");
 
     return Object.keys(headers).length > 0 ? headers : undefined;
   }
@@ -450,6 +500,42 @@ export class McpClient {
       this.openedAt = Date.now();
       this.telemetry?.onBreakerOpen?.({ resource, context });
     }
+  }
+
+  private validateAndSanitize<T>(resource: McpResourceType, raw: unknown): McpResponse<T> {
+    switch (resource) {
+      case McpResourceType.ProductRecommendation: {
+        const schema = McpResponseSchema(ProductRecommendationSchema.array());
+        const parsed = schema.parse(raw);
+        // sanitize
+        const data = parsed.data.map(sanitizeProductRecommendation) as unknown as T;
+        return { ...parsed, data } as McpResponse<T>;
+      }
+      case McpResourceType.InventorySignal: {
+        const schema = McpResponseSchema(InventorySignalSchema.array());
+        const parsed = schema.parse(raw);
+        const data = parsed.data.map(sanitizeInventorySignal) as unknown as T;
+        return { ...parsed, data } as McpResponse<T>;
+      }
+      case McpResourceType.SeoOpportunity: {
+        const schema = McpResponseSchema(SeoOpportunitySchema.array());
+        const parsed = schema.parse(raw);
+        const data = parsed.data.map(sanitizeSeoOpportunity) as unknown as T;
+        return { ...parsed, data } as McpResponse<T>;
+      }
+      default:
+        return raw as McpResponse<T>;
+    }
+  }
+
+  private buildCacheKey(path: string, payload: unknown) {
+    return `${path}::${JSON.stringify(payload)}`;
+  }
+
+  private ensureCacheSize() {
+    if (this.cache.size < this.cacheSize) return;
+    const oldestKey = this.cache.keys().next().value as string | undefined;
+    if (oldestKey) this.cache.delete(oldestKey);
   }
 }
 

@@ -38,6 +38,13 @@ Acceptance:
 - Provide typed DTOs and minimal caching (ETag/If-Modified-Since where applicable).
 
 ## First Actions Now
+
+## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
+1) Finalize rate limit/retry/pooling defaults; config via env
+2) Expose connector health and metrics to dashboard routes
+3) Add circuit breaker dashboards + alerts
+4) Write integration tests over registry + protocol contracts
+5) Prepare live-connect playbook gated by creds
 - Add rate limiting and retries to all connectors; set sane timeouts.
 - Implement connection pooling and circuit breaker where applicable.
 - Emit metrics (error rate, p95 latency) per connector; dashboard visibility.

@@ -26,6 +26,13 @@ Project root (canonical): /home/justin/llama_rag
 - CI recipe (GitHub Actions) for Python + Node jobs; artifact test reports under `test-results/`.
 
 ## First Actions Now
+
+## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
+1) Add minimal Dockerfiles and HEALTHCHECK for dashboard, rag_api, connectors, approval-app
+2) CI lane: lint, typecheck, unit, vitest, upload artifacts; prisma generate before MCP tests
+3) Wire error tracking + alerting; create SLO alerts per route and connector
+4) Add readiness/liveness endpoints to all services; document in deploy/k8s
+5) Produce security and performance baseline reports as artifacts
 - Prepare minimal Dockerfiles (non-root, small base) for services; add HEALTHCHECK.
 - Add CI job(s): lint, typecheck, unit, E2E; publish artifacts to test-results/.
 - Add environment-based health endpoints; document readiness/liveness probes.

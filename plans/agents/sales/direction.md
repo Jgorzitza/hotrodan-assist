@@ -37,6 +37,13 @@ Acceptance:
 - CSV export and "impact/effort" scoring.
 
 ## First Actions Now
+
+## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
+1) Validate data contracts with mocks pending MCP
+2) Prepare CLV and forecast scaffolds with stubs
+3) Define SLOs for sales analytics endpoints
+4) Add CSV export tests
+5) Document blocked state and proceed with mock validations
 - Validate data contracts with mocks while blocked on MCP.
 - Prepare CLV + forecast scaffolds; define SLOs.
 - Append findings to feedback/sales.md.

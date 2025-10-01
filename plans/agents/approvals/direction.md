@@ -38,6 +38,13 @@ Acceptance:
 - Integration: reads drafts from `rag` and posts decisions back to storage.
 
 ## First Actions Now
+
+## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
+1) SSE stability: reconnect/backpressure/error surfaces
+2) Audit logging + PII redaction
+3) Assistants smoke when base reachable; verify approve/edit 303 flow
+4) Add /health and /ready endpoints to approval-app
+5) Append soak results to feedback/approvals.md
 - Stabilize SSE provider: reconnect, backpressure, error surfaces.
 - Add audit logs; verify PII redaction.
 - Append soak test outcomes to feedback/approvals.md.

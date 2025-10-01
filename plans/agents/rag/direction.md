@@ -42,6 +42,13 @@ Acceptance:
 - Endpoint `query_chroma_router.py` returns grounded answers with citations.
 
 ## First Actions Now
+
+## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
+1) Persist Chroma indexes and set backup cadence
+2) Add embedding cache; tune HNSW params; record p95 targets
+3) Golden tests under load; capture latency distribution
+4) Expose /metrics Prometheus counters; add alerts
+5) Document restore/backup procedures
 - Configure persistent Chroma storage path and backups.
 - Add embedding caching; tune index params for query performance.
 - Define p95 latency target; run load and capture results.

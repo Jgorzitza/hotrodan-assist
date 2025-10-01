@@ -38,6 +38,13 @@ Acceptance:
 - Provide explainable scores and allow manual overrides.
 
 ## First Actions Now
+
+## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
+1) Gate features by creds; display clear banners
+2) Add error boundaries and mocks fallback with metrics
+3) Surface connection-tests prominently in SEO UI
+4) Optional: MCP advisory for optimize-content
+5) Keep lint/typecheck/tests green; record in feedback/seo.md
 - Gate features when creds missing; add clear UI banners.
 - Add error boundaries and fallback to mocks; collect metrics.
 - Append results to feedback/seo.md.
