@@ -58,3 +58,20 @@ ENABLE_MCP=true USE_MOCK_DATA=true \
 - Validate data contracts with mocks while blocked on MCP.
 - Prepare CLV + forecast scaffolds; define SLOs.
 - Append findings to feedback/sales.md.
+
+## Production Today — Priority Override (2025-10-01)
+
+Goals (EOD):
+- Contracts validated with live GA4/GSC where applicable; use mock‑mode for Bing only if referenced; SLOs drafted; CSV export tests added; remain non‑blocking for today’s prod push.
+
+Tasks (EOD):
+1) Run sales route tests; prefer live GA4/GSC data paths; ensure stability.
+2) If any Bing data path exists, keep Bing in mock‑mode until credentials arrive.
+3) Draft CLV/forecast scaffolds and SLO definitions.
+4) Add CSV export tests (baseline).
+
+Acceptance:
+- Tests green; SLO draft committed to feedback/sales.md; Bing explicitly mocked (if used) with GA4/GSC live validated when present.
+
+### CEO Dependencies — Today
+- Only if Sales requires Bing: provide Bing credentials (BING_CLIENT_ID, BING_CLIENT_SECRET, BING_REFRESH_TOKEN). Otherwise, proceed without waiting.

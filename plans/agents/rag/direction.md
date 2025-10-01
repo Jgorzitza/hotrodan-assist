@@ -62,3 +62,21 @@ python run_goldens.py
 - Add embedding caching; tune index params for query performance.
 - Define p95 latency target; run load and capture results.
 - Append results + charts to feedback/rag.md.
+
+## Production Today — Priority Override (2025-10-01)
+
+Goals (EOD):
+- Goldens pass; health/ready/metrics up; retrieval-only mode documented; p95 target captured.
+
+Tasks (EOD):
+1) Run python run_goldens.py; attach output (0 regressions).
+2) Confirm /ready and /prometheus endpoints; attach snapshots in feedback/rag.md.
+3) Document p95 latency target and current numbers from local/load runs.
+
+Acceptance:
+- Goldens pass.
+- Health/metrics verified with evidence.
+- p95 target documented with current measurement.
+
+### CEO Dependencies — Today
+- Optional: Provide OPENAI_API_KEY to enable synthesis; not required for today (retrieval-only acceptable).

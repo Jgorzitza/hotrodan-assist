@@ -61,3 +61,21 @@ curl -N --max-time 3 "$ASSISTANTS_BASE/assistants/events" | head -n1 || true
 - Stabilize SSE provider: reconnect, backpressure, error surfaces.
 - Add audit logs; verify PII redaction.
 - Append soak test outcomes to feedback/approvals.md.
+
+## Production Today — Priority Override (2025-10-01)
+
+Goals (EOD):
+- SSE stable (10‑minute soak) OR UI gated gracefully; audit logging + PII redaction active; /health and /ready verified.
+
+Tasks (EOD):
+1) Verify ASSISTANTS_BASE and curl SSE; implement reconnect/backpressure/error surfaces; record 10‑minute soak result.
+2) Add audit logs with PII redaction; attach masked sample logs to feedback/approvals.md.
+3) Verify /health and /ready endpoints; add to runbook.
+
+Acceptance:
+- SSE soak passes without disconnects OR gating banner active with clear messaging.
+- Audit log sample shows masked PII.
+- /health and /ready return 200.
+
+### CEO Dependencies — Today
+- Provide ASSISTANTS_BASE only if service is hosted behind a CEO-controlled URL; otherwise proceed with local/compose defaults.

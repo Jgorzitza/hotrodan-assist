@@ -60,3 +60,20 @@ npx vitest run --root dashboard --config dashboard/vitest.config.ts \
 - Add health endpoint for inventory routes; set p95 latency target.
 - Run perf on 1000+ SKUs; document bottlenecks + fixes.
 - Append results to feedback/inventory.md.
+
+## Production Today — Priority Override (2025-10-01)
+
+Goals (EOD):
+- Inventory routes healthy with documented p95 target; plan for live Shopify wiring next.
+
+Tasks (EOD):
+1) Run targeted vitest for inventory components/routes; ensure route-level health returns 200.
+2) Document p95 latency target and measurement approach for 1000+ SKUs.
+3) Prepare CSV export test skeleton for follow‑up.
+
+Acceptance:
+- Tests pass; health verified.
+- p95 target documented; plan captured in feedback/inventory.md.
+
+### CEO Dependencies — Today
+- None. Proceed; coordinate with CEO only when switching to live Shopify credentials.

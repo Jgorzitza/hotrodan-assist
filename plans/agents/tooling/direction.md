@@ -54,3 +54,21 @@ curl -sI http://localhost:8080/app/metrics | head -n1 || true
 - Add environment-based health endpoints; document readiness/liveness probes.
 - Wire error tracking and log aggregation; add basic alert rules.
 - Append results to feedback/tooling.md after each push.
+
+## Production Today — Priority Override (2025-10-01)
+
+Goals (EOD):
+- Dashboard UI test lane (Path B) green; CI jobs passing; health/metrics probed.
+
+Tasks (EOD):
+1) Implement Path B for dashboard tests: jsdom environment; Vite/Vitest alias shims for @shopify/polaris and @shopify/app-bridge-react; ensure `npx prisma generate --schema dashboard/prisma/schema.prisma` runs before tests.
+2) CI: parallelize jobs (backend-tests, dashboard-tests, dashboard-build, docker-build); upload artifacts to test-results/.
+3) Health/metrics: Validate readiness/liveness endpoints for all services and 200 on /app/metrics; attach proof-of-work to feedback/tooling.md.
+
+Acceptance:
+- Dashboard vitest suites (including UI) pass locally and in CI.
+- CI green on PR/main with artifacts uploaded.
+- curl -sI http://localhost:8080/app/metrics returns HTTP 200.
+
+### CEO Dependencies — Today
+- None. Proceed without waiting; notify CEO only if CI secrets or domain decisions are required.

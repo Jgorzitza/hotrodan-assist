@@ -75,3 +75,21 @@ npm run -s test:e2e
 - Enforce CSP (no inline scripts); sanitize all inputs; add security headers.
 - Update Playwright smoke to cover settings + one route per feature.
 - Append results to feedback/dashboard.md.
+
+## Production Today — Priority Override (2025-10-01)
+
+Goals (EOD):
+- Embedded Admin loads via Cloudflare tunnel; key routes use live MCP behind feature flags; CSP and error boundaries enforced; /api/health and /app/metrics verified.
+
+Tasks (EOD):
+1) Capture Cloudflare tunnel and update application_url/redirects (scripts/prepare_dashboard_dev.sh); verify tunnel returns 200; record URL in coordination/inbox/dashboard/2025-10-01-notes.md.
+2) Remove USE_MOCK_DATA from home and settings routes; enable MCP-backed loaders behind feature flag with graceful fallback.
+3) Enforce CSP and add error boundaries across routes; run Playwright smoke (settings + one route each).
+
+Acceptance:
+- HEAD on tunnel returns 200 and Admin iframe renders.
+- Server + UI tests pass; Playwright smoke succeeds.
+- No inline script violations; degraded states show actionable messages.
+
+### CEO Dependencies — Today
+- Approve/confirm target domain for embedded Admin if not using the Cloudflare tunnel long-term. Provide final production application_url if different from tunnel.

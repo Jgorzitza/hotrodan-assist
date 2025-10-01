@@ -59,3 +59,21 @@ npx vitest run --root dashboard --config dashboard/vitest.config.ts \
 - Gate features when creds missing; add clear UI banners.
 - Add error boundaries and fallback to mocks; collect metrics.
 - Append results to feedback/seo.md.
+
+## Production Today — Priority Override (2025-10-01)
+
+Goals (EOD):
+- Robust gating with connection‑tests surfaced; run live validation for GA4/GSC now; use mock‑mode for Bing only until credentials arrive.
+
+Tasks (EOD):
+1) Ensure gating banners and connection‑tests visibility; run loader tests green.
+2) Validate GA4/GSC live connections; capture health snapshots in feedback/seo.md.
+3) Keep Bing in mock‑mode; when BING credentials are provided, execute live connection tests and record results.
+4) Maintain error metrics; attach evidence to feedback/seo.md.
+
+Acceptance:
+- Gating UX visible; tests green.
+- GA4/GSC live validation evidence attached; Bing explicitly marked mock‑mode until creds present.
+
+### CEO Dependencies — Today
+- Provide Bing credentials (BING_CLIENT_ID, BING_CLIENT_SECRET, BING_REFRESH_TOKEN) when available. Proceed with all other work without waiting.

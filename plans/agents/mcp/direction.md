@@ -68,3 +68,26 @@ MCP_API_URL={{MCP_API_URL}} MCP_API_KEY={{MCP_API_KEY}} \
 - Implement connection pooling and circuit breaker where applicable.
 - Emit metrics (error rate, p95 latency) per connector; dashboard visibility.
 - Append test runs + metrics screenshots to feedback/mcp.md.
+
+## Production Today — Priority Override (2025-10-01)
+
+First Directive — MCP Live Validation + Tunnel (with CEO)
+- Work directly with the CEO to obtain MCP_API_URL and MCP_API_KEY for live validation.
+- Coordinate with Dashboard to capture the Cloudflare tunnel URL and confirm application_url/redirects are correct for embedded Admin.
+- Execute the live validation suite immediately after envs are set; attach outputs and next steps to feedback/mcp.md and coordination/inbox/mcp/DATE-notes.md.
+
+Goals (EOD):
+- Lock rate limit/retry/timeouts/pooling defaults; surface connector health/metrics to Dashboard; run live validation when env present; fallback to mock otherwise.
+
+Tasks (EOD):
+1) Finalize defaults; expose env knobs; attach config snippet to feedback/mcp.md.
+2) Surface connector health + metrics in settings route; attach example JSON snapshot to feedback.
+3) Execute live validation with MCP_API_URL/MCP_API_KEY when provided; else record blocked status and keep mocks.
+
+Acceptance:
+- vitest live-connection test passes when env provided.
+- /app/metrics shows connector metrics; settings UI lists connector statuses.
+- Clear fallback behaviour (no crashes) when live env missing.
+
+### CEO Dependencies — Today
+- Provide MCP_API_URL and MCP_API_KEY for live validation.
