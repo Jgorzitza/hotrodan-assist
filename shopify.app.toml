@@ -1,8 +1,8 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "d919fc39ded7df2bd0ba2fe02b666b25"
+client_id = "{{YOUR_API_KEY}}" # set API key via env at runtime (SHOPIFY_API_KEY) and link via CLI
 name = "Dashboard"
-application_url = "https://example.com"
+application_url = "https://YOUR-APP-URL.example.com" # CLI dev will update this automatically
 embedded = true
 
 [webhooks]
@@ -19,7 +19,7 @@ redirect_urls = [ ]
 
 [build]
 automatically_update_urls_on_dev = true
-dev_store_url = "afafsaf.myshopify.com"
+dev_store_url = "your-dev-store.myshopify.com"
 
 [[web]]
 name = "Remix Dashboard"

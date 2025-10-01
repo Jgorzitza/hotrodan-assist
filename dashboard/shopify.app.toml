@@ -1,9 +1,13 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "d919fc39ded7df2bd0ba2fe02b666b25"
+client_id = "{{YOUR_API_KEY}}" # set API key via env at runtime (SHOPIFY_API_KEY) and link via CLI
 name = "Dashboard"
-application_url = "https://example.com"
+application_url = "https://YOUR-APP-URL.example.com" # CLI dev will update this automatically
 embedded = true
+
+[build]
+# Pre-fill your dev store (CLI uses this when linking/devving)
+dev_store_url = "your-dev-store.myshopify.com"
 
 [webhooks]
 api_version = "2025-07"
