@@ -74,7 +74,7 @@ export const resolveDashboardRangeKey = (
 };
 
 export const resolveDashboardRange = (
-  searchParams: URLSearchParams | URLSearchParamsInit,
+  searchParams: URLSearchParams | string | string[][] | Record<string, string>,
   fallback: DashboardRangeKey = DEFAULT_DASHBOARD_RANGE,
   referenceDate = new Date(),
 ): DashboardRangeSelection => {
@@ -85,7 +85,7 @@ export const resolveDashboardRange = (
 };
 
 export type WithDashboardRangeParamOptions = {
-  searchParams?: URLSearchParams | URLSearchParamsInit;
+  searchParams?: URLSearchParams | string | string[][] | Record<string, string>;
   includeKeys?: string[];
 };
 

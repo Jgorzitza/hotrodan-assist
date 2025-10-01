@@ -58,7 +58,7 @@ async function ensureWebhookSubscriptions(session: Session) {
             record.operation,
             record.success,
             subscription.callbackUrl,
-            record.result,
+            record.result as any,
           ),
         );
       }),
@@ -98,7 +98,7 @@ const shopify = shopifyApp({
   ...(process.env.SHOP_CUSTOM_DOMAIN
     ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
     : {}),
-  webhooks: SHOPIFY_WEBHOOK_REGISTRATION,
+  webhooks: SHOPIFY_WEBHOOK_REGISTRATION as any,
   ...(IS_CUSTOM_APP
     ? {}
     : {

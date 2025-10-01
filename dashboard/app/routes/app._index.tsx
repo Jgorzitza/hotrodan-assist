@@ -204,9 +204,7 @@ export default function DashboardRoute() {
             <Text as="p" variant="headingLg">
               {metric.value}
             </Text>
-            <Badge tone={metric.delta >= 0 ? "success" : "critical"}>
-              {formatDelta(metric.delta)} {metric.deltaPeriod}
-            </Badge>
+            <Badge tone={metric.delta >= 0 ? "success" : "critical"}>{`${formatDelta(metric.delta)} ${metric.deltaPeriod}`}</Badge>
           </BlockStack>
         </Card>
       ));
@@ -593,7 +591,7 @@ function SalesSparklineSkeleton() {
         justifyContent: "center",
       }}
     >
-      <SkeletonThumbnail size="extraLarge" />
+      <SkeletonThumbnail size="large" />
     </div>
   );
 }

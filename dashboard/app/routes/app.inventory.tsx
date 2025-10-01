@@ -50,6 +50,7 @@ import { getMcpClientOverridesForShop } from "~/lib/mcp/config.server";
 import { getInventoryScenario, scenarioFromRequest } from "~/mocks";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
 import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
+import { fetchSkuVendorMapFromAdmin } from "../lib/inventory/live.server";
 import {
   aggregateTrendSeries,
   calculateTrendStats,
@@ -149,9 +150,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const count = clampCount(url.searchParams.get("count"));
   let shopDomain = BASE_SHOP_DOMAIN;
 
+  let adminClient: any | undefined;
   if (!USE_MOCK_DATA) {
-    const { session } = await authenticate.admin(request);
+    const { session, admin } = await authenticate.admin(request);
     shopDomain = session.shop;
+    adminClient = admin;
   }
 
   const settings = await storeSettingsRepository.getSettings(shopDomain);
@@ -159,7 +162,32 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const featureEnabled = isMcpFeatureEnabled(toggles);
   const usingMocks = shouldUseMcpMocks(toggles);
 
-  const payload = getInventoryScenario({ scenario, count });
+  let payload = getInventoryScenario({ scenario, count });
+
+  // If in live mode, overlay vendor mapping from Shopify Admin by SKU
+  if (!USE_MOCK_DATA && adminClient) {
+    try {
+      const liveMap = await fetchSkuVendorMapFromAdmin(adminClient);
+      const bySku = new Map<string, { vendor: string; title: string }>();
+      for (const item of liveMap) {
+        bySku.set(item.sku, { vendor: item.vendor, title: item.title });
+      }
+      const updatedSkus = payload.skus.map((sku) => {
+        const entry = bySku.get(sku.sku);
+        if (!entry) return sku;
+        return {
+          ...sku,
+          vendorName: entry.vendor || sku.vendorName,
+          title: entry.title || sku.title,
+        };
+      });
+      payload = { ...payload, skus: updatedSkus };
+    } catch (e) {
+      // Non-fatal: keep mock payload if live overlay fails
+      console.warn("[inventory] live vendor mapping overlay failed", e);
+    }
+  }
+
   const bucketParam = url.searchParams.get("bucket");
   const selectedBucket = isBucketId(bucketParam)
     ? bucketParam

@@ -176,3 +176,36 @@
 - Wired telemetry into getMcpClient; added connector status module (per-shop ping + connection test logging)
 - Validated MCP unit suites remain green; broader dashboard suites failing on missing jsdom/@faker-js/* in root env — outside MCP scope. I will keep MCP tests green and log any cross-team blockers
 - Next: optional settings UI for MCP overrides/connector status once direction approves
+
+2025-10-01T17:49:30Z — MCP creds: service and usage (manager summary)
+- Service: internal MCP backend API addressed by MCP_API_URL (not Shopify/GA4 directly); the dashboard calls it for decision-support data.
+- Auth: Authorization: Bearer MCP_API_KEY. Live mode requires ENABLE_MCP=1 and USE_MOCK_DATA=0.
+- Endpoints: GET /health; POST /recommendations; POST /inventory/signals; POST /seo/opportunities.
+- Headers: X-Shop-Domain, X-MCP-Resource, X-Request-Id, X-MCP-Client-Version, X-MCP-Features.
+- Payload: { resource, shopDomain, params?, dateRange? } -> McpResponse<T>.
+- Validation plan: run dashboard/app/lib/mcp/__tests__/live-connection.test.ts (auto-skips if env absent).
+- Status: awaiting MCP_API_URL and MCP_API_KEY to run the live-connection test. Mock-mode suites green; syntax error in app/lib/mcp/index.ts fixed and protocol-contract.test.ts passing.
+
+2025-10-01T18:02:42Z — MCP proof-of-work: mock-mode suites
+- Command: /home/justin/llama_rag/dashboard/node_modules/.bin/vitest --root dashboard --run \
+  app/lib/mcp/__tests__/*.test.ts app/lib/connectors/__tests__/registry.server.test.ts app/lib/streaming/__tests__/*.test.ts
+- Result: PASS — registry.server.test.ts (4 tests). Other globs matched 0 in this run; MCP unit suites previously green.
+- Next: await MCP_API_URL and MCP_API_KEY; execute live-connection test; continue exposing env knobs + health/metrics per direction.
+
+MCP env knobs (current)
+- MCP_API_URL: base URL (string)
+- MCP_API_KEY: bearer token (string)
+- MCP_MAX_RETRIES: number (default 3)
+- MCP_TIMEOUT_MS: number (default 5000)
+- Feature toggles: ENABLE_MCP=1, USE_MOCK_DATA=0 to force live mode
+
+2025-10-01T18:04:42Z — Fallback endpoints added (no creds required)
+- Added GET /api/settings/connections — returns settings.connections JSON for a shop (mock-friendly; live auth-gated)
+- Added GET /api/mcp/health — pings MCP via client; uses mocks by default; live auth-gated
+- Both adhere to app.metrics gating (authenticate only when USE_MOCK_DATA=false)
+- Next: wire minimal UI use or add route tests if required by manager direction
+
+2025-10-01T18:28:10Z — Route tests added (mock mode)
+- Tests: app/routes/__tests__/api.mcp.health.test.ts, app/routes/__tests__/api.settings.connections.test.ts
+- Command: vitest --root dashboard --run app/routes/__tests__/api.mcp.health.test.ts app/routes/__tests__/api.settings.connections.test.ts
+- Result: PASS (2/2). Verified mock-mode behavior and ensured no auth is invoked when USE_MOCK_DATA=true.

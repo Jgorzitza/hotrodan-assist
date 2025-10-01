@@ -85,3 +85,4 @@ stream 200
 All goldens passed.
 - 2025-10-01T12:25:25-06:00 Tasks auto-check completed.
 - 2025-10-01T12:27:24-06:00 API docs saved.
+- 2025-10-01T12:33:13-06:00 Live check executed; see tmp/live_check.json and tmp/live_check.out

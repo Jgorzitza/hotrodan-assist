@@ -569,6 +569,16 @@ export default function SettingsRoute() {
       ? String(initialMcpOverrides.maxRetries)
       : "",
   });
+  const [mcpHealth, setMcpHealth] = useState<{ ok: boolean; generatedAt: string } | null>(null);
+  const [connectionsApi, setConnectionsApi] = useState<any | null>(null);
+    endpoint: initialMcpOverrides.endpoint ?? "",
+    timeoutMs: initialMcpOverrides.timeoutMs
+      ? String(initialMcpOverrides.timeoutMs)
+      : "",
+    maxRetries: initialMcpOverrides.maxRetries
+      ? String(initialMcpOverrides.maxRetries)
+      : "",
+  });
 
   useEffect(() => {
     setThresholds(settings.thresholds);
@@ -595,12 +605,40 @@ export default function SettingsRoute() {
   }, [initialMcpOverrides]);
 
   useEffect(() => {
+    // Fetch read-only health and connections snapshots from our API endpoints
+    const abort = new AbortController();
+    const fetchHealth = async () => {
+      try {
+        const res = await fetch("/api/mcp/health", { signal: abort.signal });
+        if (res.ok) {
+          const body = await res.json();
+          setMcpHealth(body);
+        }
+      } catch {
+        setMcpHealth({ ok: false, generatedAt: new Date().toISOString() });
+      }
+    };
+    const fetchConnections = async () => {
+      try {
+        const shop = settings.shopDomain ?? "demo-shop.myshopify.com";
+        const res = await fetch(`/api/settings/connections?shop=${encodeURIComponent(shop)}`, { signal: abort.signal });
+        if (res.ok) {
+          const body = await res.json();
+          setConnectionsApi(body);
+        }
+      } catch {
+        setConnectionsApi(null);
+      }
+    };
+    fetchHealth();
+    fetchConnections();
+    return () => abort.abort();
+  }, [settings.shopDomain]);
+
+  useEffect(() => {
     if (actionData?.toast) {
-      appBridge.toast.show({
-        message: actionData.toast.message,
-        isError: actionData.toast.status === "error",
-        duration: 4000,
-      });
+      // App Bridge toast.show expects a string message
+      appBridge.toast.show(actionData.toast.message);
     }
 
     if (actionData?.ok && actionData.meta?.intent === "update-secret") {
@@ -638,7 +676,6 @@ export default function SettingsRoute() {
       title="Settings"
       subtitle="Manage operational thresholds, API access, and feature flags."
     >
-      <TitleBar title="Settings" />
       {useMockData && (
         <Box paddingBlockStart="400">
           <Banner title="Mock data enabled" tone="info">
@@ -652,8 +689,8 @@ export default function SettingsRoute() {
       <Layout>
         <Layout.Section>
           <Card>
-            <Card.Header title="Operational thresholds" />
-            <Card.Section>
+            <BlockStack gap="200">
+              <Text as="h3" variant="headingSm">Operational thresholds</Text>
               <Form method="post">
                 <input type="hidden" name="intent" value="update-thresholds" />
                 <FormLayout>
@@ -719,21 +756,21 @@ export default function SettingsRoute() {
                   />
                   <Button
                     submit
-                    primary
+                    variant="primary"
                     loading={isSubmitting("update-thresholds")}
                   >
                     Save thresholds
                   </Button>
                 </FormLayout>
               </Form>
-            </Card.Section>
+            </BlockStack>
           </Card>
         </Layout.Section>
 
         <Layout.Section>
           <Card>
-            <Card.Header title="Integrations" />
-            <Card.Section>
+            <BlockStack gap="200">
+              <Text as="h3" variant="headingSm">Integrations</Text>
               <BlockStack gap="400">
                 {(
                   Object.keys(providerMeta) as SettingsProvider[]
@@ -769,7 +806,7 @@ export default function SettingsRoute() {
                       padding="400"
                       borderWidth="025"
                       borderRadius="200"
-                      borderColor="border-subdued"
+                      borderColor="border"
                     >
                       <BlockStack gap="300">
                         <InlineStack align="space-between" blockAlign="center">
@@ -823,6 +860,7 @@ export default function SettingsRoute() {
                                 label="Rotation reminder"
                                 type="date"
                                 name="rotationReminderAt"
+                                autoComplete="off"
                                 value={rotationDrafts[provider]}
                                 onChange={(value) =>
                                   setRotationDrafts((prev) => ({
@@ -834,9 +872,7 @@ export default function SettingsRoute() {
                               <InlineStack gap="200">
                                 <Button
                                   submit
-                                  primary
-                                  name="actionType"
-                                  value="save"
+                                  variant="primary"
                                   loading={
                                     submittingSecret &&
                                     navigation.formData?.get("actionType") !== "remove"
@@ -844,28 +880,33 @@ export default function SettingsRoute() {
                                 >
                                   Save credential
                                 </Button>
-                                <Button
-                                  variant="secondary"
-                                  tone="critical"
-                                  submit
-                                  name="actionType"
-                                  value="remove"
-                                  disabled={!secret}
-                                  loading={
-                                    submittingSecret &&
-                                    navigation.formData?.get("actionType") === "remove"
-                                  }
-                                  onClick={() =>
-                                    setSecretDrafts((prev) => ({
-                                      ...prev,
-                                      [provider]: "",
-                                    }))
-                                  }
-                                >
-                                  Remove credential
-                                </Button>
                               </InlineStack>
                             </FormLayout>
+                          </Form>
+                          <Form method="post">
+                            <input type="hidden" name="intent" value="update-secret" />
+                            <input type="hidden" name="provider" value={provider} />
+                            <input type="hidden" name="actionType" value="remove" />
+                            <InlineStack gap="200">
+                              <Button
+                                variant="secondary"
+                                tone="critical"
+                                submit
+                                disabled={!secret}
+                                loading={
+                                  submittingSecret &&
+                                  navigation.formData?.get("actionType") === "remove"
+                                }
+                                onClick={() =>
+                                  setSecretDrafts((prev) => ({
+                                    ...prev,
+                                    [provider]: "",
+                                  }))
+                                }
+                              >
+                                Remove credential
+                              </Button>
+                            </InlineStack>
                           </Form>
                         </BlockStack>
 
@@ -920,6 +961,7 @@ export default function SettingsRoute() {
                                     label="Request timeout (ms)"
                                     type="number"
                                     name="timeoutMs"
+                                    autoComplete="off"
                                     value={mcpOverrideDraft.timeoutMs}
                                     onChange={(value) =>
                                       setMcpOverrideDraft((prev) => ({
@@ -942,6 +984,7 @@ export default function SettingsRoute() {
                                     label="Max retries"
                                     type="number"
                                     name="maxRetries"
+                                    autoComplete="off"
                                     value={mcpOverrideDraft.maxRetries}
                                     onChange={(value) =>
                                       setMcpOverrideDraft((prev) => ({
@@ -972,13 +1015,12 @@ export default function SettingsRoute() {
                                 <InlineStack gap="200">
                                   <Button
                                     submit
-                                    primary
+                                    variant="primary"
                                     loading={submittingOverrides}
                                   >
                                     Save MCP overrides
                                   </Button>
                                   <Button
-                                    type="button"
                                     variant="secondary"
                                     disabled={submittingOverrides}
                                     onClick={() =>
@@ -1028,14 +1070,14 @@ export default function SettingsRoute() {
                   );
                 })}
               </BlockStack>
-            </Card.Section>
+            </BlockStack>
           </Card>
         </Layout.Section>
 
         <Layout.Section>
           <Card>
-            <Card.Header title="Feature toggles" />
-            <Card.Section>
+            <BlockStack gap="200">
+              <Text as="h3" variant="headingSm">Feature toggles</Text>
               <Form method="post">
                 <input type="hidden" name="intent" value="update-toggles" />
                 <BlockStack gap="300">
@@ -1096,14 +1138,48 @@ export default function SettingsRoute() {
                     )}
                   <Button
                     submit
-                    primary
+                    variant="primary"
                     loading={isSubmitting("update-toggles")}
                   >
                     Save toggles
                   </Button>
                 </BlockStack>
               </Form>
-            </Card.Section>
+            </BlockStack>
+          </Card>
+        </Layout.Section>
+        <Layout.Section>
+          <Card>
+            <BlockStack gap="200">
+              <Text as="h3" variant="headingSm">Live health and connections (read-only)</Text>
+              <BlockStack gap="200">
+                <InlineStack align="space-between" blockAlign="center">
+                  <Text as="p" variant="bodySm">MCP availability</Text>
+                  {(() => {
+                    const ok = (mcpHealth as any)?.ok === true;
+                    return <Badge tone={ok ? "success" : "critical"}>{ok ? "Available" : "Unavailable"}</Badge>;
+                  })()}
+                </InlineStack>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  {mcpHealth?.generatedAt ? `Checked at ${mcpHealth.generatedAt}` : "Not yet checked"}
+                </Text>
+                <Divider />
+                <Text as="p" variant="bodySm">Connector summaries</Text>
+                <BlockStack gap="100">
+                  {connectionsApi?.connections
+                    ? (Object.entries(connectionsApi.connections) as Array<[string, any]>).map(([key, value]) => {
+                        const badge = providerStatusToBadge(value.status);
+                        return (
+                          <InlineStack key={key} align="space-between" blockAlign="center">
+                            <Text as="span" variant="bodySm">{key}</Text>
+                            <Badge tone={badge.tone}>{badge.label}</Badge>
+                          </InlineStack>
+                        );
+                      })
+                    : <Text as="p" variant="bodySm" tone="subdued">No connection data yet</Text>}
+                </BlockStack>
+              </BlockStack>
+            </BlockStack>
           </Card>
         </Layout.Section>
       </Layout>

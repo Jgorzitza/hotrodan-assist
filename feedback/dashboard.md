@@ -76,3 +76,4 @@ Next (tomorrow)
 - Changes:
   - api.seo.health.test.ts: moved loader import to top to satisfy import/first
   - McpClient breaker: added guard to guarantee one immediate short-circuit after open (stabilizes short cooldown timings)
+POW 2025-10-01T12:32:58,272669705-06:00 f304992e Jdesktop

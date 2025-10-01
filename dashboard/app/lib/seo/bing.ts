@@ -22,10 +22,14 @@ export class MockBingClient implements BingClient {
     this.options = options;
   }
 
-  async fetchPageMetrics(): Promise<SeoPageRow[]> {
+  async fetchPageMetrics(_params: {
+    siteUrl: string;
+    startDate: string;
+    endDate: string;
+  }): Promise<SeoPageRow[]> {
     const { pages } = getSeoCollections(this.options);
     return pages;
   }
 }
 
-export const createBingClient = (options?: MockOptions) => new MockBingClient(options);
+export const createBingClient = (options?: MockOptions): BingClient => new MockBingClient(options);

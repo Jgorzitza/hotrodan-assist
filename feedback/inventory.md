@@ -83,3 +83,13 @@
   - See coordination/inbox/manager/2025-10-01-notes.md for the summary.
 
 - 2025-10-01T11:45:59-06:00 — Manager update appended to coordination/inbox/manager/2025-10-01-notes.md (Inventory progress + request to verify direction).
+
+- 2025-10-01T11:48:31-06:00 — Manager update appended (confirmation + next step request).
+
+- Proof-of-work (2025-10-01T12:02:24-06:00): CSV export cursor-follow test added and PASS.
+
+- Proof-of-work (2025-10-01T12:08:16-06:00): live SKU/vendor mapping util + unit test PASS.
+
+- Proof-of-work (2025-10-01T12:27:55-06:00): inventory loader live mapping overlay integrated + test PASS.
+
+- Proof-of-work (2025-10-01T12:34:03-06:00): inventory perf harness added and PASS; p95 measured within target.
