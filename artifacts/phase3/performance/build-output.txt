@@ -1,0 +1,75 @@
+
+> build
+> remix vite:build
+
+vite v6.3.6 building for production...
+transforming...
+✓ 2188 modules transformed.
+Generated an empty chunk: "webhooks.fulfillments.update".
+Generated an empty chunk: "webhooks.app.scopes_update".
+Generated an empty chunk: "webhooks.orders.fulfilled".
+Generated an empty chunk: "webhooks.app.uninstalled".
+Generated an empty chunk: "webhooks.products.update".
+Generated an empty chunk: "webhooks.orders.create".
+Generated an empty chunk: "cron.retention".
+Generated an empty chunk: "queue.webhooks".
+Generated an empty chunk: "auth._".
+Generated an empty chunk: "app.inbox.telemetry".
+Generated an empty chunk: "app.inbox.stream".
+rendering chunks...
+computing gzip size...
+build/client/.vite/manifest.json                               15.20 kB │ gzip:  1.84 kB
+build/client/assets/route-TqOIn4DE.css                          0.76 kB │ gzip:  0.35 kB
+build/client/assets/styles-BeiPL2RV.css                       444.11 kB │ gzip: 52.26 kB
+build/client/assets/webhooks.fulfillments.update-l0sNRNKZ.js    0.00 kB │ gzip:  0.02 kB
+build/client/assets/webhooks.app.scopes_update-l0sNRNKZ.js      0.00 kB │ gzip:  0.02 kB
+build/client/assets/webhooks.orders.fulfilled-l0sNRNKZ.js       0.00 kB │ gzip:  0.02 kB
+build/client/assets/webhooks.app.uninstalled-l0sNRNKZ.js        0.00 kB │ gzip:  0.02 kB
+build/client/assets/webhooks.products.update-l0sNRNKZ.js        0.00 kB │ gzip:  0.02 kB
+build/client/assets/webhooks.orders.create-l0sNRNKZ.js          0.00 kB │ gzip:  0.02 kB
+build/client/assets/cron.retention-l0sNRNKZ.js                  0.00 kB │ gzip:  0.02 kB
+build/client/assets/queue.webhooks-l0sNRNKZ.js                  0.00 kB │ gzip:  0.02 kB
+build/client/assets/auth._-l0sNRNKZ.js                          0.00 kB │ gzip:  0.02 kB
+build/client/assets/app.inbox.telemetry-l0sNRNKZ.js             0.00 kB │ gzip:  0.02 kB
+build/client/assets/app.inbox.stream-l0sNRNKZ.js                0.00 kB │ gzip:  0.02 kB
+build/client/assets/context-Dqc0DVKX.js                         0.12 kB │ gzip:  0.11 kB
+build/client/assets/Divider-DIrlFGxE.js                         0.32 kB │ gzip:  0.26 kB
+build/client/assets/Toast-CXrt2ZEj.js                           0.66 kB │ gzip:  0.42 kB
+build/client/assets/date-range-CLhjUUo2.js                      0.72 kB │ gzip:  0.42 kB
+build/client/assets/Link-DwkoUbpE.js                            0.73 kB │ gzip:  0.39 kB
+build/client/assets/InlineGrid-CJl4-Huk.js                      0.81 kB │ gzip:  0.49 kB
+build/client/assets/route-MZQCEDL1.js                           0.85 kB │ gzip:  0.52 kB
+build/client/assets/FormLayout-DDHw9MJ5.js                      0.95 kB │ gzip:  0.52 kB
+build/client/assets/AfterInitialMount-DdFmFDc6.js               1.25 kB │ gzip:  0.47 kB
+build/client/assets/route-BqIegG81.js                           1.51 kB │ gzip:  0.62 kB
+build/client/assets/root-BUCsH7mu.js                            1.54 kB │ gzip:  0.87 kB
+build/client/assets/TitleBar-BoJ0cFKL.js                        1.67 kB │ gzip:  0.62 kB
+build/client/assets/Sticky-POeO40Bj.js                          1.85 kB │ gzip:  0.80 kB
+build/client/assets/SparkLineChart-Bb-0boLx.js                  2.03 kB │ gzip:  1.06 kB
+build/client/assets/app.additional-DsC4Q17w.js                  2.05 kB │ gzip:  0.94 kB
+build/client/assets/entry.client-IUY-wHjb.js                    3.86 kB │ gzip:  1.46 kB
+build/client/assets/Checkbox-By_G21Bu.js                        4.33 kB │ gzip:  1.81 kB
+build/client/assets/Select-NLQy22yz.js                          4.57 kB │ gzip:  1.86 kB
+build/client/assets/styles-D5t_72bF.js                          5.95 kB │ gzip:  2.46 kB
+build/client/assets/Banner-Bh6054-S.js                          8.35 kB │ gzip:  2.67 kB
+build/client/assets/app._index-vxBw65MJ.js                      9.43 kB │ gzip:  2.97 kB
+build/client/assets/EmptySearchResult-C8B35wGs.js               9.98 kB │ gzip:  3.51 kB
+build/client/assets/app.settings-t8G21smD.js                   11.49 kB │ gzip:  3.77 kB
+build/client/assets/LineChart-qbgiQGNo.js                      14.09 kB │ gzip:  5.47 kB
+build/client/assets/app.inventory-C9u--LY_.js                  15.38 kB │ gzip:  5.17 kB
+build/client/assets/DataTable-xMOtYBef.js                      17.17 kB │ gzip:  5.22 kB
+build/client/assets/app.seo-CeQaNoQb.js                        17.64 kB │ gzip:  5.29 kB
+build/client/assets/app.orders-DBQm_LwN.js                     32.67 kB │ gzip:  9.62 kB
+build/client/assets/app.inbox-BlIF6SBw.js                      35.03 kB │ gzip: 11.61 kB
+build/client/assets/app-CGD5QjfN.js                            46.72 kB │ gzip: 15.44 kB
+build/client/assets/SkipLink-DDFl_IKW.js                       48.08 kB │ gzip: 16.73 kB
+build/client/assets/app.sales-eKgy8LCt.js                      54.43 kB │ gzip: 17.79 kB
+build/client/assets/IndexTable-BL_cplQB.js                     65.94 kB │ gzip: 19.90 kB
+build/client/assets/Page-Dq43bf9s.js                           88.47 kB │ gzip: 27.13 kB
+build/client/assets/components-CMaq4e8b.js                    114.85 kB │ gzip: 37.50 kB
+build/client/assets/index-OtPSfN_w.js                         143.29 kB │ gzip: 45.97 kB
+build/client/assets/context-m2hXMs5D.js                       151.78 kB │ gzip: 17.07 kB
+build/client/assets/PolarisVizProvider-BIxFCe9S.js            226.25 kB │ gzip: 86.56 kB
+✓ built in 6.38s
+vite v6.3.6 building SSR bundle for production...
+transforming...

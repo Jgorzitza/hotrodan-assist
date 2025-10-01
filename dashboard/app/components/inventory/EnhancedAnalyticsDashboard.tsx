@@ -319,7 +319,7 @@ const EnhancedAnalyticsDashboard: React.FC<EnhancedAnalyticsDashboardProps> = ({
             <Badge key={`po-status-${po.poId}`} status={po.status === 'approved' ? 'success' : 'info'}>
               {po.status}
             </Badge>,
-            <ButtonGroup>
+            <ButtonGroup key={`po-actions-${po.poId}`}>
               <Button size="slim" onClick={() => handlePurchaseOrderAction('view', po)}>
                 View
               </Button>

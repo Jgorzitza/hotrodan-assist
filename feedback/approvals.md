@@ -34,3 +34,6 @@ Next
 2025-10-01T08:01:29Z BLOCKER connectors: app/connectors/Dockerfile is missing; skipping build/start.
 2025-10-01T08:01:29Z approvals production services: rag-api ok connectors skip
 2025-10-01T08:01:37Z approvals production services health: rag-api ok connectors skip
+2025-10-01T08:05:10Z approvals standby poll go changed dir changed ui ok mcp skip perf ok security ok connectors fail rag-api ok
+2025-10-01T08:06:12Z approvals production services: connectors ok
+2025-10-01T08:06:31Z approvals production services: rag-api ok

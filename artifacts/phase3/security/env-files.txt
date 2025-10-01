@@ -1,0 +1,6 @@
+./.env
+./.env.example
+./apps/dashboard/.env.backup
+./apps/dashboard/.env
+./apps/dashboard/.env.example
+./apps/dashboard/.env.local
