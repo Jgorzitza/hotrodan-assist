@@ -78,6 +78,70 @@ npm run -s test:e2e
 
 ## Production Today — Priority Override (2025-10-01)
 
+## Partner Dev Setup via Shopify CLI — Today
+
+Goal: Link this repo to the new Partner app and dev store, run dev with the Shopify CLI, and validate embedded OAuth without breaking MCP.
+
+Steps (CLI-first; use in dashboard/ unless noted):
+1) Poll and restate focus (5 min cadence)
+- Read coordination/GO-SIGNAL.md and this direction file, then append a brief focus update to coordination/inbox/dashboard/$(date -I)-notes.md before starting.
+
+2) Shopify CLI auth (login/logout as needed)
+```bash
+shopify whoami || true
+# If needed:
+shopify logout || true
+shopify login --store {{your-dev-store.myshopify.com}}
+shopify whoami
+```
+
+3) Link local project to the Partner app
+- Option A (recommended): link via app client_id (API key)
+```bash
+shopify app config link --client-id {{YOUR_API_KEY}}
+```
+- Option B (interactive): pick the app when prompted by dev
+```bash
+shopify app dev --store {{your-dev-store.myshopify.com}}
+```
+
+4) Update URLs and run dev via CLI
+- Let the CLI update application_url and redirects automatically (it may tunnel for you).
+```bash
+shopify app dev --store {{your-dev-store.myshopify.com}}
+```
+- If you prefer the existing cloudflared flow, run:
+```bash
+APP_PORT=8080 TUNNEL_TOOL=cloudflared RUN_CHECKS=1 scripts/prepare_dashboard_dev.sh
+# then push the config if needed
+shopify app config push --path dashboard
+```
+
+5) Validate embedded Admin and metrics
+```bash
+# Open the Admin via the dev install prompt, complete OAuth, and ensure the embedded UI loads
+# Verify metrics endpoint responds 200
+curl -sI "$SHOPIFY_APP_URL/app/metrics" | head -n1
+```
+
+6) MCP readiness (must be loaded fully; mock vs live ok)
+```bash
+# Ensure Prisma client for tests
+npx prisma generate --schema dashboard/prisma/schema.prisma
+# Run MCP client + settings connection tests (mock acceptable if live creds not present)
+ENABLE_MCP=true USE_MOCK_DATA=${USE_MOCK_DATA:-true} MCP_FORCE_MOCKS=${MCP_FORCE_MOCKS:-true} \
+  npx vitest run --root dashboard --config dashboard/vitest.config.ts \
+  "dashboard/app/lib/mcp/__tests__/*.test.ts" \
+  "dashboard/app/lib/settings/__tests__/connection-tests.test.ts"
+```
+
+7) Proof-of-work (5-minute cadence)
+- Append commands, outputs, tunnel URL, OAuth status, and test results to coordination/inbox/dashboard/$(date -I)-notes.md
+- Summarize in feedback/dashboard.md
+
+If blocked
+- Record blocker in coordination/inbox/dashboard/$(date -I)-notes.md with exact command/output, then proceed with fallback tasks from this direction (CSP/error boundaries, MCP loaders, Playwright smoke).
+
 Goals (EOD):
 - Embedded Admin loads via Cloudflare tunnel; key routes use live MCP behind feature flags; CSP and error boundaries enforced; /api/health and /app/metrics verified.
 
