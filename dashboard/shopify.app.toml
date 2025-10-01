@@ -2,7 +2,9 @@
 
 client_id = "d919fc39ded7df2bd0ba2fe02b666b25"
 name = "Dashboard"
-application_url = "https://hotrodan.com/dashboad"
+application_url = "https://examined-constitutes-alternate-outlets.trycloudflare.com"
+[1;36m-- Tunnel URL: https://tide-supplies-revolutionary-genome.trycloudflare.com (PID 70563)[0m
+https://tide-supplies-revolutionary-genome.trycloudflare.com"
 embedded = true
 
 [webhooks]
@@ -23,4 +25,8 @@ optional_scopes = [ ]
 use_legacy_install_flow = false
 
 [auth]
-redirect_urls = [ ]
+redirect_urls = [ "https://examined-constitutes-alternate-outlets.trycloudflare.com/auth/callback", "https://examined-constitutes-alternate-outlets.trycloudflare.com/auth/callback/online" ]
+[1;36m-- Tunnel URL: https://tide-supplies-revolutionary-genome.trycloudflare.com (PID 70563)[0m
+tide-supplies-revolutionary-genome.trycloudflare.com/auth/callback", "https://[1;36m-- Starting cloudflared tunnel to http://localhost:8080 ...[0m
+[1;36m-- Tunnel URL: https://tide-supplies-revolutionary-genome.trycloudflare.com (PID 70563)[0m
+tide-supplies-revolutionary-genome.trycloudflare.com/auth/callback/online" ]
