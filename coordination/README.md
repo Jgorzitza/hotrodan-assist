@@ -1,5 +1,6 @@
 # Coordination Hub
 
+Project root (canonical): /home/justin/llama_rag
 This directory tracks cross-agent status, memos, and feedback for the llama_rag program. Use these artifacts to keep prompts aligned and ensure every agent continues without waiting on user input.
 
 ## Key Areas

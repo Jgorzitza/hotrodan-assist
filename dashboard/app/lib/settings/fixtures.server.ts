@@ -1,12 +1,8 @@
-import {
-  ConnectionEventStatus,
-  IntegrationProvider,
-  SettingsSecretProvider,
-  StoreStatus,
-} from "@prisma/client";
+import prismaPkg from "@prisma/client";
 
 import { encryptSecret, maskSecret } from "~/lib/security/secrets.server";
 import { BASE_SHOP_DOMAIN, getMockSettings } from "~/mocks/settings";
+const { ConnectionEventStatus, IntegrationProvider, SettingsSecretProvider, StoreStatus } = prismaPkg;
 
 export const SETTINGS_SEED_NOTIFICATION_EMAIL = "ops@seed-demo.test";
 

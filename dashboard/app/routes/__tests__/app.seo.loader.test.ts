@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ConnectionHealth, SettingsPayload } from "~/types/settings";
@@ -12,6 +13,29 @@ vi.mock("../../shopify.server", () => ({
     })),
   },
 }));
+
+// Stub UI-only packages to avoid heavy client imports during server-only loader test
+vi.mock("@shopify/app-bridge-react", () => ({ __esModule: true, TitleBar: () => null }));
+vi.mock("@shopify/polaris", () => ({
+  __esModule: true,
+  Badge: () => null,
+  Banner: () => null,
+  BlockStack: () => null,
+  Box: () => null,
+  Button: () => null,
+  ButtonGroup: () => null,
+  Card: () => null,
+  Divider: () => null,
+  InlineGrid: () => null,
+  InlineStack: () => null,
+  DataTable: () => null,
+  Layout: () => null,
+  Page: () => null,
+  Select: () => null,
+  Text: () => null,
+  TextField: () => null,
+}));
+vi.mock("@shopify/polaris-viz", () => ({ __esModule: true, LineChart: () => null, PolarisVizProvider: ({ children }: any) => children }));
 
 const createDeferred = <T>() => {
   let resolve: (value: T | PromiseLike<T>) => void;
@@ -136,7 +160,7 @@ describe("app.seo loader", () => {
       }))
       .mockName("getSettings");
 
-    vi.doMock("../../lib/settings/repository.server", () => ({
+    vi.doMock("~/lib/settings/repository.server", () => ({
       storeSettingsRepository: {
         getSettings: getSettingsMock,
       },

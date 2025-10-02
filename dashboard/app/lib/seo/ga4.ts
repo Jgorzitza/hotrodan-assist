@@ -35,7 +35,7 @@ export class MockGa4Client implements Ga4Client {
     this.options = options;
   }
 
-  async fetchTrafficSummary(params: {
+  async fetchTrafficSummary(_params: {
     propertyId: string;
     startDate: string;
     endDate: string;
@@ -58,10 +58,14 @@ export class MockGa4Client implements Ga4Client {
     return { totalUsers: 18452, sessions: 23120, conversions: 842, source: "ga4" };
   }
 
-  async fetchTrafficTrend(): Promise<SeoTrafficPoint[]> {
+  async fetchTrafficTrend(_params: {
+    propertyId: string;
+    startDate: string;
+    endDate: string;
+  }): Promise<SeoTrafficPoint[]> {
     const { traffic } = getSeoCollections(this.options);
     return traffic;
   }
 }
 
-export const createGa4Client = (options?: MockOptions) => new MockGa4Client(options);
+export const createGa4Client = (options?: MockOptions): Ga4Client => new MockGa4Client(options);

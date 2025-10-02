@@ -8,15 +8,18 @@ on:
 
 jobs:
   backend-tests:
-    name: Chroma Smoke
+    name: Chroma Smoke Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install -U llama-index openai "chromadb>=0.5" llama-index-vector-stores-chroma llama-index-readers-web llama-index-readers-file llama-index-embeddings-fastembed fastembed pyyaml
-      - run: OFFLINE_CORRECTIONS_ONLY=1 python run_goldens.py
+          cache: 'pip'
+      - name: Install Python dependencies
+        run: pip install -U llama-index openai "chromadb>=0.5" llama-index-vector-stores-chroma llama-index-readers-web llama-index-readers-file llama-index-embeddings-fastembed fastembed pyyaml
+      - name: Run golden tests
+        run: OFFLINE_CORRECTIONS_ONLY=1 python run_goldens.py
 
   dashboard-tests:
     name: Dashboard Lint & Tests
@@ -27,7 +30,8 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium webkit
       - name: Typecheck
@@ -43,3 +47,43 @@ jobs:
           name: playwright-report
           path: playwright-report
           if-no-files-found: ignore
+
+  dashboard-build:
+    name: Dashboard Build & Prisma
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install root dependencies
+        run: npm ci --include=dev
+      - name: Typecheck root
+        run: npm run -s typecheck
+      - name: Install dashboard dependencies
+        working-directory: dashboard
+        run: npm install
+      - name: Generate Prisma client
+        working-directory: dashboard
+        run: npm run -s prisma:generate
+      - name: Build dashboard
+        working-directory: dashboard
+        run: npm run build
+
+  docker-build:
+    name: Docker Build Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build dashboard Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./dashboard
+          file: ./dashboard/Dockerfile
+          push: false
+          tags: dashboard:ci-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

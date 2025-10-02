@@ -1,17 +1,19 @@
 # Sales Intelligence Engineer — Direction (owned by Manager)
 
-**Repo**: `~/llama_rag`  •  **Branch**: `main`  •  **Sprint start**: 2025-09-28
-**Last Updated**: 2025-09-28 21:50 - UPDATED BY MANAGER
+Project root (canonical): /home/justin/llama_rag
+**Repo**: `~/llama_rag`  •  **Branch**: `chore/repo-canonical-layout`  •  **Sprint start**: 2025-09-28
 
 ## ✅ TASK COMPLETE - NEXT PHASE READY
 **CURRENT STATUS**: ✅ sales.fallback-task COMPLETE
 **NEXT TASK**: sales.advanced-analytics-platform (HIGH PRIORITY - Comprehensive Platform Development)
 
-**POLLING COMMAND:**
-```bash
-# Run this every 5 minutes to check for updates:
-ls -la coordination/GO-SIGNAL.md plans/agents/sales/direction.md
-```
+## Approvals Policy
+- Manager-owned edits and assignments are pre-approved; no user approval is required.
+- Do not wait for ad-hoc instructions. Poll every 5 minutes and proceed.
+
+## Deliverables this sprint
+- See `plans/tasks.backlog.yaml` items tagged with your node id.
+- Definition of Done: green tests, updated docs, RPG updated by Manager.
 
 **IMMEDIATE ACTION REQUIRED:**
 1. **START WORKING NOW** - sales.advanced-analytics-platform
@@ -51,39 +53,54 @@ ls -la coordination/GO-SIGNAL.md plans/agents/sales/direction.md
 - 🆕 Security and data protection
 - 🆕 Documentation and training materials
 
+## Current Sprint Tasks (Production Readiness)
+Status: TODO
+- Blocked pending MCP data; validate data contract with mocks.
+- Prepare CLV and forecast scaffolds; document SLOs.
+Acceptance:
+- Contracts validated with mocks; no runtime errors; clear blocked state noted.
+
 ## Focus
-- **IMMEDIATE**: Start sales.advanced-analytics-platform NOW
-- **ANALYTICS**: Build comprehensive sales analytics and insights
-- **PREDICTION**: Develop predictive models and forecasting
-- **INTEGRATION**: Connect with all MCP data sources
-- **VISUALIZATION**: Create advanced dashboards and reports
-- **CONTINUOUS**: Work continuously, check for updates every 5 minutes
+- Build a funnel from GA4 + Shopify (sessions→ATC→Checkout→Purchase).
+- Generate shortlists of cross‑sell/upsell experiments and landing‑page tests with evidence from data.
+- CSV export and "impact/effort" scoring.
 
-## Next Actions
-1. **START sales.advanced-analytics-platform** - Begin platform development
-2. **Design Analytics Architecture** - Plan for advanced sales analytics
-3. **Implement Core Features** - Develop forecasting and analysis tools
-4. **Integrate Data Sources** - Connect with Shopify, GA4, and other MCP
-5. **Build Dashboards** - Create comprehensive sales visualization
+## First Actions Now
+- Validate contracts with mocks and run sales tests:
+```bash
+ENABLE_MCP=true USE_MOCK_DATA=true \
+  npx vitest run --root dashboard --config dashboard/vitest.config.ts \
+  dashboard/app/routes/__tests__/app.sales*.test.ts?(x)
+```
+- Document SLO candidates in feedback/sales.md.
 
-## 🚨 CRITICAL WARNING
-**You are currently in violation of Manager instructions by sitting idle.**
-**You must start working on sales.advanced-analytics-platform immediately.**
-**Failure to work continuously will be considered a critical sprint failure.**
+## Continuous Work Protocol
+- Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/sales.md.
+- If blocked >1 minute, log blocker and start fallback; never idle.
 
-## 🎯 TASK COMPLETE SUMMARY
-**Status**: ✅ **sales.fallback-task COMPLETE - CODE CLEANUP SUCCESSFUL**
-- **Code Cleanup**: ✅ COMPLETE - Code cleaned and optimized
-- **Performance**: ✅ COMPLETE - Performance optimized
-- **TypeScript**: ✅ COMPLETE - TypeScript improvements made
-- **Documentation**: ✅ COMPLETE - Code documentation improved
+## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
+1) Validate data contracts with mocks pending MCP
+2) Prepare CLV and forecast scaffolds with stubs
+3) Define SLOs for sales analytics endpoints
+4) Add CSV export tests
+5) Document blocked state and proceed with mock validations
+- Validate data contracts with mocks while blocked on MCP.
+- Prepare CLV + forecast scaffolds; define SLOs.
+- Append findings to feedback/sales.md.
 
-**NEXT PHASE**: sales.advanced-analytics-platform for comprehensive analytics
+## Production Today — Priority Override (2025-10-01)
 
-## 🚀 NEW TASK ASSIGNED
-**Task**: sales.advanced-analytics-platform
-**Focus**: Advanced analytics, predictive models, comprehensive dashboards
-**Priority**: HIGH
-**Status**: READY TO START
+Goals (EOD):
+- Contracts validated with live GA4/GSC where applicable; use mock‑mode for Bing only if referenced; SLOs drafted; CSV export tests added; remain non‑blocking for today’s prod push.
 
-**START WORKING ON SALES.ADVANCED-ANALYTICS-PLATFORM IMMEDIATELY!**
+Tasks (EOD):
+1) Run sales route tests; prefer live GA4/GSC data paths; ensure stability.
+2) If any Bing data path exists, keep Bing in mock‑mode until credentials arrive.
+3) Draft CLV/forecast scaffolds and SLO definitions.
+4) Add CSV export tests (baseline).
+
+Acceptance:
+- Tests green; SLO draft committed to feedback/sales.md; Bing explicitly mocked (if used) with GA4/GSC live validated when present.
+
+### CEO Dependencies — Today
+- Only if Sales requires Bing: provide Bing credentials (BING_CLIENT_ID, BING_CLIENT_SECRET, BING_REFRESH_TOKEN). Otherwise, proceed without waiting.

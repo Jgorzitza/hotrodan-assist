@@ -1,0 +1,50 @@
+./.venv/lib/python3.12/site-packages/pyasn1_modules/rfc2459.py:# Updated by Russ Housley to resolve the TODO regarding the Certificate
+./.venv/lib/python3.12/site-packages/pyasn1_modules/rfc2985.py:# TODO:
+./.venv/lib/python3.12/site-packages/pyasn1_modules/rfc2985.py:# TODO: Once PKCS15Token can be imported, this can be included
+./.venv/lib/python3.12/site-packages/pyasn1_modules/rfc2985.py:    # TODO: Once PKCS15Token can be imported, this can be included
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:# TODO: pandas.core.tools.datetimes imports this explicitly.  Might be worth
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:                ("Tue", "Tuesday"),     # TODO: "Tues"
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:                ("Thu", "Thursday"),    # TODO: "Thurs"
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:              ("Feb", "February"),      # TODO: "Febr"
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:    # TODO: ERA = ["AD", "BC", "CE", "BCE", "Stardate",
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:                                # TODO: not hit in tests
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:                    # TODO: check that l[i + 1] is integer?
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:                        min_offset = int(l[i + 3])  # TODO: Check that l[i+3] is minute-like?
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:                # TODO: Check if res attributes already set.
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:                # TODO: checking that hour/minute/second are not
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:            value = self._to_decimal(tokens[idx + 2])  # TODO: try/except for this?
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:            # TODO: Are we sure this is the right condition here?
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:        # TODO: Every usage of this function sets res.second to the return
+./.venv/lib/python3.12/site-packages/dateutil/parser/_parser.py:        # TODO: Is this going to admit a lot of false-positives for when we
+./.venv/lib/python3.12/site-packages/dateutil/zoneinfo/__init__.py:    except IOError as e:  # TODO  switch to FileNotFoundError?
+./.venv/lib/python3.12/site-packages/dateutil/zoneinfo/__init__.py:# TODO: Remove after deprecation period.
+./.venv/lib/python3.12/site-packages/dateutil/rrule.py:                    # TODO: Check -numweeks for next year.
+./.venv/lib/python3.12/site-packages/sklearn/calibration.py:            # TODO(1.8): Remove this code branch and cv='prefit'
+./.venv/lib/python3.12/site-packages/sklearn/calibration.py:        # TODO: Remove casting to np.float64 when minimum supported SciPy is 1.11.2
+./.venv/lib/python3.12/site-packages/sklearn/feature_extraction/text.py:        # FIXME: np.float16 could be preserved if _inplace_csr_row_normalize_l2
+./.venv/lib/python3.12/site-packages/sklearn/cross_decomposition/tests/test_pls.py:    # FIXME: one would expect y_trans == pls.y_scores_ but this is not
+./.venv/lib/python3.12/site-packages/sklearn/impute/_base.py:            # TODO(1.8): Remove FutureWarning and add `np.nan` as a statistic
+./.venv/lib/python3.12/site-packages/sklearn/impute/_base.py:            # TODO(1.8): Remove FutureWarning and add `np.nan` as a statistic
+./.venv/lib/python3.12/site-packages/sklearn/impute/tests/test_impute.py:# TODO (1.8): check that `keep_empty_features=False` drop the
+./.venv/lib/python3.12/site-packages/sklearn/impute/tests/test_impute.py:# TODO (1.8): check that `keep_empty_features=False` drop the
+./.venv/lib/python3.12/site-packages/sklearn/impute/tests/test_impute.py:# TODO (1.8): check that `keep_empty_features=False` drop the
+./.venv/lib/python3.12/site-packages/sklearn/impute/tests/test_impute.py:# TODO (1.8): check that `keep_empty_features=False` drop the
+./.venv/lib/python3.12/site-packages/sklearn/impute/tests/test_impute.py:# TODO (1.8): check that `keep_empty_features=False` drop the
+./.venv/lib/python3.12/site-packages/sklearn/impute/tests/test_impute.py:        # TODO(1.8): Remove the condition and still call getattr(imputer, method)(X)
+./.venv/lib/python3.12/site-packages/sklearn/impute/_iterative.py:        # TODO (1.8): remove this once the deprecation is removed. In the meantime,
+./.venv/lib/python3.12/site-packages/sklearn/impute/_iterative.py:            # TODO (1.8): remove this once the deprecation is removed to keep only
+./.venv/lib/python3.12/site-packages/sklearn/impute/_iterative.py:            # TODO (1.8): remove this once the deprecation is removed to keep only
+./.venv/lib/python3.12/site-packages/sklearn/impute/_iterative.py:                # TODO (1.8): remove this `if` branch once the following issue is
+./.venv/lib/python3.12/site-packages/sklearn/impute/__init__.py:    # TODO: remove this check once the estimator is no longer experimental.
+./.venv/lib/python3.12/site-packages/sklearn/impute/__init__.py:# TODO: remove this check once the estimator is no longer experimental.
+./.venv/lib/python3.12/site-packages/sklearn/_loss/tests/test_loss.py:            # TODO: What could we test if loss.approx_hessian?
+./.venv/lib/python3.12/site-packages/sklearn/_loss/tests/test_loss.py:                # TODO: What could we test if loss.approx_hessian?
+./.venv/lib/python3.12/site-packages/sklearn/pipeline.py:    TODO(1.8): remove this context manager and replace with check_is_fitted.
+./.venv/lib/python3.12/site-packages/sklearn/pipeline.py:    # TODO(1.8): Remove this property
+./.venv/lib/python3.12/site-packages/sklearn/pipeline.py:        # TODO(1.8): Remove the context manager and use check_is_fitted(self)
+./.venv/lib/python3.12/site-packages/sklearn/pipeline.py:        # TODO(1.8): Remove the context manager and use check_is_fitted(self)
+./.venv/lib/python3.12/site-packages/sklearn/pipeline.py:        # TODO(1.8): Remove the context manager and use check_is_fitted(self)
+./.venv/lib/python3.12/site-packages/sklearn/pipeline.py:        # TODO(1.8): Remove the context manager and use check_is_fitted(self)
+./.venv/lib/python3.12/site-packages/sklearn/pipeline.py:        # TODO(1.8): Remove the context manager and use check_is_fitted(self)
+./.venv/lib/python3.12/site-packages/sklearn/pipeline.py:        # TODO(1.8): Remove the context manager and use check_is_fitted(self)
+./.venv/lib/python3.12/site-packages/sklearn/pipeline.py:        # TODO(1.8): Remove the context manager and use check_is_fitted(self)

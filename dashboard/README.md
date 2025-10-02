@@ -197,15 +197,29 @@ Embedded Shopify apps must maintain the user session, which can be tricky inside
 
 This only applies if your app is embedded, which it will be by default.
 
-### Non Embedded
+### Merchant Custom App Mode
 
-Shopify apps are best when they are embedded in the Shopify Admin, which is how this template is configured. If you have a reason to not embed your app please make the following changes:
+We support merchant custom apps (distributed in Shopify Admin, no OAuth) with an environment flag.
 
-1. Ensure `embedded = false` is set in [shopify.app.toml`](./shopify.app.toml). [Docs here](https://shopify.dev/docs/apps/build/cli-for-apps/app-configuration#global).
-2. Pass `isEmbeddedApp: false` to `shopifyApp()` in `./app/shopify.server.js|ts`.
-3. Change the `isEmbeddedApp` prop to `isEmbeddedApp={false}` for the `AppProvider` in `/app/routes/app.jsx|tsx`.
-4. Remove the `@shopify/app-bridge-react` dependency from [package.json](./package.json) and `vite.config.ts|js`.
-5. Remove anything imported from `@shopify/app-bridge-react`.  For example: `NavMenu`, `TitleBar` and `useAppBridge`.
+Set the following env vars:
+
+- `SHOPIFY_CUSTOM_APP=true`
+- `SHOPIFY_ADMIN_API_ACCESS_TOKEN=shpat_xxx` (from the Shopify Admin for your store)
+- `SHOPIFY_APP_URL=https://localhost:8080` (or your dev origin)
+
+Run locally without the Shopify CLI:
+
+```bash
+npm run dev:custom --prefix dashboard
+# Or pnpm/yarn equivalent
+```
+
+Key changes in this mode:
+- shopifyApp distribution is `AppDistribution.ShopifyAdmin` and uses `adminApiAccessToken`.
+- App is non-embedded; `AppProvider` uses `isEmbeddedApp={false}` and App Bridge UI is not rendered.
+- OAuth and redirect URLs are not used.
+
+If you need the Partner/embedded flow again, set `SHOPIFY_CUSTOM_APP` to `false` (or unset) and use `npm run dev` (Shopify CLI).
 
 ### OAuth goes into a loop when I change my app's scopes
 

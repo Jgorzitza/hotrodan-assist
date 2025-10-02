@@ -5,38 +5,115 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: app
-    volumes: [ "pgdata:/var/lib/postgresql/data" ]
-    ports: [ "5432:5432" ]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
   redis:
     image: redis:7
-    ports: [ "6379:6379" ]
+    ports:
+      - "6379:6379"
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    environment:
+      - ENABLE_MCP=true
+      - USE_MOCK_DATA=true
+      - PORT=8080
+    ports:
+      - "8080:8080"
 
   rag-api:
     build: ./app/rag_api
     env_file: .env
-    volumes: [ "./data:/data", "./:/workspace" ]
-    ports: [ "8001:8001" ]
-    depends_on: [ db, redis ]
+    environment:
+      - UVICORN_WORKERS=2
+    volumes:
+      - ./data:/data
+      - ./:/workspace
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health').read()"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   assistants:
     build: ./app/assistants
     env_file: .env
-    volumes: [ "./:/workspace" ]
-    ports: [ "8002:8002" ]
-    depends_on: [ db, redis, rag-api ]
+    volumes:
+      - ./:/workspace
+    ports:
+      - "8002:8002"
+    depends_on:
+      - db
+      - redis
+      - rag-api
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health').read()"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   sync:
     build: ./app/sync
     env_file: .env
-    volumes: [ "./:/workspace" ]
-    depends_on: [ db, redis ]
+    volumes:
+      - ./:/workspace
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   approval-app:
     build: ./app/approval-app
     env_file: .env
-    ports: [ "5173:5173" ]
-    depends_on: [ assistants ]
+    ports:
+      - "5173:5173"
+    depends_on:
+      - assistants
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5173/health').read()"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  connectors:
+    build: ./app/connectors
+    env_file: .env
+    ports:
+      - "8003:8003"
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    command: python3 -m uvicorn connectors.main:app --host 0.0.0.0 --port 8003
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health').read()"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
 volumes:
   pgdata:
 

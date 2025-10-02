@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  labels:
+    app: dashboard
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      containers:
+        - name: dashboard
+          image: ghcr.io/example/dashboard:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: ENABLE_MCP
+              value: "true"
+            - name: USE_MOCK_DATA
+              value: "true"
+          readinessProbe:
+            httpGet:
+              path: /app/metrics
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /app/metrics
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard
+spec:
+  selector:
+    app: dashboard
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000

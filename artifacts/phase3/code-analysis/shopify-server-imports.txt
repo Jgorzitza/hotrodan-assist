@@ -1,0 +1,52 @@
+# shopify.server.ts Import Analysis
+
+## Import Pattern Scan Results
+
+Files importing shopify.server.ts (21 total):
+- entry.server.tsx: line 9 (static: addDocumentResponseHeaders)
+- routes/app.tsx: line 8 (static: authenticate)
+- routes/_index/route.tsx
+- routes/app.orders.tsx
+- routes/app.inbox.tsx
+- routes/app.sales.tsx
+- routes/app.settings.tsx
+- routes/app._index.tsx
+- routes/app.inventory.tsx
+- routes/app.seo.tsx
+- Plus 11 webhook routes
+
+## Build Warning Analysis
+
+Build output warning:
+> "The following modules are referenced both dynamically and statically"
+
+**Root cause**: 
+- Static imports in multiple route loaders/actions
+- Possible dynamic import() calls in Remix route splitting
+- Vite/Remix treats route modules as dynamic chunks by default
+
+## Typical Import Patterns Found
+
+```typescript
+// entry.server.tsx (line 9)
+import { addDocumentResponseHeaders } from "./shopify.server";
+
+// routes/app.tsx (line 8)
+import { authenticate } from "../shopify.server";
+```
+
+**Assessment**: All imports appear to be static ESM imports.
+**Hypothesis**: Warning is false positive OR caused by Remix's automatic route-based code splitting treating routes as dynamic boundaries.
+
+## Recommendation
+
+**Priority**: MEDIUM (was HIGH, downgraded after analysis)
+**Action**: This is likely a Remix/Vite code-splitting artifact, not a real duplication issue.
+**Validation**: Check final bundle sizes - if duplication were severe, shopify.server.ts would appear in multiple chunks with significant size impact.
+
+From build output:
+- PolarisVizProvider: 226 kB (largest)
+- shopify.server.ts impact: Not among top chunks (suggests minimal duplication)
+
+**Conclusion**: Warning noted but not critical. No immediate action required.
+

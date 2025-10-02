@@ -1,8 +1,4 @@
-import {
-  ConnectionEventStatus,
-  IntegrationProvider,
-  SettingsSecretProvider,
-} from "@prisma/client";
+import prismaPkg from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
 import {
@@ -25,12 +21,13 @@ import type {
   ThresholdSettings,
 } from "../../types/settings";
 import {
-  decryptSecret,
-  encryptSecret,
   maskSecret,
 } from "../security/secrets.server";
+import { getSecretsAdapter } from "../security/secrets-adapter.server";
+import { recordAuditEvent } from "../security/audit.server";
 import { isMockMode } from "../env.server";
 import prisma from "../../db.server";
+const { ConnectionEventStatus, IntegrationProvider, SettingsSecretProvider } = prismaPkg;
 
 const PROVIDERS: SettingsProvider[] = ["ga4", "gsc", "bing", "mcp"];
 
@@ -121,6 +118,7 @@ const mcpOverridesStore = new Map<string, McpIntegrationOverrides>();
 const ensureEncryptedSecrets = (
   shopDomain: string,
 ): Record<SettingsProvider, string | null> => {
+  const adapter = getSecretsAdapter();
   if (!encryptedSecretsStore.has(shopDomain)) {
     const seeds: Record<SettingsProvider, string | null> = {
       ga4: null,
@@ -131,7 +129,7 @@ const ensureEncryptedSecrets = (
 
     PROVIDERS.forEach((provider) => {
       const seed = defaultSecretSeeds[provider];
-      seeds[provider] = seed ? encryptSecret(seed) : null;
+      seeds[provider] = seed ? adapter.encrypt(seed) : null;
     });
 
     encryptedSecretsStore.set(shopDomain, seeds);
@@ -172,14 +170,24 @@ class MockStoreSettingsRepository implements SettingsRepositoryContract {
     shopDomain: string,
     input: UpdateSecretInput,
   ): Promise<SettingsPayload> {
+    const adapter = getSecretsAdapter();
     const bucket = ensureEncryptedSecrets(shopDomain);
 
     if (!input.secret) {
       bucket[input.provider] = null;
+      recordAuditEvent({ actor: shopDomain, action: "update_secret", resource: input.provider, details: { masked: null } });
       return updateMockSecret(shopDomain, input.provider, null);
     }
 
-    bucket[input.provider] = encryptSecret(input.secret);
+    // Basic validation for MCP secret quality
+    if (
+      input.provider === "mcp" &&
+      (input.secret.length < 8 || /\s/.test(input.secret))
+    ) {
+      throw new Error("Invalid MCP secret: must be >= 8 chars and contain no whitespace");
+    }
+
+    bucket[input.provider] = adapter.encrypt(input.secret);
     const current = getMockSettings(shopDomain);
     const existingMetadata = current.secrets[input.provider];
     const verifiedAt =
@@ -197,7 +205,14 @@ class MockStoreSettingsRepository implements SettingsRepositoryContract {
       rotationReminderAt,
     );
 
-    return updateMockSecret(shopDomain, input.provider, metadata);
+    const result = await updateMockSecret(shopDomain, input.provider, metadata);
+    recordAuditEvent({
+      actor: shopDomain,
+      action: "update_secret",
+      resource: input.provider,
+      details: { masked: metadata.maskedValue },
+    });
+    return result;
   }
 
   private buildSecretMetadata(
@@ -220,7 +235,7 @@ class MockStoreSettingsRepository implements SettingsRepositoryContract {
     provider: SettingsProvider,
   ): Promise<string | null> {
     const bucket = ensureEncryptedSecrets(shopDomain);
-    return decryptSecret(bucket[provider] ?? null);
+    return getSecretsAdapter().decrypt(bucket[provider] ?? null);
   }
 
   async getMcpIntegrationOverrides(
@@ -234,6 +249,16 @@ class MockStoreSettingsRepository implements SettingsRepositoryContract {
     shopDomain: string,
     input: Partial<McpIntegrationOverrides>,
   ): Promise<McpIntegrationOverrides> {
+    recordAuditEvent({
+      actor: shopDomain,
+      action: "update_mcp_overrides",
+      resource: "mcp",
+      details: {
+        endpoint: input.endpoint ?? undefined,
+        timeoutMs: input.timeoutMs ?? undefined,
+        maxRetries: input.maxRetries ?? undefined,
+      },
+    });
     const overrides = ensureMcpOverrides(shopDomain);
 
     if (Object.prototype.hasOwnProperty.call(input, "endpoint")) {
@@ -630,6 +655,7 @@ class PrismaStoreSettingsRepository implements SettingsRepositoryContract {
     shopDomain: string,
     input: UpdateSecretInput,
   ): Promise<SettingsPayload> {
+    const adapter = getSecretsAdapter();
     const store = await this.ensureStoreWithSettings(shopDomain);
     const provider = SECRET_PROVIDER_MAP[input.provider];
 
@@ -638,7 +664,16 @@ class PrismaStoreSettingsRepository implements SettingsRepositoryContract {
         where: { storeId: store.id, provider },
       });
 
+      recordAuditEvent({ actor: shopDomain, action: "update_secret", resource: input.provider, details: { masked: null } });
       return this.getSettings(shopDomain);
+    }
+
+    // Basic validation for MCP secret quality
+    if (
+      input.provider === "mcp" &&
+      (input.secret.length < 8 || /\s/.test(input.secret))
+    ) {
+      throw new Error("Invalid MCP secret: must be >= 8 chars and contain no whitespace");
     }
 
     const existing = await prisma.storeSecret.findUnique({
@@ -650,8 +685,8 @@ class PrismaStoreSettingsRepository implements SettingsRepositoryContract {
       },
     });
 
-    const ciphertext = encryptSecret(input.secret);
-    const existingPlaintext = existing ? decryptSecret(existing.ciphertext) : null;
+    const ciphertext = adapter.encrypt(input.secret);
+    const existingPlaintext = existing ? getSecretsAdapter().decrypt(existing.ciphertext) : null;
     const secretChanged = existingPlaintext !== input.secret;
     const maskedValue =
       secretChanged || !existing?.maskedValue
@@ -695,7 +730,14 @@ class PrismaStoreSettingsRepository implements SettingsRepositoryContract {
       });
     }
 
-    return this.getSettings(shopDomain);
+    const settings = await this.getSettings(shopDomain);
+    recordAuditEvent({
+      actor: shopDomain,
+      action: "update_secret",
+      resource: input.provider,
+      details: { masked: maskedValue },
+    });
+    return settings;
   }
 
   async getDecryptedSecret(
@@ -716,7 +758,7 @@ class PrismaStoreSettingsRepository implements SettingsRepositoryContract {
       },
     });
 
-    return secret ? decryptSecret(secret.ciphertext) : null;
+    return secret ? getSecretsAdapter().decrypt(secret.ciphertext) : null;
   }
 
   async getMcpIntegrationOverrides(
@@ -731,6 +773,16 @@ class PrismaStoreSettingsRepository implements SettingsRepositoryContract {
     shopDomain: string,
     input: Partial<McpIntegrationOverrides>,
   ): Promise<McpIntegrationOverrides> {
+    recordAuditEvent({
+      actor: shopDomain,
+      action: "update_mcp_overrides",
+      resource: "mcp",
+      details: {
+        endpoint: input.endpoint ?? undefined,
+        timeoutMs: input.timeoutMs ?? undefined,
+        maxRetries: input.maxRetries ?? undefined,
+      },
+    });
     const store = await this.ensureStoreWithSettings(shopDomain);
     const metadata = parseConnectionMetadata(store.settings!.connectionMetadata);
 

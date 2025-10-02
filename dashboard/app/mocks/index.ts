@@ -1,5 +1,6 @@
 export * from "./builder";
 export { getDashboardOverview } from "./dashboard";
+export { getInboxData, getInboxScenario } from "./inbox";
 export {
   assignOrders,
   getOrdersScenario,

@@ -14,6 +14,11 @@
 
 Agents must not edit their own direction files. All cross‑agent asks go **through the Manager**. 
 
+## Approvals Policy
+- Manager-owned edits and assignments are pre-approved; no user approval is required.
+- Agents must not wait for ad-hoc instructions. Poll every 5 minutes and proceed.
+- All manager-owned artifacts (plans/rpg.json, plans/tasks.backlog.yaml, plans/agents/*/direction.md, coordination/*) can be updated by the Manager at any time; agents adopt changes immediately.
+
 ## Lifecycle
 1. **Plan** (Manager): updates `rpg.json` + `tasks.backlog.yaml` for the next sprint.
 2. **Direct** (Manager): writes/updates each `direction.md`.

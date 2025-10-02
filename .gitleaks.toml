@@ -1,0 +1,48 @@
+# Gitleaks configuration to reduce false positives and enforce real secret detection
+# Docs: https://github.com/gitleaks/gitleaks#configuration
+
+[allowlist]
+# Ignore common vendor/cert bundles and local virtualenvs
+paths = [
+  "^node_modules/",
+  "^dashboard/node_modules/",
+  "^\.venv/",
+  "^venv/",
+  "^\.venv-.*",
+  "^.*cacert\.pem$",
+  "^handover/offline-fork\.git/",
+  "^chroma/",
+]
+
+# Exempt known non-secret values/patterns used as examples
+regexes = [
+  # Example DSNs in examples/templates
+  "postgres(ql)?:\/\/postgres:postgres@(?:db|localhost):\d{2,5}\/\w+",
+  "redis:\/\/redis:\d{2,5}\/\d+",
+]
+
+# Some files contain non-sensitive identifiers which scanners often flag
+# Public Shopify client_id must be in app.toml; not a secret
+[[allowlist.paths]]
+description = "Shopify app.toml client_id is public identifier"
+path = "^(dashboard\/)?shopify\.app\.toml$"
+# Optionally ignore any key named client_id in this file
+regex = "(?i)client_id\s*=\s*\"[A-Za-z0-9]+\""
+
+# Example env templates are allowed to contain keys with empty/default values
+[[allowlist.paths]]
+description = ".env.example templates"
+path = "^(\.env\.example|dashboard\/\.env\.example|apps\/dashboard\/\.env\.example)$"
+
+# Custom rules (leave defaults enabled); add an explicit Shopify token rule for shpat_ etc.
+# This ensures real tokens are still caught if checked in by mistake.
+[[rules]]
+id = "shopify-token"
+description = "Shopify Admin/Storefront access tokens"
+regex = "shp(?:at|ss|pa)_[A-Za-z0-9]{32,}"
+secretGroup = 0
+keywords = ["shpat_", "shpss_", "shppa_", "shp_"]
+
+# Keep default gitleaks rules enabled
+[[rules.allowlist]]
+stopwords = []

@@ -10,7 +10,6 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import { useEffect, useMemo, useState } from "react";
-import { TitleBar } from "@shopify/app-bridge-react";
 import {
   Badge,
   Banner,
@@ -51,6 +50,7 @@ import { getMcpClientOverridesForShop } from "~/lib/mcp/config.server";
 import { getInventoryScenario, scenarioFromRequest } from "~/mocks";
 import { USE_MOCK_DATA } from "~/mocks/config.server";
 import { BASE_SHOP_DOMAIN } from "~/mocks/settings";
+import { fetchSkuVendorMapFromAdmin } from "../lib/inventory/live.server";
 import {
   aggregateTrendSeries,
   calculateTrendStats,
@@ -150,9 +150,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const count = clampCount(url.searchParams.get("count"));
   let shopDomain = BASE_SHOP_DOMAIN;
 
+  let adminClient: any | undefined;
   if (!USE_MOCK_DATA) {
-    const { session } = await authenticate.admin(request);
+    const { session, admin } = await authenticate.admin(request);
     shopDomain = session.shop;
+    adminClient = admin;
   }
 
   const settings = await storeSettingsRepository.getSettings(shopDomain);
@@ -160,7 +162,32 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const featureEnabled = isMcpFeatureEnabled(toggles);
   const usingMocks = shouldUseMcpMocks(toggles);
 
-  const payload = getInventoryScenario({ scenario, count });
+  let payload = getInventoryScenario({ scenario, count });
+
+  // If in live mode, overlay vendor mapping from Shopify Admin by SKU
+  if (!USE_MOCK_DATA && adminClient) {
+    try {
+      const liveMap = await fetchSkuVendorMapFromAdmin(adminClient);
+      const bySku = new Map<string, { vendor: string; title: string }>();
+      for (const item of liveMap) {
+        bySku.set(item.sku, { vendor: item.vendor, title: item.title });
+      }
+      const updatedSkus = payload.skus.map((sku) => {
+        const entry = bySku.get(sku.sku);
+        if (!entry) return sku;
+        return {
+          ...sku,
+          vendorName: entry.vendor || sku.vendorName,
+          title: entry.title || sku.title,
+        };
+      });
+      payload = { ...payload, skus: updatedSkus };
+    } catch (e) {
+      // Non-fatal: keep mock payload if live overlay fails
+      console.warn("[inventory] live vendor mapping overlay failed", e);
+    }
+  }
+
   const bucketParam = url.searchParams.get("bucket");
   const selectedBucket = isBucketId(bucketParam)
     ? bucketParam
@@ -573,9 +600,6 @@ export default function InventoryRoute() {
         title="Inventory"
         subtitle="Demand planning cockpit for replenishment, expediting, and overstock mitigation."
       >
-      <TitleBar
-        title="Inventory"
-      />
 
       <BlockStack gap="400">
         {(useMockData || payload.alert || payload.error) && (
@@ -601,26 +625,24 @@ export default function InventoryRoute() {
         <InlineGrid columns={{ xs: 1, md: 3 }} gap="300">
           {summaryCards.map((card) => (
             <Card key={card.id}>
-              <Card>
-                <BlockStack gap="100">
-                  <Text variant="bodyMd" as="span">
-                    {card.label}
-                  </Text>
-                  <Text variant="headingLg" as="span">
-                    {card.value}
-                  </Text>
-                </BlockStack>
-              </Card>
+              <BlockStack gap="100">
+                <Text variant="bodyMd" as="span">
+                  {card.label}
+                </Text>
+                <Text variant="headingLg" as="span">
+                  {card.value}
+                </Text>
+              </BlockStack>
             </Card>
           ))}
         </InlineGrid>
 
-        <Card title="MCP inventory signals" >
+        <Card>
           <BlockStack gap="200">
+            <Text variant="headingMd" as="h3">MCP inventory signals</Text>
             {mcp.signals.map((signal) => (
               <Box
                 key={signal.sku}
-                background="bg-subdued"
                 padding="200"
                 borderRadius="200"
               >
@@ -641,10 +663,7 @@ export default function InventoryRoute() {
                   {signal.demandSignals.length > 0 && (
                     <InlineStack gap="200" wrap>
                       {signal.demandSignals.map((metric) => (
-                        <Badge key={metric.label} tone="info">
-                          {metric.label}: {metric.value}
-                          {metric.unit ? `${metric.unit}` : ""}
-                        </Badge>
+                        <Badge key={metric.label} tone="info">{`${metric.label}: ${metric.value}${metric.unit ? metric.unit : ""}`}</Badge>
                       ))}
                     </InlineStack>
                   )}
@@ -674,28 +693,27 @@ export default function InventoryRoute() {
         <Layout>
           <Layout.Section>
             <Card>
-              <Card>
+              <BlockStack gap="200">
                 <InlineStack align="space-between" blockAlign="center">
                   <Tabs tabs={bucketTabs} selected={selectedTabIndex} onSelect={handleTabChange} fitted />
                   <Button onClick={handleBucketExport} loading={exportFetcher.state !== "idle" && exportFetcher.formData?.get("bucketId") === activeBucket}>
                     Export bucket CSV
                   </Button>
                 </InlineStack>
-              </Card>
+              </BlockStack>
 
               <Divider />
 
-              <Card>
-                <BlockStack gap="300">
+              <BlockStack gap="300">
                   {activeBucketMeta?.description && (
-                    <Text variant="bodySm" tone="subdued">
+                    <Text variant="bodySm" tone="subdued" as="p">
                       {activeBucketMeta.description}
                     </Text>
                   )}
 
                   {filteredSkus.length === 0 ? (
                     <BlockStack gap="200" align="center">
-                      <Text variant="bodyMd">No SKUs in this bucket yet.</Text>
+                      <Text variant="bodyMd" as="span">No SKUs in this bucket yet.</Text>
                     </BlockStack>
                   ) : (
                     <>
@@ -706,7 +724,7 @@ export default function InventoryRoute() {
                           stats={bucketTrendStats}
                         />
                       ) : (
-                        <Text variant="bodySm" tone="subdued">
+                        <Text variant="bodySm" tone="subdued" as="span">
                           Demand trend data unavailable for this bucket.
                         </Text>
                       )}
@@ -774,7 +792,6 @@ export default function InventoryRoute() {
                     </>
                   )}
                 </BlockStack>
-              </Card>
             </Card>
           </Layout.Section>
         </Layout>
@@ -791,9 +808,9 @@ export default function InventoryRoute() {
 
           {payload.vendors.length === 0 ? (
             <Card>
-              <Card>
-                <Text variant="bodyMd">No vendor drafts available yet.</Text>
-              </Card>
+              <BlockStack gap="200">
+                <Text variant="bodyMd" as="span">No vendor drafts available yet.</Text>
+              </BlockStack>
             </Card>
           ) : (
             payload.vendors.map((vendor) => {
@@ -803,8 +820,9 @@ export default function InventoryRoute() {
               }, 0);
 
               return (
-                <Card key={vendor.vendorId} title={vendor.vendorName}>
-                  <Card>
+                <Card key={vendor.vendorId}>
+                  <BlockStack gap="200">
+                    <Text variant="headingMd" as="h3">{vendor.vendorName}</Text>
                     <InlineStack gap="400">
                       <Text variant="bodyMd" as="span">
                         Lead time: {vendor.leadTimeDays} days
@@ -816,14 +834,12 @@ export default function InventoryRoute() {
                         Draft total: {formatCurrency(totalDraftValue, vendor.budgetRemaining.currency)}
                       </Text>
                     </InlineStack>
-                  </Card>
+                  </BlockStack>
 
-                  <Card>
-                    <BlockStack gap="200">
+                  <BlockStack gap="200">
                       {vendor.items.map((item) => (
                         <Box
                           key={item.skuId}
-                          background="bg-subdued"
                           padding="200"
                           borderRadius="200"
                         >
@@ -837,9 +853,7 @@ export default function InventoryRoute() {
                                   {item.sku}
                                 </Text>
                               </BlockStack>
-                              <Badge tone="info">
-                                Reco: {formatNumber(item.recommendedOrder)}
-                              </Badge>
+                              <Badge tone="info">{`Reco: ${formatNumber(item.recommendedOrder)}`}</Badge>
                             </InlineStack>
 
                             <InlineStack gap="200" align="space-between" blockAlign="center">
@@ -848,6 +862,7 @@ export default function InventoryRoute() {
                                 labelHidden
                                 type="number"
                                 min={0}
+                                autoComplete="off"
                                 value={String(draftQuantities[item.skuId] ?? item.draftQuantity)}
                                 onChange={(value) => handleDraftChange(item.skuId, value)}
                               />
@@ -865,12 +880,12 @@ export default function InventoryRoute() {
                         </Box>
                       ))}
                     </BlockStack>
-                  </Card>
 
-                  <Card subdued>
+                  <BlockStack gap="200">
                     <TextField
                       label="Planner notes"
                       multiline
+                      autoComplete="off"
                       value={vendorNotes[vendor.vendorId]}
                       onChange={(value) =>
                         setVendorNotes((current) => ({
@@ -879,15 +894,15 @@ export default function InventoryRoute() {
                         }))
                       }
                     />
-                  </Card>
+                  </BlockStack>
 
-                  <Card>
+                  <BlockStack gap="200">
                     <InlineStack align="end" gap="200">
                       <ButtonGroup>
                         <Button
                           onClick={() => handleSaveDraft(vendor.vendorId)}
                           loading={saveFetcher.state !== "idle" && saveFetcher.formData?.get("payload") !== undefined}
-                          primary
+                          variant="primary"
                         >
                           Save draft
                         </Button>
@@ -899,7 +914,7 @@ export default function InventoryRoute() {
                         </Button>
                       </ButtonGroup>
                     </InlineStack>
-                  </Card>
+                  </BlockStack>
                 </Card>
               );
             })
@@ -916,7 +931,7 @@ export default function InventoryRoute() {
             <Modal.Section>
               <BlockStack gap="300">
                 <BlockStack gap="100">
-                  <Text variant="bodyMd" tone="subdued">
+                  <Text variant="bodyMd" tone="subdued" as="span">
                     {detailSku.sku} • {detailSku.vendorName}
                   </Text>
                   <InlineStack gap="200" blockAlign="center">
@@ -957,10 +972,9 @@ export default function InventoryRoute() {
                     <Text variant="headingSm" as="h3">
                       Demand trend
                     </Text>
-                    {detailTrendStats?.deltaPercentage !== null && (
-                      <Badge tone={detailTrendStats.deltaPercentage >= 0 ? "success" : "critical"}>
-                        {detailTrendStats.deltaPercentage >= 0 ? "+" : ""}
-                        {detailTrendStats.deltaPercentage}% WoW
+                    {typeof detailTrendStats?.deltaPercentage === "number" && (
+                      <Badge tone={detailTrendStats!.deltaPercentage >= 0 ? "success" : "critical"}>
+                        {`${detailTrendStats!.deltaPercentage >= 0 ? "+" : ""}${detailTrendStats!.deltaPercentage}% WoW`}
                       </Badge>
                     )}
                   </InlineStack>
@@ -994,7 +1008,7 @@ export default function InventoryRoute() {
                       />
                     </div>
                   ) : (
-                    <Text variant="bodySm" tone="subdued">
+                    <Text variant="bodySm" tone="subdued" as="span">
                       Demand trend data unavailable.
                     </Text>
                   )}
@@ -1017,7 +1031,7 @@ export default function InventoryRoute() {
                   )}
 
                   {useMockData && (
-                    <Text variant="bodySm" tone="subdued">
+                    <Text variant="bodySm" tone="subdued" as="span">
                       Showing mock demand history. Live Shopify analytics will populate this chart once connected.
                     </Text>
                   )}
@@ -1114,8 +1128,7 @@ function BucketTrendSummary({ bucketLabel, dataset, stats }: BucketTrendSummaryP
             </Text>
             {stats.deltaPercentage !== null && (
               <Badge tone={stats.deltaPercentage >= 0 ? "success" : "critical"}>
-                {stats.deltaPercentage >= 0 ? "+" : ""}
-                {stats.deltaPercentage}% WoW
+                {`${stats.deltaPercentage >= 0 ? "+" : ""}${stats.deltaPercentage}% WoW`}
               </Badge>
             )}
           </InlineStack>

@@ -464,6 +464,13 @@ export type InboxMetrics = {
   approvalsPending: number;
   escalated: number;
   ideaCandidates: number;
+  total: number;
+  confidenceHistogram: {
+    low: number;
+    medium: number;
+    high: number;
+    unscored: number;
+  };
 };
 
 export type InboxConversation = {
@@ -480,13 +487,21 @@ export type InboxData = {
   dataset: InboxDataset;
   metrics: InboxMetrics;
   conversations: InboxConversation[];
+  availableScenarios?: MockScenario[];
 };
 
 export type InboxActionEventType =
   | "draft:approved"
   | "draft:updated"
   | "draft:feedback"
-  | "bridge:status";
+  | "bridge:status"
+  | "mcp:request:start"
+  | "mcp:request:success"
+  | "mcp:request:retry"
+  | "mcp:request:error"
+  | "mcp:circuit:open"
+  | "mcp:circuit:half_open"
+  | "mcp:circuit:closed";
 
 export type InboxBridgeStatusEventPayload = {
   status: InboxConnectionStatus;

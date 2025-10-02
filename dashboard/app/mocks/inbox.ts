@@ -106,7 +106,7 @@ const buildTimeline = (
       type: "customer_message" as const,
       actor: ticket.customer.name,
       timestamp: ticket.createdAt,
-      body: faker.lorem.paragraphs({ min: 1, max: 2, separator: "\n\n" }),
+body: faker.lorem.paragraphs({ min: 1, max: 2 }),
       attachments,
     },
   ];
@@ -209,7 +209,7 @@ const buildBaseTickets = ({
   });
 
   const ticketsWithContext: InboxTicket[] = seededTickets.map((ticket, index) => {
-    const draftSeed = faker.lorem.paragraphs({ min: 1, max: 2, separator: "\n\n" });
+const draftSeed = faker.lorem.paragraphs({ min: 1, max: 2 });
     const draft = ensureDraftForTicket({
       ticketId: ticket.id,
       content: draftSeed,
@@ -422,7 +422,22 @@ const toMetrics = (dataset: InboxDataset): InboxMetrics => {
   const approvalsPending = dataset.tickets.filter((ticket) => ticket.priority === "urgent").length;
   const ideaCandidates = dataset.tickets.filter((ticket) => ticket.sentiment === "positive").length;
 
-  return { outstanding, overdue, closedToday, approvalsPending, ideaCandidates };
+  const total = dataset.count;
+  const low = dataset.tickets.filter((t) => t.sentiment === "negative").length;
+  const medium = dataset.tickets.filter((t) => t.sentiment === "neutral").length;
+  const high = dataset.tickets.filter((t) => t.sentiment === "positive").length;
+  const accounted = low + medium + high;
+  const unscored = Math.max(0, total - accounted);
+
+  return {
+    outstanding,
+    overdue,
+    closedToday,
+    approvalsPending,
+    ideaCandidates,
+    total,
+    confidenceHistogram: { low, medium, high, unscored },
+  };
 };
 
 const toConversations = (dataset: InboxDataset): InboxConversation[] =>
@@ -449,9 +464,12 @@ export const getInboxData = (options: InboxDataOptions = {}): InboxData => {
       assignedFilter: options.assignedFilter,
     });
 
+  const availableScenarios: MockScenario[] = ["base", "empty", "warning", "error"];
+
   return {
     dataset,
     metrics: toMetrics(dataset),
     conversations: toConversations(dataset),
+    availableScenarios,
   };
 };

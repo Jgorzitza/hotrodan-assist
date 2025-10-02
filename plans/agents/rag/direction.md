@@ -1,17 +1,19 @@
 # RAG Data Engineer — Direction (owned by Manager)
 
-**Repo**: `~/llama_rag`  •  **Branch**: `main`  •  **Sprint start**: 2025-09-28
-**Last Updated**: 2025-09-28 21:50 - UPDATED BY MANAGER
+Project root (canonical): /home/justin/llama_rag
+**Repo**: `~/llama_rag`  •  **Branch**: `chore/repo-canonical-layout`  •  **Sprint start**: 2025-09-28
 
 ## ✅ TASK COMPLETE - NEXT PHASE READY
 **CURRENT STATUS**: ✅ rag.dotenv-fix COMPLETE
 **NEXT TASK**: rag.advanced-platform (HIGH PRIORITY - Comprehensive Platform Development)
 
-**POLLING COMMAND:**
-```bash
-# Run this every 5 minutes to check for updates:
-ls -la coordination/GO-SIGNAL.md plans/agents/rag/direction.md
-```
+## Approvals Policy
+- Manager-owned edits and assignments are pre-approved; no user approval is required.
+- Do not wait for ad-hoc instructions. Poll every 5 minutes and proceed.
+
+## Deliverables this sprint
+- See `plans/tasks.backlog.yaml` items tagged with your node id.
+- Definition of Done: green tests, updated docs, RPG updated by Manager.
 
 **IMMEDIATE ACTION REQUIRED:**
 1. **START WORKING NOW** - rag.advanced-platform
@@ -51,6 +53,14 @@ ls -la coordination/GO-SIGNAL.md plans/agents/rag/direction.md
 - 🆕 Automated testing suite
 - 🆕 Production deployment tools
 
+## Current Sprint Tasks (Production Readiness)
+Status: TODO
+- Configure persistent Chroma storage and backups.
+- Add embedding caching and query index optimizations.
+- Define and meet p95 latency target under load tests.
+Acceptance:
+- Golden tests pass under load; latency targets documented and met.
+
 ## Focus
 - **IMMEDIATE**: Start rag.advanced-platform NOW
 - **ARCHITECTURE**: Design and implement a robust, scalable RAG platform
@@ -59,31 +69,46 @@ ls -la coordination/GO-SIGNAL.md plans/agents/rag/direction.md
 - **INTEGRATION**: Ensure seamless integration with MCP connectors
 - **CONTINUOUS**: Work continuously, check for updates every 5 minutes
 
-## Next Actions
-1. **START rag.advanced-platform** - Begin platform development
-2. **Design Architecture** - Plan for multi-model, scalable RAG
-3. **Implement Core Features** - Develop advanced search and generation
-4. **Optimize Performance** - Focus on speed and efficiency
-5. **Integrate MCP** - Connect with all MCP data sources
+## Targets
+- `python run_goldens.py` passes.
+- Endpoint `query_chroma_router.py` returns grounded answers with citations.
 
-## 🚨 CRITICAL WARNING
-**You are currently in violation of Manager instructions by sitting idle.**
-**You must start working on rag.advanced-platform immediately.**
-**Failure to work continuously will be considered a critical sprint failure.**
+## First Actions Now
+- Run goldens and capture results:
+```bash
+python run_goldens.py
+```
+- Plan persistent Chroma storage and backup path; record in feedback/rag.md.
 
-## 🎯 TASK COMPLETE SUMMARY
-**Status**: ✅ **rag.dotenv-fix COMPLETE - ENVIRONMENT VARIABLES FIXED**
-- **Dotenv Loading**: ✅ COMPLETE - Environment variables loading fixed
-- **OpenAI Integration**: ✅ COMPLETE - OpenAI API key working
-- **RAG System**: ✅ COMPLETE - RAG system operational
-- **Performance**: ✅ COMPLETE - System performance optimized
+## Continuous Work Protocol
+- Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/rag.md.
+- If blocked >1 minute, log blocker and start fallback; never idle.
 
-**NEXT PHASE**: rag.advanced-platform for comprehensive platform development
+## Next 5 Tasks (updated 2025-10-01 08:29 UTC)
+1) Persist Chroma indexes and set backup cadence
+2) Add embedding cache; tune HNSW params; record p95 targets
+3) Golden tests under load; capture latency distribution
+4) Expose /metrics Prometheus counters; add alerts
+5) Document restore/backup procedures
+- Configure persistent Chroma storage path and backups.
+- Add embedding caching; tune index params for query performance.
+- Define p95 latency target; run load and capture results.
+- Append results + charts to feedback/rag.md.
 
-## 🚀 NEW TASK ASSIGNED
-**Task**: rag.advanced-platform
-**Focus**: Advanced platform, multi-model support, comprehensive features
-**Priority**: HIGH
-**Status**: READY TO START
+## Production Today — Priority Override (2025-10-01)
 
-**START WORKING ON RAG.ADVANCED-PLATFORM IMMEDIATELY!**
+Goals (EOD):
+- Goldens pass; health/ready/metrics up; retrieval-only mode documented; p95 target captured.
+
+Tasks (EOD):
+1) Run python run_goldens.py; attach output (0 regressions).
+2) Confirm /ready and /prometheus endpoints; attach snapshots in feedback/rag.md.
+3) Document p95 latency target and current numbers from local/load runs.
+
+Acceptance:
+- Goldens pass.
+- Health/metrics verified with evidence.
+- p95 target documented with current measurement.
+
+### CEO Dependencies — Today
+- Optional: Provide OPENAI_API_KEY to enable synthesis; not required for today (retrieval-only acceptable).

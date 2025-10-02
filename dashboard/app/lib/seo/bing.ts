@@ -22,7 +22,7 @@ export class MockBingClient implements BingClient {
     this.options = options;
   }
 
-  async fetchPageMetrics(params: {
+  async fetchPageMetrics(_params: {
     siteUrl: string;
     startDate: string;
     endDate: string;
@@ -32,4 +32,4 @@ export class MockBingClient implements BingClient {
   }
 }
 
-export const createBingClient = (options?: MockOptions) => new MockBingClient(options);
+export const createBingClient = (options?: MockOptions): BingClient => new MockBingClient(options);

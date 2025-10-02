@@ -15,8 +15,14 @@ const seedScriptPath = fileURLToPath(new URL("./prisma/seed.ts", import.meta.url
 const hasSeedHarness =
   existsSync(seedLoaderPath) && existsSync(seedRegisterPath) && existsSync(seedScriptPath);
 
+// Choose schema based on DATABASE_URL so local dev can use SQLite
+const dbUrl = process.env.DATABASE_URL || "";
+const schemaPath = dbUrl.startsWith("file:")
+  ? "prisma/schema.sqlite.prisma"
+  : "prisma/schema.prisma";
+
 export default defineConfig({
-  schema: "prisma/schema.prisma",
+  schema: schemaPath,
   ...(hasSeedHarness
     ? {
         migrations: {

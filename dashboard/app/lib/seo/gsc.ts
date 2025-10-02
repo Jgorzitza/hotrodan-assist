@@ -38,7 +38,7 @@ export class MockGscClient implements GscClient {
     this.options = options;
   }
 
-  async fetchCoverageIssues(params: {
+  async fetchCoverageIssues(_params: {
     siteUrl: string;
     startDate: string;
     endDate: string;
@@ -87,15 +87,19 @@ export class MockGscClient implements GscClient {
     ];
   }
 
-  async fetchSeoActions(): Promise<SeoAction[]> {
+  async fetchSeoActions(_params: { siteUrl: string }): Promise<SeoAction[]> {
     const { actions } = getSeoCollections(this.options);
     return actions;
   }
 
-  async fetchKeywordTable(): Promise<SeoKeywordRow[]> {
+  async fetchKeywordTable(_params: {
+    siteUrl: string;
+    startDate: string;
+    endDate: string;
+  }): Promise<SeoKeywordRow[]> {
     const { keywords } = getSeoCollections(this.options);
     return keywords;
   }
 }
 
-export const createGscClient = (options?: MockOptions) => new MockGscClient(options);
+export const createGscClient = (options?: MockOptions): GscClient => new MockGscClient(options);

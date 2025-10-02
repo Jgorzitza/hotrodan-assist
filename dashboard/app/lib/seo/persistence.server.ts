@@ -1,4 +1,5 @@
-import { Prisma, SeoInsightSeverity, SeoInsightStatus } from "@prisma/client";
+import prismaPkg from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 import prisma from "~/db.server";
 import type {
@@ -6,6 +7,7 @@ import type {
   SeoActionStatus,
   SeoSource,
 } from "~/types/dashboard";
+const { SeoInsightSeverity, SeoInsightStatus } = prismaPkg;
 
 const ACTION_CATEGORY = "SEO_ACTION";
 

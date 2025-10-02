@@ -53,3 +53,26 @@ reingest.log
 # virtualenvs
 .venv*/
 venv/
+
+# Project artifacts and logs
+artifacts/
+playwright-report/
+dashboard/playwright-report/
+logs/
+*.pid
+coordination/inbox/**/dev.pid
+coordination/inbox/**/polling.pid
+coordination/inbox/dashboard/current_tunnel_url.txt
+
+# Test outputs
+coverage/
+test-results/
+dashboard/test-results/
+
+# Dashboard caches
+dashboard/.eslintcache
+dashboard/.cache/
+dashboard/.turbo/
+
+# Ignore stray workspace copies or large untracked app dirs
+apps/HRAN DASHBOARD/

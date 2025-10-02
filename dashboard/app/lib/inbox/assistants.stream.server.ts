@@ -7,6 +7,7 @@ import { publishInboxActionEvent } from "./events.server";
 const STREAM_PATH = "/assistants/events";
 const INITIAL_RECONNECT_DELAY_MS = 2000;
 const MAX_RECONNECT_DELAY_MS = 30000;
+const MAX_BUFFER_BYTES = 256 * 1024; // cap in-memory SSE buffer to 256KB
 
 type AssistantsStreamState = {
   baseUrl: string;
@@ -182,6 +183,15 @@ const processBuffer = (state: AssistantsStreamState) => {
   }
 
   state.pendingBuffer = buffer;
+
+  // Backpressure guard: cap buffer to avoid unbounded growth
+  if (state.pendingBuffer.length > MAX_BUFFER_BYTES) {
+    // Keep the tail as it is most likely to contain a partial message
+    state.pendingBuffer = state.pendingBuffer.slice(-MAX_BUFFER_BYTES);
+    state.logger.warn(
+      `assistants stream: pending buffer capped at ${MAX_BUFFER_BYTES} bytes`,
+    );
+  }
 };
 
 const startStream = async (state: AssistantsStreamState) => {

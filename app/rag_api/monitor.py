@@ -49,9 +49,9 @@ def track_performance(func):
             )
 
             return result
-        except Exception as e:
+        except Exception:
             metrics["error_count"] += 1
-            raise e
+            raise
 
     return wrapper
 
@@ -66,9 +66,7 @@ def get_metrics() -> Dict[str, Any]:
             metrics["error_count"] / max(metrics["query_count"], 1) * 100, 2
         ),
         "last_query_time": metrics["last_query_time"],
-        "queries_by_hour": dict(
-            list(metrics["queries_by_hour"].items())[-24:]
-        ),  # Last 24 hours
+        "queries_by_hour": dict(list(metrics["queries_by_hour"].items())[-24:]),
         "recent_response_times_ms": [
             round(t * 1000, 2) for t in metrics["response_times"][-10:]
         ],
@@ -77,26 +75,9 @@ def get_metrics() -> Dict[str, Any]:
 
 def save_metrics():
     """Save metrics to file for persistence."""
-    metrics_file = "/home/justin/llama_rag/app/rag_api/metrics.json"
+    metrics_file = "/app/metrics.json"
     try:
         with open(metrics_file, "w") as f:
             json.dump(metrics, f, indent=2)
-    except Exception as e:
-        print(f"Error saving metrics: {e}")
-
-
-def load_metrics():
-    """Load metrics from file."""
-    metrics_file = "/home/justin/llama_rag/app/rag_api/metrics.json"
-    global metrics
-    try:
-        if os.path.exists(metrics_file):
-            with open(metrics_file, "r") as f:
-                loaded_metrics = json.load(f)
-                metrics.update(loaded_metrics)
-    except Exception as e:
-        print(f"Error loading metrics: {e}")
-
-
-# Load metrics on import
-load_metrics()
+    except Exception:
+        pass

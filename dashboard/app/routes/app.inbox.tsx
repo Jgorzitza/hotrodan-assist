@@ -25,7 +25,6 @@ import {
   Toast,
 } from "@shopify/polaris";
 import { ThumbsDownIcon, ThumbsUpIcon } from "@shopify/polaris-icons";
-import { TitleBar } from "@shopify/app-bridge-react";
 
 import { authenticate } from "../shopify.server";
 import { storeSettingsRepository } from "../lib/settings/repository.server";
@@ -1093,10 +1092,13 @@ export default function InboxRoute() {
           next[payload.ticket.id] = payload.ticket.aiDraft.feedback;
           mutated = true;
         } else if (payload.feedback) {
-          const existing = next[payload.feedback.ticketId] ?? [];
-          const deduped = existing.filter((entry) => entry.id !== payload.feedback.id);
-          next[payload.feedback.ticketId] = [...deduped, payload.feedback];
-          mutated = true;
+          const feedback = payload.feedback;
+          if (feedback) {
+            const existing = next[feedback.ticketId] ?? [];
+            const deduped = existing.filter((entry) => entry.id !== feedback.id);
+            next[feedback.ticketId] = [...deduped, feedback];
+            mutated = true;
+          }
         }
 
         if (!mutated) {
@@ -1412,7 +1414,7 @@ export default function InboxRoute() {
       subtitle="Monitor conversations, approvals, and SLA breaches across channels."
     >
       <Layout>
-        <Layout.Section >
+        <Layout.Section>
           <BlockStack gap="300">
             {(dataset.alert || dataset.error || useMockData) && (
               <BlockStack gap="200">
@@ -1441,7 +1443,7 @@ export default function InboxRoute() {
               <Badge tone={CONNECTION_STATUS_TONE[connectionStatus]}>
                 {CONNECTION_STATUS_LABEL[connectionStatus]}
               </Badge>
-              <Text variant="bodySm" tone="subdued">
+              <Text variant="bodySm" tone="subdued" as="span">
                 {CONNECTION_STATUS_DESCRIPTION[connectionStatus]}
               </Text>
               {connectionStatus === "reconnecting" && (
@@ -1458,12 +1460,12 @@ export default function InboxRoute() {
             <InlineStack gap="150" blockAlign="center">
               <Badge tone="info">{providerBadgeLabel}</Badge>
               {providerTransportLabel ? (
-                <Badge tone="subdued">{providerTransportLabel}</Badge>
+                <Badge tone="info">{providerTransportLabel}</Badge>
               ) : null}
-              <Text variant="bodySm" tone="subdued">
+              <Text variant="bodySm" tone="subdued" as="span">
                 {providerCapabilitiesLabel}
               </Text>
-              <Text variant="bodySm" tone="subdued">
+              <Text variant="bodySm" tone="subdued" as="span">
                 {providerStatusLabel}
               </Text>
             </InlineStack>
@@ -1478,8 +1480,9 @@ export default function InboxRoute() {
               </Banner>
             )}
 
-            <Card title="Tickets overview" sectioned>
+            <Card>
               <BlockStack gap="200">
+                <Text variant="headingSm" as="h3">Tickets overview</Text>
                 <MetricRow label="Outstanding" value={metrics.outstanding} tone="critical" />
                 <MetricRow label="Overdue" value={metrics.overdue} tone="warning" />
                 <MetricRow label="Approvals pending" value={metrics.approvalsPending} tone="attention" />
@@ -1525,7 +1528,6 @@ export default function InboxRoute() {
                       id={ticket.id}
                       accessibilityLabel={`View ${ticket.subject}`}
                       onClick={() => handleSelectTicket(ticket.id)}
-                      selected={ticket.id === selectedTicket?.id}
                     >
                       <BlockStack gap="100">
                         <InlineStack align="space-between" blockAlign="center">
@@ -1555,11 +1557,11 @@ export default function InboxRoute() {
                 />
               </Card>
             </Layout.Section>
-            <Layout.Section secondary>
+        <Layout.Section>
               {hasTickets && activeTicket ? (
-                <Card title={activeTicket.subject}>
-                  <Card.Section>
-                    <BlockStack gap="200">
+                <Card>
+                  <BlockStack gap="200">
+                    <Text variant="headingSm" as="h3">{activeTicket.subject}</Text>
                       <InlineStack gap="200" blockAlign="center">
                         <Badge tone={statusTone(activeTicket.status)}>
                           {formatStatus(activeTicket.status)}
@@ -1575,10 +1577,8 @@ export default function InboxRoute() {
                       <Text variant="bodySm" tone="subdued" as="p">
                         {activeTicket.customer.name} • {formatAssignee(activeTicket.assignedTo)}
                       </Text>
-                    </BlockStack>
-                  </Card.Section>
-                  <Card.Section>
-                    <BlockStack gap="200">
+                  </BlockStack>
+                  <BlockStack gap="200">
                       <Text variant="headingSm" as="h3">
                         Conversation timeline
                       </Text>
@@ -1615,14 +1615,12 @@ export default function InboxRoute() {
                           ))}
                         </BlockStack>
                       ) : (
-                        <Text variant="bodySm" tone="subdued">
+                        <Text variant="bodySm" tone="subdued" as="span">
                           Timeline events will appear here as messages arrive.
                         </Text>
                       )}
                     </BlockStack>
-                  </Card.Section>
-                  <Card.Section>
-                    <BlockStack gap="200">
+                  <BlockStack gap="200">
                       <TextField
                         label="AI draft response"
                         multiline
@@ -1632,7 +1630,7 @@ export default function InboxRoute() {
                         helpText={`Last updated ${formatTimeAgo(activeTicket.aiDraft.updatedAt)} by ${activeTicket.aiDraft.updatedBy}`}
                         disabled={isSubmitting}
                       />
-                      <Text tone="subdued" variant="bodySm">
+                      <Text tone="subdued" variant="bodySm" as="span">
                         Provide edits or approve to log feedback for future training iterations.
                       </Text>
                       <InlineStack align="end">
@@ -1641,7 +1639,7 @@ export default function InboxRoute() {
                             Save edits
                           </Button>
                           <Button
-                            primary
+                            variant="primary"
                             onClick={() => handleDraftAction("approve")}
                             loading={isSubmitting}
                           >
@@ -1650,16 +1648,14 @@ export default function InboxRoute() {
                         </ButtonGroup>
                       </InlineStack>
                     </BlockStack>
-                  </Card.Section>
-                  <Card.Section subdued>
-                    <BlockStack gap="200">
-                      <InlineStack align="space-between" blockAlign="center">
-                        <Text variant="headingSm" as="h3">
-                          Draft feedback
-                        </Text>
-                        {currentFeedback.length ? (
-                          <Badge tone="info">{currentFeedback.length}</Badge>
-                        ) : null}
+                  <BlockStack gap="200">
+                    <InlineStack align="space-between" blockAlign="center">
+                      <Text variant="headingSm" as="h3">
+                        Draft feedback
+                      </Text>
+                      {currentFeedback.length ? (
+                        <Badge tone="info">{String(currentFeedback.length)}</Badge>
+                      ) : null}
                       </InlineStack>
                       <InlineStack gap="200">
                         <ButtonGroup>
@@ -1699,7 +1695,7 @@ export default function InboxRoute() {
                       />
                       {currentFeedback.length ? (
                         <BlockStack gap="100">
-                          <Text variant="bodySm" tone="subdued">
+                          <Text variant="bodySm" tone="subdued" as="span">
                             Recent feedback signals
                           </Text>
                           {feedbackHistory.map((entry) => (
@@ -1719,20 +1715,19 @@ export default function InboxRoute() {
                           ))}
                         </BlockStack>
                       ) : (
-                        <Text variant="bodySm" tone="subdued">
+                        <Text variant="bodySm" tone="subdued" as="span">
                           No feedback submitted yet.
                         </Text>
                       )}
                     </BlockStack>
-                  </Card.Section>
                 </Card>
               ) : (
-                <Card sectioned>
+                <Card>
                   <BlockStack gap="200">
                     <Text variant="headingSm" as="h3">
                       No tickets match the current filters.
                     </Text>
-                    <Text tone="subdued" variant="bodySm">
+                    <Text tone="subdued" variant="bodySm" as="span">
                       Adjust the filters on the left to review other inbox conversations.
                     </Text>
                   </BlockStack>
@@ -1780,7 +1775,7 @@ function MetricRow({
       <Text variant="bodyMd" as="span">
         {label}
       </Text>
-      <Badge tone={tone}>{value}</Badge>
+      <Badge tone={tone}>{String(value)}</Badge>
     </InlineStack>
   );
 }

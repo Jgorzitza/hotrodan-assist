@@ -12,7 +12,14 @@ from uuid import uuid4
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query, Request, status
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, PlainTextResponse
+from prometheus_client import generate_latest
+from opentelemetry import trace
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from sqlalchemy import JSON, DateTime, Integer, String, Text, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -137,9 +144,43 @@ DEFAULT_CHANNEL = "email"
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
 
 
-async def _post_draft(
-    client: httpx.AsyncClient, payload: Dict[str, Any]
-) -> Dict[str, Any]:
+def _maybe_setup_tracing(service_name: str) -> None:
+    endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+    if not endpoint:
+        return
+    resource = Resource.create({"service.name": service_name})
+    provider = TracerProvider(resource=resource)
+    processor = BatchSpanProcessor(OTLPSpanExporter())
+    provider.add_span_processor(processor)
+    trace.set_tracer_provider(provider)
+    FastAPIInstrumentor.instrument_app(app)
+
+
+_maybe_setup_tracing("sync")
+
+
+@app.get("/health")
+async def health() -> Dict[str, Any]:
+    """Liveness/readiness probe for Sync service."""
+    ok = True
+    try:
+        # Simple DB ping
+        async with ENGINE.begin() as conn:
+            await conn.run_sync(lambda c: None)
+    except Exception:
+        ok = False
+    return {
+        "status": "ok" if ok else "degraded",
+        "service": "sync",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+    }
+
+
+@app.get("/prometheus")
+async def prometheus_metrics() -> PlainTextResponse:
+    return PlainTextResponse(generate_latest().decode("utf-8"))
+
+async def _post_draft(client: httpx.AsyncClient, payload: Dict[str, Any]) -> Dict[str, Any]:
     try:
         resp = await client.post(ASSISTANTS_DRAFT_URL, json=payload, timeout=20.0)
         resp.raise_for_status()
