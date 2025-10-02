@@ -7,7 +7,7 @@ Project root (canonical): /home/justin/llama_rag
 - Do not wait for ad-hoc instructions. Poll every 5 minutes and proceed.
 
 ## Continuous Work Protocol (MANDATORY)
-- Never post “working on it”, “next up…”, or “no more breaks” without proof-of-work. Log next steps in your notes, not to the CEO, and keep executing.
+- Never post “working on it”, “next up…”, or “no more breaks” to the CEO without proof-of-work. Updates belong in your coordination inbox + manager notes; keep executing.
 - Every 5 minutes, append to feedback/[your-agent].md with at least one of:
   - A diff snippet of changed files (path + summary), or
   - Test/lint output excerpt with pass/fail and counts, or
@@ -19,7 +19,8 @@ Project root (canonical): /home/justin/llama_rag
 ## Simple instructions for all agents
 1) Poll coordination/GO-SIGNAL.md, coordination/AGENT-INSTRUCTIONS.md, and your plans/agents/[your-agent]/direction.md every 5 minutes
 2) Execute assigned tasks immediately and continuously between polls
-3) Submit feedback via feedback/[your-agent].md with proof-of-work every cycle (see above)
+3) Submit feedback via feedback/[your-agent].md with proof-of-work every cycle (see above) and continue appending manager updates in coordination/inbox/[agent]/ files
+4) Never status-ping the CEO; record next steps in your coordination note and keep working unless manager explicitly redirects
 4) Route questions through manager notes or blockers log—do not pause to ask the CEO; keep working the backlog until directed otherwise
 
 ## CEO Directive — Production Today (2025-10-01)
