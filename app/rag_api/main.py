@@ -11,6 +11,7 @@ from hashlib import sha1
 import json
 import time
 from datetime import datetime
+from pathlib import Path
 
 import chromadb
 from fastapi import FastAPI, HTTPException, Request
@@ -20,6 +21,12 @@ from pydantic import BaseModel
 
 from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.vector_stores.chroma import ChromaVectorStore
+try:
+    from backup import ensure_storage_dirs, create_chroma_backup
+except ImportError:
+    from .backup import ensure_storage_dirs, create_chroma_backup
+
+from embedding_cache import RedisCachedEmbedding
 
 # Monitoring helpers
 from monitor import track_performance, get_metrics, save_metrics
@@ -35,9 +42,34 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 # Load .env for container and local runs
 load_dotenv()
 
+def _resolve_path(env_value: str | None, relative: str) -> str:
+    candidates = []
+    if env_value:
+        candidates.append(Path(env_value))
+    candidates.append(Path('/workspace') / relative)
+    candidates.append(Path.cwd() / relative)
+    candidates.append(Path(__file__).resolve().parent.parent / relative)
+    seen = set()
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        try:
+            resolved.mkdir(parents=True, exist_ok=True)
+            return str(resolved)
+        except PermissionError:
+            continue
+        except OSError:
+            continue
+    fallback_root = (Path(__file__).resolve().parent / relative).resolve()
+    fallback_root.mkdir(parents=True, exist_ok=True)
+    return str(fallback_root)
+
+
 # Resolve storage/collection settings from environment
-CHROMA_PATH = os.getenv("CHROMA_PATH", "/workspace/chroma")
-PERSIST_DIR = os.getenv("PERSIST_DIR", "/workspace/storage")
+CHROMA_PATH = _resolve_path(os.getenv("CHROMA_PATH"), "chroma")
+PERSIST_DIR = _resolve_path(os.getenv("PERSIST_DIR"), "storage")
 COLLECTION = os.getenv("COLLECTION", "hotrodan")
 INDEX_ID = os.getenv("INDEX_ID", "hotrodan")
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
@@ -47,27 +79,59 @@ RAG_REQUIRE_AUTH = os.getenv("RAG_REQUIRE_AUTH", "false").lower() == "true"
 RAG_API_TOKEN = os.getenv("RAG_API_TOKEN", "")
 CORS_ALLOW_ORIGINS = os.getenv("CORS_ALLOW_ORIGINS", "*")
 AB_VARIANTS = [v.strip() for v in os.getenv("AB_VARIANTS", "A,B").split(",") if v.strip()]
+CHROMA_BACKUP_DIR = _resolve_path(os.getenv("CHROMA_BACKUP_DIR"), "storage/backups/chroma")
+CHROMA_BACKUP_RETENTION = int(os.getenv("CHROMA_BACKUP_RETENTION", "5"))
+EMBEDDING_CACHE_TTL = int(os.getenv("EMBEDDING_CACHE_TTL", "86400"))
+EMBEDDING_CACHE_PREFIX = os.getenv("EMBEDDING_CACHE_PREFIX", "emb")
+CHROMA_HNSW_M = int(os.getenv("CHROMA_HNSW_M", "32"))
+CHROMA_HNSW_EF_CONSTRUCTION = int(os.getenv("CHROMA_HNSW_EF_CONSTRUCTION", "200"))
 
 GENERATION_MODE = os.getenv("RAG_GENERATION_MODE", "openai")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+# ----- Redis helpers -----
+_redis_client = None
+
+def get_redis():
+    global _redis_client
+    if _redis_client is None:
+        try:
+            _redis_client = redis.from_url(REDIS_URL)
+        except Exception:
+            _redis_client = None
+    return _redis_client
+
+
+ensure_storage_dirs(CHROMA_PATH, PERSIST_DIR, CHROMA_BACKUP_DIR)
+
 # Configure LlamaIndex models
 from llama_index.core import Settings as LISettings
+from llama_index.embeddings.fastembed import FastEmbedEmbedding
 
+embed_model = None
 if OPENAI_API_KEY and GENERATION_MODE == "openai":
     try:
         from llama_index.llms.openai import OpenAI as OpenAI_LLM
         from llama_index.embeddings.openai import OpenAIEmbedding
         LISettings.llm = OpenAI_LLM(model=os.getenv("RAG_LLM_MODEL", "gpt-4o-mini"))
-        LISettings.embed_model = OpenAIEmbedding(model=os.getenv("RAG_EMBED_MODEL", "text-embedding-3-small"))
+        embed_model = OpenAIEmbedding(model=os.getenv("RAG_EMBED_MODEL", "text-embedding-3-small"))
     except Exception:
         GENERATION_MODE = "retrieval-only"
-        from llama_index.embeddings.fastembed import FastEmbedEmbedding
-        LISettings.embed_model = FastEmbedEmbedding(model_name=os.getenv("FASTEMBED_MODEL", "BAAI/bge-small-en-v1.5"))
+        embed_model = FastEmbedEmbedding(model_name=os.getenv("FASTEMBED_MODEL", "BAAI/bge-small-en-v1.5"))
 else:
-    # retrieval-only (or missing key): ensure local embedding model for query vectors
-    from llama_index.embeddings.fastembed import FastEmbedEmbedding
-    LISettings.embed_model = FastEmbedEmbedding(model_name=os.getenv("FASTEMBED_MODEL", "BAAI/bge-small-en-v1.5"))
+    embed_model = FastEmbedEmbedding(model_name=os.getenv("FASTEMBED_MODEL", "BAAI/bge-small-en-v1.5"))
+
+if not (OPENAI_API_KEY and GENERATION_MODE == "openai"):
+    LISettings.llm = None
+
+LISettings.embed_model = RedisCachedEmbedding(
+    inner=embed_model,
+    redis_factory=get_redis,
+    ttl_seconds=EMBEDDING_CACHE_TTL,
+    prefix=EMBEDDING_CACHE_PREFIX,
+    on_hit=lambda kind: EMBED_CACHE_HITS.labels(kind=kind).inc(),
+    on_miss=lambda kind: EMBED_CACHE_MISSES.labels(kind=kind).inc(),
+)
 
 _SYSTEM_HINT = (
     "Retail EFI specialist. Cover pump sizing (LPH vs hp & fuel), "
@@ -101,24 +165,16 @@ if os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT"):
 REQUESTS = Counter("rag_requests_total", "Total RAG requests", ["route"])
 RATE_LIMITED = Counter("rag_rate_limited_total", "Requests rejected due to rate limiting")
 
+CACHE_HITS = Counter("rag_cache_hits_total", "Cache hits for query/embedding cache", ['layer'])
+CACHE_MISSES = Counter("rag_cache_misses_total", "Cache misses for query/embedding cache", ['layer'])
+EMBED_CACHE_HITS = Counter("rag_embedding_cache_hits_total", "Embedding cache hits", ['kind'])
+EMBED_CACHE_MISSES = Counter("rag_embedding_cache_misses_total", "Embedding cache misses", ['kind'])
+
 class QueryIn(BaseModel):
     question: str
     top_k: int = 10
     mode: str | None = None  # "hybrid" or None
     ab: str | None = None  # optional explicit A/B bucket
-
-# ----- Redis helpers -----
-_redis_client = None
-
-def get_redis():
-    global _redis_client
-    if _redis_client is None:
-        try:
-            _redis_client = redis.from_url(REDIS_URL)
-        except Exception:
-            _redis_client = None
-    return _redis_client
-
 
 def cache_key_for(q: QueryIn) -> str:
     raw = f"{q.question}\n{q.top_k}".encode()
@@ -128,11 +184,21 @@ def cache_key_for(q: QueryIn) -> str:
 def cache_get(k: str):
     r = get_redis()
     if not r:
+        CACHE_MISSES.labels(layer="query").inc()
         return None
     try:
         v = r.get(k)
-        return json.loads(v) if v else None
+        if v:
+            CACHE_HITS.labels(layer="query").inc()
+            try:
+                return json.loads(v.decode("utf-8"))
+            except Exception:
+                CACHE_MISSES.labels(layer="query").inc()
+                return None
+        CACHE_MISSES.labels(layer="query").inc()
+        return None
     except Exception:
+        CACHE_MISSES.labels(layer="query").inc()
         return None
 
 
@@ -195,7 +261,6 @@ class MetricsResponse(BaseModel):
 
 # ---- Corrections layer ----
 import re
-from pathlib import Path
 from typing import List, Dict, Any
 
 _CORRECTIONS: List[Dict[str, Any]] | None = None
@@ -257,9 +322,15 @@ def query(req: Request, q: QueryIn):
     REQUESTS.labels(route="query").inc()
     try:
         client = chromadb.PersistentClient(path=CHROMA_PATH)
-        collection = client.get_or_create_collection(
-            COLLECTION, metadata={"hnsw:space": "cosine"}
-        )
+        collection_metadata = {"hnsw:space": "cosine"}
+        if CHROMA_HNSW_M:
+            collection_metadata["hnsw:M"] = int(CHROMA_HNSW_M)
+        if CHROMA_HNSW_EF_CONSTRUCTION:
+            collection_metadata["hnsw:construction_ef"] = int(CHROMA_HNSW_EF_CONSTRUCTION)
+        try:
+            collection = client.get_collection(COLLECTION)
+        except Exception:
+            collection = client.create_collection(COLLECTION, metadata=collection_metadata)
         vector_store = ChromaVectorStore(chroma_collection=collection)
         storage = StorageContext.from_defaults(
             vector_store=vector_store, persist_dir=PERSIST_DIR
@@ -409,6 +480,17 @@ def analytics_queries(limit: int = 50):
         except Exception:
             out = []
     return {"queries": out}
+
+@app.post("/admin/backup")
+def admin_backup():
+    try:
+        manifest = create_chroma_backup(
+            CHROMA_PATH, PERSIST_DIR, CHROMA_BACKUP_DIR, CHROMA_BACKUP_RETENTION
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"backup failed: {exc}") from exc
+    return manifest
+
 
 @app.post("/admin/clear-cache")
 def admin_clear_cache():

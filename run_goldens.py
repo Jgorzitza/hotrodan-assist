@@ -1,8 +1,42 @@
 import os, yaml, subprocess, sys
+from pathlib import Path
 
 GOLDENS = "goldens/qa.yaml"
 ROUTER = "query_chroma_router.py"
 TIMEOUT_S = 45  # fail fast if anything stalls
+
+
+# Warm up the router once to avoid slow-on-first-call stalls (LLM init, cache misses, etc.)
+def warm_up(cases):
+    if not cases:
+        return
+    first = cases[0]
+    question = first.get("q")
+    if not question:
+        return
+    try:
+        run_query(question)
+        print(f"[warmup] Primed router with: {question!r}")
+    except subprocess.TimeoutExpired:
+        print(f"[WARN warmup timeout] No response in {TIMEOUT_S}s while priming")
+    except Exception as exc:
+        print(f"[WARN warmup error] {exc}")
+
+
+class Tee:
+    def __init__(self, *streams):
+        self.streams = streams
+
+    def write(self, data):
+        for stream in self.streams:
+            stream.write(data)
+        for stream in self.streams:
+            stream.flush()
+
+    def flush(self):
+        for stream in self.streams:
+            stream.flush()
+
 
 def run_query(q):
     env = dict(os.environ)
@@ -12,6 +46,17 @@ def run_query(q):
     if p.returncode != 0:
         raise RuntimeError(f"Router errored: {p.stderr.strip()}")
     return p.stdout
+
+def configure_logging():
+    log_target = os.environ.get("RUN_GOLDENS_LOG", "logs/run_goldens.log")
+    if not log_target:
+        return None, None, None
+    path = Path(log_target)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle = path.open("a")
+    tee = Tee(sys.stdout, handle)
+    return handle, tee, path
+
 
 def check_case(case, out):
     ok = True
@@ -34,18 +79,30 @@ def main():
     if not os.path.exists(GOLDENS):
         print("Missing goldens/qa.yaml"); sys.exit(2)
     cases = yaml.safe_load(open(GOLDENS)) or []
+    log_handle, tee, log_path = configure_logging()
+    original_stdout = sys.stdout
+    if tee:
+        sys.stdout = tee
+        print(f"[log] Appending run output to {log_path}")
     failures = 0
-    for i, case in enumerate(cases, 1):
-        q = case["q"]
-        print(f"\n[{i}] {q}")
-        try:
-            out = run_query(q)
-        except subprocess.TimeoutExpired:
-            print(f"[FAIL timeout] No response in {TIMEOUT_S}s"); failures += 1; continue
-        except Exception as e:
-            print(f"[FAIL error] {e}"); failures += 1; continue
-        if not check_case(case, out):
-            print("---- OUTPUT ----"); print(out); failures += 1
+    try:
+        warm_up(cases)
+        for i, case in enumerate(cases, 1):
+                q = case["q"]
+                print(f"\n[{i}] {q}")
+                try:
+                    out = run_query(q)
+                except subprocess.TimeoutExpired:
+                    print(f"[FAIL timeout] No response in {TIMEOUT_S}s"); failures += 1; continue
+                except Exception as e:
+                    print(f"[FAIL error] {e}"); failures += 1; continue
+                if not check_case(case, out):
+                    print("---- OUTPUT ----"); print(out); failures += 1
+    finally:
+        if tee:
+            sys.stdout = original_stdout
+            log_handle.close()
+
     if failures:
         print(f"\n{failures} failing golden(s)."); sys.exit(1)
     print("\nAll goldens passed."); sys.exit(0)
