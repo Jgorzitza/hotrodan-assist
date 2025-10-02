@@ -1292,3 +1292,38 @@ CEO Directive — Production Today (2025-10-01)
 
 **Starting with RAG Docker healthcheck fix...**
 
+
+## 2025-10-01T16:01:32-06:00 — QA sweep summary
+- Ran read-only checks (node, npm, git status); curl metrics and SSE endpoints; vitest MCP + settings tests; RAG goldens attempt.
+- Evidence appended to coordination/inbox/quality/2025-10-01-notes.md.
+- Pending: live MCP validation (requires MCP_API_URL/MCP_API_KEY) and Dashboard embedded OAuth validation (awaiting Partner CLI run).
+
+## 2025-10-01T16:16:13-06:00 — QA sweep summary
+- Executed curl probes for metrics/health endpoints; ran vitest (sales+settings) and attempted RAG goldens; appended outputs to QA notes.
+- Pending: live MCP validation (needs MCP_API_URL/MCP_API_KEY) and Partner CLI embedded OAuth confirmation by Dashboard.
+
+## 2025-10-01T20:43:06-06:00 — QA sweep summary
+- Probed dashboard metrics/health, approvals SSE, RAG health; executed vitest (SEO, Inventory, Settings) and attempted RAG goldens; evidence appended.
+- Tracking open risks: MCP live validation (awaiting creds), dashboard metrics availability pending dev server/CLI run.
+
+## 2025-10-01T20:51:28-06:00 — QA sweep summary
+- Re-ran read-only probes and tests; appended outputs to QA notes; maintaining 5-minute cadence.
+
+## 2025-10-01T21:57:24-06:00 — QA sweep summary
+- Probes and targeted tests executed; outputs appended to QA notes. Next cycle in 5 minutes or upon new direction.
+
+## 2025-10-01T22:10:06-06:00 — QA sweep summary
+- Read-only probes and targeted tests executed; outputs appended to QA notes. Next cycle in 5 minutes per policy.
+
+## 2025-10-01T22:11:27-06:00 — QA sweep summary
+- Extended probes: metrics/health for app, MCP, inventory, SEO; SSE head; RAG health; vitest (MCP headers+ping, settings); goldens attempt. Evidence in QA notes.
+
+## 2025-10-01T22:14:19-06:00 — QA sweep summary
+- Probes and targeted tests executed; outputs appended to QA notes; next cycle in 5 minutes.
+
+## 2025-10-01T22:19:23-06:00 — QA sweep summary
+- Continuous read-only checks and tests executed; outputs appended to QA notes; next update in 5 minutes as per protocol.
+
+## 2025-10-01T22:25:20-06:00 — QA quality checks summary
+- Typecheck (tsc), lint (errors only), secret scan, and TODO/FIXME/HACK counts executed; evidence appended to QA notes.
+- Continuing 5-minute cadence; escalating only genuine blockers.

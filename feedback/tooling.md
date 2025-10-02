@@ -128,3 +128,17 @@
 - Monitor: switch to python3 or alias 'python'; rerun and attach logs.
 - Metrics: curl -sI http://localhost:8080/app/metrics | head -n1 → expect 200; attach output.
 - CI: upload Path B results; link artifacts.
+
+2025-10-02T04:08Z — Ran vitest with junit reporter (npx vitest run --root dashboard --config vitest.config.ts --reporter=junit --outputFile test-results/dashboard/vitest-junit.xml). File saved at test-results/dashboard/vitest-junit.xml.
+2025-10-02T04:08Z — Lint JUnit: npm run lint -- --format junit --output-file ../test-results/dashboard/eslint-junit.xml (relative) produced test-results/dashboard/eslint-junit.xml.
+
+2025-10-02T04:12Z — Proposed optional flag (pending approval): add VITEST_PRISMA_DISABLE to dashboard/test/setup.ts to skip sqlite generation. Implementation outline: guard ensurePrismaSqlite() + env injection. Holding until manager greenlights.
+
+2025-10-02T04:11Z — Python3 monitor update: amended plans/agents/integration/direction.md to use python3; ran python3 scripts/monitor_agents.py (exit=0) as proof.
+
+2025-10-02T04:24:12Z — Re-read GO-SIGNAL/agent instructions/direction/manager notes. Inspected .github/workflows/ci.yml to confirm dashboard-tests uploads test-results/dashboard/vitest-junit.xml + eslint-junit.xml via relative ../ paths (matches local artifacts).
+2025-10-02T04:34:08Z — npx vitest run --root dashboard --config vitest.config.ts (233 passed, 3 skipped, 0 failed; 58 files) confirming Path B stable after sqlite bootstrap.
+2025-10-02T04:34:57Z — npm run lint -- --format junit --output-file ../test-results/dashboard/eslint-junit.xml (root path via dashboard working dir) ✔️ JUnit artifact updated.
+2025-10-02T04:35:16Z — QA coordination note: dashboard/test/setup.ts uses Symbol.for("dashboard-prisma-sqlite-ready") to ensure sqlite bootstrap runs once per worker, reuses file-based datasource (prisma/schema.sqlite.prisma), and resets envs in global beforeEach. Verified execSync stdio=ignore when node_modules present to avoid noise. Flag for QA: confirm Playwright suites rely on same env seeds; no conflicting db path observed.
+2025-10-02T04:36:00Z — rg "python scripts/monitor_agents" → no matches; confirms python3 direction propagated repo-wide. Awaiting QA sign-off before touching ensurePrismaSqlite guard.
+2025-10-02T04:36:21Z — curl -sI http://localhost:8080/app/metrics | head -n1 → HTTP/1.1 200 OK (metrics endpoint healthy).

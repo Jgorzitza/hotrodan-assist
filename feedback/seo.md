@@ -114,3 +114,13 @@ Polling
   - Re-run targeted SEO suites, log results; keep Bing mock-mode until creds.
   - If MCP creds arrive, run live-connection test and record history in settings.
 
+
+**21:53:36 UTC** — prepare_dashboard_dev.sh failed: cloudflared missing. Logged blocker & focusing on vitest loaders fallback.
+
+**21:55:44 UTC** — Updated app.seo.prisma.test.ts to mock MCP module (keeps scope in SEO tests). `npx vitest run ... app.seo.loader/prisma` PASS 2/2.
+
+**22:09:03 UTC** — Added Bing mock-mode banner, adapter gating metrics (`seo_adapter_*` counters), and surfaced last validation timestamps in SEO route. Updated loader/prisma tests to stub MCP + config, metrics assertions now PASS (`npx vitest run --config vitest.config.ts app/routes/__tests__/app.seo.loader.test.ts app/routes/__tests__/app.seo.prisma.test.ts`).
+
+**22:10:00 UTC** — GA4/GSC live validation still blocked: no credentials provisioned (see coordination/inbox/seo/2025-10-01-notes.md entry). Confirmed gating UX + error metrics in place while awaiting secrets.
+
+**02:40:09 UTC** — GA4/GSC live validation: `npx vitest run --config vitest.config.ts app/lib/settings/__tests__/live-hotrodan-connection.test.ts` PASS; captured `/api/seo/health` snapshot with env creds at artifacts/seo/2025-10-01-ga4-gsc-health.json (GA4 success 360ms, GSC warning 920ms). Bing/MCP still mock-mode (missing creds).
