@@ -1173,4 +1173,32 @@ export class StoreSettingsRepository implements SettingsRepositoryContract {
   }
 }
 
-export const storeSettingsRepository = new StoreSettingsRepository();
+const getDynamicRepository = (): SettingsRepositoryContract =>
+  isMockMode() ? new MockStoreSettingsRepository() : new PrismaStoreSettingsRepository();
+
+export const storeSettingsRepository: SettingsRepositoryContract = {
+  getSettings(shopDomain) {
+    return getDynamicRepository().getSettings(shopDomain);
+  },
+  updateThresholds(shopDomain, thresholds) {
+    return getDynamicRepository().updateThresholds(shopDomain, thresholds);
+  },
+  updateToggles(shopDomain, toggles) {
+    return getDynamicRepository().updateToggles(shopDomain, toggles);
+  },
+  updateSecret(shopDomain, input) {
+    return getDynamicRepository().updateSecret(shopDomain, input);
+  },
+  getDecryptedSecret(shopDomain, provider) {
+    return getDynamicRepository().getDecryptedSecret(shopDomain, provider);
+  },
+  getMcpIntegrationOverrides(shopDomain) {
+    return getDynamicRepository().getMcpIntegrationOverrides(shopDomain);
+  },
+  updateMcpIntegrationOverrides(shopDomain, input) {
+    return getDynamicRepository().updateMcpIntegrationOverrides(shopDomain, input);
+  },
+  recordConnectionTest(shopDomain, input) {
+    return getDynamicRepository().recordConnectionTest(shopDomain, input);
+  },
+};

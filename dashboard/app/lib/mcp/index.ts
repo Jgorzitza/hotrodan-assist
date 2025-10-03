@@ -1,4 +1,5 @@
 import { createMcpClient, type McpClientConfig } from "./client.server";
+import { buildMcpMetricsTelemetry } from "./telemetry.server";
 import {
   createMockMcpClient,
   DEFAULT_RESOURCE_PATHS,
@@ -14,7 +15,6 @@ import {
   type ProductRecommendation,
   type SeoOpportunity,
 } from "./types";
-import { createMcpTelemetryHooks } from "./telemetry.server";
 import type { FeatureToggles } from "~/types/settings";
 
 const parseBoolean = (value: string | undefined, fallback: boolean) => {
@@ -103,8 +103,7 @@ export const getMcpClient = (
     ...resolveMcpConfigFromEnv(overrides),
     ...runtimeOverrides,
     useMocks: false,
-    // inject default telemetry that emits Prometheus counters
-    telemetry: (runtimeOverrides as any)?.telemetry ?? require("./telemetry.server").buildMcpMetricsTelemetry(),
+    telemetry: (runtimeOverrides as any)?.telemetry ?? buildMcpMetricsTelemetry(),
   });
 };
 
@@ -158,3 +157,5 @@ export {
   type SeoOpportunity,
   type McpResponse,
 };
+
+export { createMcpTelemetryHooks } from "./telemetry.server";
