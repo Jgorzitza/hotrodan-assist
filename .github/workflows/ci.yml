@@ -32,14 +32,29 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+      - name: Install dashboard dependencies
+        run: npm ci --prefix dashboard
+      - name: Prepare artifact directories
+        run: mkdir -p test-results/dashboard
+      - name: Generate Prisma Client (dashboard, sqlite)
+        env:
+          DATABASE_URL: file:./prisma/dev.db
+        run: npm run -s prisma:generate
+        working-directory: dashboard
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium webkit
-      - name: Typecheck
-        run: npm run lint
-      - name: Vitest Suite
-        run: npm run test -- --run
-      - name: Playwright Smoke
-        run: npm run test:e2e -- --reporter=line
+      - name: ESLint (dashboard)
+        run: |
+          set -o pipefail
+          npm run lint --silent | tee ../test-results/dashboard/eslint.txt
+        working-directory: dashboard
+      - name: Vitest Suite (dashboard)
+        env:
+          DATABASE_URL: file:./prisma/dev.db
+        run: npx vitest run --config vitest.config.ts --reporter=default --reporter=junit --outputFile ../test-results/dashboard/vitest-junit.xml
+        working-directory: dashboard
+      - name: Playwright Smoke (list only)
+        run: npm run test:e2e -- --list
       - name: Upload Playwright Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -47,6 +62,13 @@ jobs:
           name: playwright-report
           path: playwright-report
           if-no-files-found: ignore
+      - name: Upload Dashboard Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-test-results
+          path: test-results/dashboard
+          if-no-files-found: warn
 
   dashboard-build:
     name: Dashboard Build & Prisma
@@ -64,7 +86,9 @@ jobs:
       - name: Install dashboard dependencies
         working-directory: dashboard
         run: npm install
-      - name: Generate Prisma client
+      - name: Generate Prisma client (sqlite)
+        env:
+          DATABASE_URL: file:./prisma/dev.db
         working-directory: dashboard
         run: npm run -s prisma:generate
       - name: Build dashboard

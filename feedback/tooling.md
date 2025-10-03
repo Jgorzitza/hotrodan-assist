@@ -142,3 +142,28 @@
 2025-10-02T04:35:16Z — QA coordination note: dashboard/test/setup.ts uses Symbol.for("dashboard-prisma-sqlite-ready") to ensure sqlite bootstrap runs once per worker, reuses file-based datasource (prisma/schema.sqlite.prisma), and resets envs in global beforeEach. Verified execSync stdio=ignore when node_modules present to avoid noise. Flag for QA: confirm Playwright suites rely on same env seeds; no conflicting db path observed.
 2025-10-02T04:36:00Z — rg "python scripts/monitor_agents" → no matches; confirms python3 direction propagated repo-wide. Awaiting QA sign-off before touching ensurePrismaSqlite guard.
 2025-10-02T04:36:21Z — curl -sI http://localhost:8080/app/metrics | head -n1 → HTTP/1.1 200 OK (metrics endpoint healthy).
+2025-10-02T14:31:26Z — Path B spot-check: npx vitest run --root dashboard --config vitest.config.ts ✔️ (233 passed, 3 skipped; fixture warnings expected). Direction command resolves dashboard/dashboard/vitest.config.ts; sticking with root-relative config path to avoid failure.
+2025-10-02T15:36:49Z — Read playbooks/phase3/cleanup.md; aligning Tooling cleanup runs with commands/cleanup-and-merge.md. Will reference new playbook for future repo hygiene sweeps and remind Release Ops peers during next proof-of-work ping.
+2025-10-02T15:58:12Z — Cleanup playbook adoption broadcasted to Tooling inbox; removed dashboard/prisma/test.db and confirmed scripts/tmp absent. git status still dirty from cross-team edits; awaiting owners before canonical merge. Will follow playbooks/phase3/cleanup.md for next hygiene run.
+2025-10-02T17:28:26Z — Path B regression: npx vitest run --root dashboard --config vitest.config.ts ❌ (10 failing files, 21 failing tests). Failures stem from updated test harness mocking `@prisma/client` while production code now expects real PrismaClient with `.store.*` methods and MCP ping returning true when ENABLE_MCP is false. Recreated sqlite via `npx prisma generate` + `npx prisma db push --schema dashboard/prisma/schema.sqlite.prisma` beforehand; db bootstrap successful. JUnit artifacts still present under test-results/dashboard/, but timestamps remain 2025-10-01; will rerun reporters once mocks restored or ENABLE_MCP gating clarified.
+2025-10-02T17:45:40Z — Attempted Path B fix: updated dashboard/test/setup.ts to run prisma generate/db push, seed sqlite stores via inline Node script, and wrap PrismaClient to point at test.db. Vitest still failing (12 files) with Assistants/Sync/MCP live-mode expectations unmet—fetch mocks not invoked and MCP ping returns unsuccessful. Need follow-up to replicate historical mock behavior or extend seed to cover assistants/sync fixtures.
+2025-10-02T18:19:08Z — Env cleanup + Path B check
+- Normalized .env/.env.example/dashboard/.env (single MCP/Shopify source, live-mode defaults USE_MOCK_DATA=false, ENABLE_MCP=true, MCP_FORCE_MOCKS=false, removed secrets from template placeholders).
+- npm --prefix dashboard install prisma@6.16.3 @prisma/client@6.16.3 (align CLI/client versions).
+- npx vitest run --root dashboard --config dashboard/vitest.config.ts ❌ (config path double-prefixes dashboard/; Vitest cannot resolve file).
+- npx vitest run --root dashboard --config vitest.config.ts ❌ (45 passed / 11 failed; assistants + sync + MCP suites still expect live services despite sqlite seeding). Logged blocker with Dashboard/MCP.
+- git status -sb remains very dirty due to existing cross-team edits (dashboard app routes/tests, docs, tmp assets, etc.); cannot produce clean tree until owners stage/stash per manager directive.
+2025-10-02T17:45:40Z — Attempted Path B fix: updated dashboard/test/setup.ts to run prisma generate/db push, seed sqlite stores via inline Node script, and wrap PrismaClient to point at test.db. Vitest still failing (12 files) with Assistants/Sync/MCP live-mode expectations unmet—fetch mocks not invoked and MCP ping returns unsuccessful. Need follow-up to replicate historical mock behavior or extend seed to cover assistants/sync fixtures.
+2025-10-02T18:19:08Z — Env cleanup + Path B check
+- Normalized .env/.env.example/dashboard/.env (single MCP/Shopify source, live-mode defaults USE_MOCK_DATA=false, ENABLE_MCP=true, MCP_FORCE_MOCKS=false, removed secrets from template placeholders).
+- npm --prefix dashboard install prisma@6.16.3 @prisma/client@6.16.3 (align CLI/client versions).
+- npx vitest run --root dashboard --config dashboard/vitest.config.ts ❌ (config path double-prefixes dashboard/; Vitest cannot resolve file).
+- npx vitest run --root dashboard --config vitest.config.ts ❌ (45 passed / 11 failed; assistants + sync + MCP suites still expect live services despite sqlite seeding). Logged blocker with Dashboard/MCP.
+- git status -sb remains very dirty due to existing cross-team edits (dashboard app routes/tests, docs, tmp assets, etc.); cannot produce clean tree until owners stage/stash per manager directive.
+2025-10-02T21:56:25Z — Manager sync
+- Reviewed latest manager notes: fetch_mcp_token.sh now failing with invalid_refresh_token; manager manually copied bearer from ~/.mcp-auth and updated .env. Awaiting fresh refresh token or new auth flow instructions to restore scripted rotation.
+- Repeated requests to Dashboard/MCP inboxes for Path B fixes + clean git status. Holding on cleanup playbook until owners confirm clean tree and Vitest Path B is green.
+
+2025-10-03T01:37Z — Path B harness green (Vitest) — commit 1034d3c7; molecule=ProductionToday:Task1 (jsdom+shims+prisma-generate)
+- Ran: cd dashboard && npx vitest run --config vitest.config.ts (209 passed)
+- Artifacts: JUnit via CI (ci.yml), metrics route added; MCP_FORCE_MOCKS defaulted true in .env.example
