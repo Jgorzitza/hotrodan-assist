@@ -739,3 +739,20 @@ POW 2025-10-01T12:41:52,266844993-06:00 17f0ed4e Jdesktop
 Notes/Blockers
 - Template comparison: `tmp/hran-dashboard-reset` not present, so could not copy/overwrite template auth files. Current auth implementation remains via `dashboard/app/shopify.server.ts` with `PrismaSessionStorage` and `auth.login` route; no `app/session.server.ts` in this scaffold. If exact upstream parity is required, provide template snapshot.
 - Live `shopify app dev --reset` not executed here due to sandbox/network; pending CLI run with tunnel to capture OAuth flow.
+
+## 2025-10-02T20:16Z — Auth reset steps 5–10 progress
+- Verified template auth routes intact: `dashboard/app/routes/auth.$.tsx`, `dashboard/app/routes/auth.login/route.tsx`, `dashboard/app/shopify.server.ts`.
+- Prisma env alignment confirmed in `dashboard/.env` and `.env.example` (DATABASE_URL, DIRECT_URL, SHADOW_DATABASE_URL present).
+- Prisma client generated (v6.16.3): `npm --prefix dashboard run prisma:generate`.
+- Vitest (mock mode) — green subsets:
+  - MCP + Settings: 17 files, 50 tests — all passed.
+  - Inventory route: 6 tests — passed; Sales route: 5 tests — passed.
+- Test harness tweak: forced SQLite for vitest to avoid root `.env` driver mismatch and regenerated Prisma client against `schema.sqlite.prisma`.
+- Shopify CLI dev reset remains pending (requires network/tunnel). Will capture tunnel URL + OAuth evidence when available.
+- Temp scaffold dir `tmp/hran-dashboard-reset` not present — no cleanup needed.
+
+Artifacts
+- Commands + outputs logged in `coordination/inbox/dashboard/2025-10-02-notes.md` (prisma:generate, vitest bundles).
+- 2025-10-02T20:30:06-06:00 Auth files verified; tmp/hran-dashboard-reset missing; env vars present in dashboard/.env and .env.example.
+- 2025-10-02T20:30:06-06:00 prisma:generate executed
+- 2025-10-02T20:30:11-06:00 prisma generated; vitest run executed (mocks).
