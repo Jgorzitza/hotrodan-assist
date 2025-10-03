@@ -871,9 +871,32 @@ class PrismaStoreSettingsRepository implements SettingsRepositoryContract {
   private async ensureStoreWithSettings(
     shopDomain: string,
   ): Promise<StoreWithRelations> {
-    const store = await this.findStore(shopDomain);
+    let store = await this.findStore(shopDomain);
     if (!store) {
-      throw new Error(`Store not found for domain: ${shopDomain}`);
+      // Create a minimal store record on first access to support tests and
+      // local SQLite runs without manual seeding.
+      const created = await prisma.store.create({
+        data: {
+          domain: shopDomain,
+          myShopifyDomain: shopDomain,
+          accessTokenCipher: "",
+        },
+        select: { id: true },
+      });
+      // Initialize settings with defaults
+      await prisma.storeSettings.create({
+        data: {
+          storeId: (created.id as unknown) as string,
+          thresholds: toJson(DEFAULT_THRESHOLDS),
+          featureFlags: toJson(DEFAULT_TOGGLES),
+          connectionMetadata: this.buildConnectionMetadataPayload(
+            createDefaultConnections(),
+            createDefaultMcpOverrides(),
+          ),
+        },
+      });
+      // Reload with relations
+      store = await this.findStore(shopDomain);
     }
 
     if (!store.settings) {

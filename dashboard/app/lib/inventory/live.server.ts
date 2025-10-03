@@ -1,16 +1,16 @@
-// Minimal live-mode helper for inventory vendor mapping overlay.
-// In tests, this returns an empty mapping and performs no network I/O.
-export type AdminClient = unknown;
+import type { AdminApiContext } from "~/types/dashboard";
 
-export type VendorSkuEntry = {
+export type SkuVendorMapEntry = {
   sku: string;
   vendor: string;
   title: string;
 };
 
-export async function fetchSkuVendorMapFromAdmin(_admin: AdminClient): Promise<VendorSkuEntry[]> {
-  // Intentionally return an empty array for now. The inventory loader treats
-  // this as a no-op overlay when USE_MOCK_DATA is false during unit tests.
+// Placeholder live fetch using Shopify Admin context. In tests and mock mode
+// this is never invoked, but the module must exist for Vite to resolve.
+export const fetchSkuVendorMapFromAdmin = async (
+  _admin: AdminApiContext,
+): Promise<SkuVendorMapEntry[]> => {
   return [];
-}
+};
 

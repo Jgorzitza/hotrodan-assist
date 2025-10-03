@@ -15,3 +15,15 @@ import { URL as NodeURL, URLSearchParams as NodeURLSearchParams } from 'node:url
   URL: NodeURL,
   URLSearchParams: NodeURLSearchParams,
 });
+
+// Normalize test environment defaults for Path B harness
+process.env.VITEST = 'true';
+if (!('USE_MOCK_DATA' in process.env)) {
+  process.env.USE_MOCK_DATA = 'true';
+}
+if (!('MCP_FORCE_MOCKS' in process.env)) {
+  process.env.MCP_FORCE_MOCKS = 'true';
+}
+if (!('DATABASE_URL' in process.env)) {
+  process.env.DATABASE_URL = 'file:./prisma/dev.db';
+}

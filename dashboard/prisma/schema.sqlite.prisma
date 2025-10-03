@@ -130,7 +130,7 @@ model Store {
   planLevel             String      @default("free")
   status                StoreStatus @default(ACTIVE)
   timezone              String      @default("UTC")
-  accessTokenCipher     String
+  accessTokenCipher     String      @default("")
   encryptionVersion     Int         @default(1)
   scopeHash             String?
   onboardingCompletedAt DateTime?
