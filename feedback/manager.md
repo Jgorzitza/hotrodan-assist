@@ -187,7 +187,7 @@ Risks
 2025-10-02T18:35:26-06:00 Canonicalization status — Inventory logged (docs/cleanup/inventory-20251002.md), legacy handovers moved to archive/legacy/, governance files updated (README, CODEOWNERS, workflows, PR template, agent launch GO gate). GO not posted yet; awaiting review + commit SHA before releasing employees.
 2025-10-02T18:43:12-06:00 Test evidence — `python3 run_goldens.py` (All goldens passed), `npm test -- --run` (4 files, 12 tests passed), `npx playwright test --list` (15 smoke tests enumerated). Update PR description with outputs + GO criteria before merge; GO remains blocked until commit SHA posted.
 2025-10-02T18:47:03-06:00 PR prep — Draft description with test outputs + GO criteria saved to docs/cleanup/canonicalization-pr-description.md for copy/paste before opening the cleanup PR. Once CI passes and review approves README/ledger/backlog/.github updates, merge and post `GO — <commit-sha>`.
-GO — fb1f3f38fbae9c1b4641926ae23c1b1ac35e3be7
+GO — 3c9cf64389371f1a9651dcd8a270c00b5395aee0
 - Goldens, dashboard vitest, and Playwright smoke listing captured.
 - README/ledger/backlog/.github reviewed; PR description draft ready.
 - CI must finish green post-push; monitor workflows for managed-file enforcement.
