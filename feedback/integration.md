@@ -150,3 +150,27 @@
 - `python3 scripts/monitor_agents.py` → exit 0.
 - Awaiting Dashboard/MCP/Inventory route fixes + Approvals SSE + SEO/Approvals compliance before smoke rerun.
 
+- Reinforced policy: AGENT-INSTRUCTIONS now explicitly ban CEO status pings; noted in integration + manager logs.
+## 2025-10-02T08:32:36-06:00
+- `bash scripts/health_grid.sh | tee artifacts/phase3/integration/2025-10-02T08:30:26-06:00-health-grid.tsv` → all endpoints 200 (`dashboard_metrics`, `rag_api_health`, `rag_api_metrics`, `assistants_health`, `approvals_health`, `connectors_health`).
+- `python3 scripts/monitor_agents.py` → exit 0 (no stdout; proof-of-work logged).
+
+- Updated `coordination/status-dashboard.md` Last Sweep entries for Dashboard/MCP/RAG/Approvals to reflect the 14:31Z sweep; `/app/metrics` now 200 but `/api/mcp/health` and Approvals SSE still require proof-of-work before smoke rerun.
+- Logged in integration inbox that Dashboard/MCP/Release Ops still owe refreshed FastMCP token-length notes; continuing cadence until evidence lands.
+## 2025-10-02T12:12:22-06:00
+- `bash scripts/health_grid.sh | tee artifacts/phase3/integration/2025-10-02T18:12:16+00:00-health-grid.tsv` → dashboard_metrics, rag_api_health, rag_api_metrics, assistants_health, approvals_health, connectors_health all 200.
+- `python3 scripts/monitor_agents.py` → exit 0.
+
+- Oversized integration inbox trimmed: collapsed auto non-compliance spam (00:00–18:12Z) into single summary noting current compliance. Integration/Release Ops/Dashboard/Inventory/MCP/Tooling reporting within 15m; Sales/SEO still pending their next proof-of-work.
+## 2025-10-02T15:56:34-06:00
+- Escalated FastMCP token rotation blocker: fetch_mcp_token.sh returned invalid_refresh_token for bundle LDtYyuue9ATI82eCgFTL8a9jB; pinged Release Ops to redo OAuth + provide token length proof. Current bearer (len 781) expires within ~1h.
+
+- Health cadence holding: latest sweep artifacts/phase3/integration/2025-10-02T18:12:16+00:00-health-grid.tsv all 200; monitor_agents.py exit 0.
+- Smoke (`npm run -s test:e2e`) still pending live Shopify creds + refreshed MCP bearer.
+
+## 2025-10-02T20:30:10-06:00
+- `bash scripts/health_grid.sh | tee artifacts/phase3/integration/2025-10-02T20-30-02-06-00-health-grid.tsv`
+  - dashboard_metrics → 000; rag_api_health → 000; rag_api_metrics → 000; assistants_health → 000; approvals_health → 000; connectors_health → 000
+- `python3 scripts/monitor_agents.py` → exit 0
+- Updated `coordination/status-dashboard.md` with BLOCKED statuses and paged owners in blockers-log.
+- Nudged Release Ops, MCP, and Dashboard to post FastMCP token-length logs per docs/mcp-env.md; awaiting evidence.
