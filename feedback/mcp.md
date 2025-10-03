@@ -40,6 +40,8 @@
 
 - Fallback engaged: continue with mock-mode reliability suites and connector telemetry while tracking credential drop.
 
+STATUS: commit c9bf593f — molecule mcp.connectors-production (mock suites, creds snapshot, live cmd prepped)
+
 2025-10-02T19:29:45-06:00 — MCP mock/reliability run + creds snapshot
 - Ran MCP-focused vitest subsets under dashboard with corrected config path.
 - Command: npx vitest run --root dashboard --config vitest.config.ts app/lib/connectors/__tests__/registry.server.test.ts
