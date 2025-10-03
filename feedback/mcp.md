@@ -7,6 +7,47 @@
 
 (Use the template in `templates/feedback-template.md`.)
 
+2025-10-03T02:30:35Z — MCP mocks/reliability suites executed + creds snapshot
+- Ran targeted Vitest subsets under `dashboard` with correct config root.
+  - Command: `npx vitest run --root dashboard --config vitest.config.ts app/lib/connectors/__tests__/registry.server.test.ts`
+    - Result: PASS (1 file, 4 tests)
+  - Command: `npx vitest run --root dashboard --config vitest.config.ts app/lib/streaming/__tests__/memory-transport.server.test.ts`
+    - Result: PASS (1 file, 3 tests)
+  - Command: `npx vitest run --root dashboard --config vitest.config.ts app/lib/mcp/__tests__`
+    - Result: 11 files; 10 passed, 1 failed (27 tests: 26 passed, 1 failed)
+    - Failing suite: `settings-persistence.test.ts (Prisma mode)` — PrismaClientInitializationError due to root `DATABASE_URL` using `postgresql+psycopg2://` (invalid for Prisma). Mock-mode variant passed.
+
+- Credentials snapshot (repo root `.env`):
+  - `MCP_API_URL`: present (`https://tired-green-ladybug.fastmcp.app/mcp`)
+  - `MCP_API_KEY`: empty (len=0) — live bearer missing
+  - `MCP_CLIENT_ID`: present
+  - `MCP_REFRESH_TOKEN`: present
+  - Mint timestamp: not found in working tree; recorded snapshot time above. Will set a 55‑minute refresh reminder upon bearer issuance.
+
+- Live validation prep (ready to fire when env lands):
+  - `npx prisma generate --schema dashboard/prisma/schema.prisma`
+  - `ENABLE_MCP=true MCP_FORCE_MOCKS=false MCP_API_URL=$MCP_API_URL MCP_API_KEY=$MCP_API_KEY \
+     npx vitest run --root dashboard --config vitest.config.ts app/lib/mcp/__tests__/live-connection.test.ts`
+
+- Blockers:
+  - Live MCP bearer absent (`MCP_API_KEY` empty) — live-connection test is blocked.
+  - Shopify Admin token not confirmed for live validation.
+  - Prisma-mode settings test expects a Prisma-compatible `DATABASE_URL` (postgresql://) and DB availability; current root `.env` value is incompatible for Prisma.
+
+- Fallback in effect: continuing with mock-mode reliability tests and telemetry while polling for credential drop.
+
+STATUS: proof-of-work appended — molecule `mcp.connectors-production` (mock suites, creds snapshot, live cmd prepped)
+
+2025-10-03T02:32:35Z — Reliability env knobs wired (switching to next molecule)
+- Added env-driven reliability options to MCP client config resolution:
+  - `MCP_MAX_CONCURRENT`, `MCP_RATE_LIMIT_RPS`
+  - `MCP_BREAKER_FAILURE_THRESHOLD`, `MCP_BREAKER_COOLDOWN_MS`, `MCP_BREAKER_HALF_OPEN_MAX`
+  - `MCP_KEEP_ALIVE`, `MCP_CACHE_TTL_MS`, `MCP_CACHE_SIZE`
+- Code: `dashboard/app/lib/mcp/index.ts` (extends `resolveMcpConfigFromEnv`)
+- Docs: updated `docs/environment-variables.md` (MCP Integration section)
+- Targeted MCP tests remain green (client, headers, index)
+- This keeps defaults unchanged when env is absent; feature flags safe for production.
+
 2025-10-03T02:14:40Z — MCP mock suites + creds snapshot
 - Prisma client generated for dashboard schema.
 - Ran targeted Vitest subsets (mock/reliability focus):

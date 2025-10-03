@@ -30,10 +30,10 @@ except Exception:  # pragma: no cover - optional dependency
     _OTEL_AVAILABLE = False
 
 try:
-    from .adapters import DeliveryAdapterRegistry
-except Exception:
-    # Fallback when running without package context
     from adapters import DeliveryAdapterRegistry
+except Exception:
+    # Fallback when running within a package context
+    from .adapters import DeliveryAdapterRegistry
 
 
 # ---------------------------------------------------------------------------
@@ -167,6 +167,18 @@ class EventBroker:
 
 
 events = EventBroker()
+HANDSHAKE_CAPABILITIES = ["drafts", "feedback", "attachments"]
+
+
+def build_stream_handshake() -> Dict[str, Any]:
+    """Return a lightweight handshake payload emitted when clients connect."""
+    return {
+        "type": "handshake",
+        "service": "assistants",
+        "timestamp": to_iso(utc_now()),
+        "capabilities": HANDSHAKE_CAPABILITIES,
+        "ping_interval_seconds": EVENT_PING_SECONDS,
+    }
 FALLBACK_CUSTOMER_NAME = "Customer"
 FALLBACK_ASSISTANT_ACTOR = "Assistant"
 
@@ -909,17 +921,22 @@ def prometheus_metrics() -> PlainTextResponse:
 async def events_stream(request: Request) -> StreamingResponse:
     queue = await events.subscribe()
 
+    handshake = build_stream_handshake()
+
     async def event_generator():
         try:
+            yield f"event: handshake\ndata: {json.dumps(handshake)}\n\n"
             while True:
-                if await request.is_disconnected():
-                    break
                 try:
                     message = await asyncio.wait_for(queue.get(), timeout=EVENT_PING_SECONDS)
                 except asyncio.TimeoutError:
                     yield "event: ping\ndata: {}\n\n"
                     continue
+                except asyncio.CancelledError:
+                    break
                 yield f"data: {message}\n\n"
+        except asyncio.CancelledError:
+            pass
         finally:
             await events.unsubscribe(queue)
 

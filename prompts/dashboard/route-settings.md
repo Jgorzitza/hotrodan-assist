@@ -17,7 +17,7 @@ Administrative control center for store-level configuration and integrations:
 - Connection test handlers stubbing out GA4/GSC/Bing pings (use adapters from `data-layer.md`) and surfacing badge state (`Success`, `Warning`, `Error`).
 
 ## Technical Notes
-- Define `StoreSettingsRepository` in the data layer returning `{ thresholds, toggles, secrets, connectionStatuses }`; Prisma backs the live path while `USE_MOCK_DATA` continues to use the in-memory fixtures for demos/tests.
+- Define `StoreSettingsRepository` in the data layer returning `{ thresholds, toggles, secrets, connectionStatuses }`; Prisma backs the live path while `MCP_FORCE_MOCKS` continues to use the in-memory fixtures for demos/tests.
 - Sensitive fields must stay server-side: send masked tokens (`••••1234`) + `lastVerifiedAt`, never raw secrets; action receives plaintext, passes through `encryptSecret` helper before persistence.
 - Use Remix `defer` or blocking loader depending on secret fetch latency; keep form submissions multipart-aware for future file inputs (e.g., service account JSON).
 - Validation: leverage `zod` schemas per section; enforce numeric ranges (min/max thresholds) and throttle connection button to avoid spamming mock APIs.
@@ -43,7 +43,7 @@ Administrative control center for store-level configuration and integrations:
 ## Status / Notes
 - Owner: Settings Admin UI agent (Codex)
 - Blockers: KMS-backed secret storage + audit logging still outstanding before enabling real credentials beyond the mock encryptor.
-- Prisma dependency: live updates rely on `Store`, `StoreSettings`, `StoreSecret`, and `ConnectionEvent` migrations; stay on mocks by keeping `USE_MOCK_DATA=true` until Postgres is provisioned.
+- Prisma dependency: live updates rely on `Store`, `StoreSettings`, `StoreSecret`, and `ConnectionEvent` migrations; stay on mocks by keeping `MCP_FORCE_MOCKS=true` until Postgres is provisioned.
 - Loader/action + Polaris UI now persist through the Prisma-backed `StoreSettingsRepository`, with connection history synchronised from `ConnectionEvent` rows so badges/toasts reflect the latest attempts.
 - Vitest coverage guards both mock and Prisma implementations; `npm exec vitest run app/routes/__tests__/app.settings.test.ts app/routes/__tests__/app.settings.prisma.test.ts` ran 2025-09-27 on `feature/approval-app` to confirm the flows.
 - MCP toggle continues to gate downstream routes; saved overrides feed `resolveMcpConfigFromEnv` and provide the values surfaced in connection banners.

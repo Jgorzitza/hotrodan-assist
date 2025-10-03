@@ -55,6 +55,9 @@ npm run test -- --watch
   - `app/routes/app.sales.test.tsx`
   - `app/routes/webhooks.test.tsx`
   - `app/lib/analytics/ga4Client.test.ts`
+- Live-mode smoke commands:
+  - `ENABLE_MCP=true MCP_FORCE_MOCKS=false USE_MOCK_DATA=false npx vitest run --root dashboard --config dashboard/vitest.config.ts app/routes/__tests__/app.sales.test.ts`
+  - `ENABLE_MCP=true MCP_FORCE_MOCKS=false USE_MOCK_DATA=false npx vitest run --root dashboard --config dashboard/vitest.config.ts app/lib/sales/__tests__/analytics.server.test.ts app/lib/sales/__tests__/cache.server.test.ts`
 
 #### Linting
 
@@ -325,8 +328,8 @@ const mockResponse = mockShopifyData.products[0];
 
 **Control via environment**:
 ```bash
-USE_MOCK_DATA=true  # Enable mocks
-USE_MOCK_DATA=false # Use live APIs
+MCP_FORCE_MOCKS=true  # Force dashboard loaders to use fixture data
+MCP_FORCE_MOCKS=false # Allow live MCP-backed flows when credentials are present
 ```
 
 ### Test Fixtures

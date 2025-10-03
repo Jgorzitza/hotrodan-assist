@@ -38,7 +38,7 @@ Strongly recommended for production:
 | `SHOPIFY_WEBHOOK_SECRET` | Webhook signature verification | (none) |
 | `CRON_SECRET` | Cron endpoint authentication | (none) |
 | `SECRETS_ADAPTER` | How to store sensitive data | `prisma` |
-| `USE_MOCK_DATA` | Enable mock data mode | `false` |
+| `MCP_FORCE_MOCKS` | Force dashboard loaders to use mock data | `false` |
 
 ### 🟢 OPTIONAL (Feature-Specific)
 
@@ -105,7 +105,7 @@ COLLECTION=hotrodan_docs
 
 ```bash
 # Mock data (disable in production)
-USE_MOCK_DATA=false
+MCP_FORCE_MOCKS=false
 
 # MCP integration
 ENABLE_MCP=true
@@ -119,12 +119,22 @@ MCP_API_URL=http://localhost:8003
 MCP_API_KEY=your-mcp-key
 MCP_TIMEOUT_MS=5000
 MCP_MAX_RETRIES=3
+# Reliability knobs (optional)
+MCP_MAX_CONCURRENT=4           # concurrency limiter for outbound calls
+MCP_RATE_LIMIT_RPS=0           # requests per second; 0 disables
+MCP_BREAKER_FAILURE_THRESHOLD=5
+MCP_BREAKER_COOLDOWN_MS=10000
+MCP_BREAKER_HALF_OPEN_MAX=1
+MCP_KEEP_ALIVE=true            # enable keep-alive pooling when supported
+MCP_CACHE_TTL_MS=0             # response cache TTL; 0 disables
+MCP_CACHE_SIZE=0               # response cache size; 0 disables
 ```
 
 ### Analytics & SEO
 
 ```bash
 ANALYTICS_SERVICE_URL=http://localhost:8003
+ANALYTICS_SERVICE_TOKEN=your-analytics-bearer
 ANALYTICS_REFRESH_URL=http://localhost:8003/refresh
 ANALYTICS_REFRESH_TOKEN=your-token
 ANALYTICS_REFRESH_TIMEOUT_MS=8000
@@ -153,7 +163,7 @@ WEBHOOK_SYNC_TIMEOUT_MS=30000
 
 ```bash
 NODE_ENV=development
-USE_MOCK_DATA=true
+MCP_FORCE_MOCKS=true
 ENABLE_MCP=false
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app_dev
 ```
@@ -162,7 +172,7 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app_dev
 
 ```bash
 NODE_ENV=production
-USE_MOCK_DATA=false
+MCP_FORCE_MOCKS=false
 ENABLE_MCP=true
 DATABASE_URL=postgresql://user:pass@staging-db:5432/app
 SHOPIFY_APP_URL=https://staging-app.example.com
@@ -172,7 +182,7 @@ SHOPIFY_APP_URL=https://staging-app.example.com
 
 ```bash
 NODE_ENV=production
-USE_MOCK_DATA=false
+MCP_FORCE_MOCKS=false
 ENABLE_MCP=true
 DATABASE_URL=postgresql://user:pass@prod-db:5432/app
 SHOPIFY_APP_URL=https://app.example.com

@@ -35,26 +35,6 @@ tasks:
       - "agent_launch_commands.md contains GO gate note"
     notes: "Completed 2025-10-02 alongside canonicalization efforts."
 
-  - id: rag.index-v1
-    node: rag
-    title: "RAG index V1 over site + docs using Chroma"
-    status: TODO
-    deliverables:
-      - "Crawl via discover_urls.py; ingest via ingest_site_chroma.py"
-      - "Corrections loaded from corrections/corrections.yaml"
-      - "Golden tests pass: run `python run_goldens.py`"
-    deps: ["tooling.qa-basics"]
-
-  - id: mcp.connectors-v1
-    node: mcp
-    title: "Wire MCP connectors (Shopify, Zoho, GSC, Bing, GA4) behind feature flags"
-    status: TODO
-    deliverables:
-      - "ENV keys validated; 401/403 handling with actionable error messages"
-      - "Typed response mappers and minimal caching"
-      - "Dashboard settings can mark a connector as LIVE or MOCK"
-    deps: ["dashboard.settings-v1"]
-
   - id: dashboard.settings-v1
     node: dashboard
     title: "Settings screen for credentials vault + feature flags"
@@ -63,6 +43,10 @@ tasks:
       - "Polaris form with ENV key presence checks (no values shown)"
       - "Feature toggles: MCP_FORCE_MOCKS, ENABLE_MCP, ENABLE_SEO, ENABLE_INVENTORY"
       - "Health panel that pings each backend service"
+      - "Remove MCP_FORCE_MOCKS toggle usage in routes/components once live data paths exist"
+      - "Integrate live MCP connector data with graceful fallbacks"
+      - "Ensure real-time updates and caching paths are wired"
+      - "Surface actionable error handling for live data failures"
     deps: ["tooling.remix-tests"]
 
   - id: approvals.loop-v1
@@ -73,7 +57,7 @@ tasks:
       - "Inbox shows draft replies (rag → approvals)"
       - "Approve: sends via Zoho; Edit: stores both machine + human text for fine-tuning"
       - "Metrics: approval rate, avg edit distance"
-    deps: ["mcp.connectors-v1","rag.index-v1"]
+    deps: ["mcp.connectors-production","rag.index-optimization"]
 
   - id: inventory.reorder-v1
     node: inventory
@@ -83,58 +67,77 @@ tasks:
       - "Lead-time demand + safety stock: ROP = μ_d * L + z * σ_d * √L"
       - "Screens: by All, Vendor, Fast Movers"
       - "Assign/remove vendors; vendor SKU mapping"
-    deps: ["mcp.connectors-v1"]
+    deps: ["mcp.connectors-production"]
 
-  - id: tooling.qa-basics
+  - id: tooling.ops-foundation
     node: tooling
-    title: "Pre-commit, lint, type-check, unit/E2E test harness"
+    title: "QA, CI, and deployment guardrails"
     status: TODO
     deliverables:
       - "pre-commit with black/ruff/isort"
       - "mypy on Python, tsconfig strict on dashboard"
       - "Playwright smoke test bound to `npm run test:e2e`"
+      - "Docker containerization for all services with health checks"
+      - "CI/CD pipeline plus artifact uploads (lint/test results)"
+      - "Production health monitoring + log aggregation story"
+    notes: "Owner: Tooling. Acceptance: CI green, smoke tests automated, deploy pipeline documented."
 
-  # Production Readiness (added 2025-10-01)
-  - id: tooling.production-deployment
-    node: tooling
-    title: "Production deployment pipeline and monitoring"
-    status: DOING
-    deliverables:
-      - "Docker containerization for all services"
-      - "CI/CD pipeline with automated testing and deployment"
-      - "Health monitoring and alerting system"
-      - "Log aggregation and error tracking"
-    notes: "Owner: Tooling. Acceptance: green CI on PR, health endpoint 200, alerts configured."
-
-  - id: dashboard.live-data-integration
-    node: dashboard
-    title: "Remove mock data toggles and integrate live data"
-    status: DOING
-    deliverables:
-      - "Remove MCP_FORCE_MOCKS toggles from all components"
-      - "Integrate live MCP connector data"
-      - "Real-time data updates and caching"
-      - "Error handling for live data failures"
-    notes: "Owner: Dashboard. Acceptance: mocks removed, live data renders, error boundaries in place."
-
-  - id: mcp.production-monitoring
+  - id: mcp.connectors-production
     node: mcp
-    title: "MCP connectors production monitoring and reliability"
-    status: DOING
-    deliverables:
-      - "Rate limiting and retry logic for all connectors"
-      - "Connection pooling and timeout management"
-      - "Error tracking and alerting for connector failures"
-      - "Performance metrics and dashboards"
-    notes: "Owner: MCP. Acceptance: rate limit + retry tested; SLO dashboard in place."
-
-  - id: rag.production-optimization
-    node: rag
-    title: "RAG system production optimization and scaling"
+    title: "MCP connectors live readiness"
     status: TODO
     deliverables:
-      - "ChromaDB production configuration and persistence"
-      - "Embedding model optimization and caching"
-      - "Query performance tuning and indexing"
-      - "Define and meet p95 latency target under load"
-    notes: "Owner: RAG. Acceptance: goldens pass under load; p95 latency target met."
+      - "ENV keys validated; 401/403 handling with actionable error messages"
+      - "Typed response mappers and minimal caching"
+      - "Dashboard settings can mark a connector as LIVE or MOCK"
+      - "Rate limiting, retry, and connection pooling policies implemented"
+      - "Error tracking + alerting with performance metrics surfaced"
+    notes: "Owner: MCP. Acceptance: live vitest suite green; metrics exported to /app/metrics."
+    deps: ["dashboard.settings-v1"]
+
+  - id: rag.index-optimization
+    node: rag
+    title: "RAG ingestion, caching, and latency tuning"
+    status: TODO
+    deliverables:
+      - "Crawl via discover_urls.py; ingest via ingest_site_chroma.py"
+      - "Corrections loaded from corrections/corrections.yaml"
+      - "Golden tests pass: run `python run_goldens.py`"
+      - "Chroma persistence + backup plan documented"
+      - "Embedding cache configured with tuned HNSW params"
+      - "p95 latency target defined and met under load harness"
+    notes: "Owner: RAG. Acceptance: goldens green with load metrics attached."
+    deps: ["tooling.ops-foundation"]
+
+  - id: ops.readiness-triad
+    node: tooling
+    title: "Integration, QA, and Release control room"
+    status: DOING
+    deliverables:
+      - "Integration: health_grid + monitor sweeps captured every 5 minutes with TSV artifacts"
+      - "Quality: independent verification log (findings prioritized, blockers logged)"
+      - "Release Ops: GO/NO-GO checklist with evidence table and rollback plan"
+      - "All updates recorded using proof-of-work template; blockers escalated within 5 minutes"
+    notes: "Owners: Integration, Quality, Release-Ops. Acceptance: status-dashboard.md reflects latest sweeps and checklist."
+
+  - id: sales.mock-validation
+    node: sales
+    title: "Sales analytics mock-validation + SLOs"
+    status: TODO
+    deliverables:
+      - "Vitest loaders/tests for sales routes running against mocks"
+      - "CSV export tests and artifacts attached"
+      - "SLO draft for availability/error/p95 captured in feedback"
+      - "Mock vs live dependency tracker logged (Bing, GA4, GSC)"
+    notes: "Owner: Sales. Acceptance: tests green; SLOs documented in feedback/sales.md."
+
+  - id: seo.credentials-gating
+    node: seo
+    title: "SEO gating, health, and credential workflow"
+    status: TODO
+    deliverables:
+      - "Vitest loaders/api tests for SEO routes green"
+      - "Credential gating banners and connection-tests surfaced"
+      - "GA4/GSC live validation evidence attached; Bing mock state noted"
+      - "Metric counters exported and linked in feedback/seo.md"
+    notes: "Owner: SEO. Acceptance: health endpoint 200 with proof-of-work logged."

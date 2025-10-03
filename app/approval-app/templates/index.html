@@ -9,9 +9,17 @@
       th, td { border: 1px solid #ddd; padding: 0.5rem; }
       th { background: #f2f2f2; text-align: left; }
       a { color: #2a5db0; }
+      .banner { padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 1rem; }
+      .banner--warning { background: #fff4ce; border: 1px solid #f29900; color: #5c3b00; }
     </style>
   </head>
   <body>
+    {% if not sse_online %}
+    <div class="banner banner--warning">
+      Live event stream is currently offline. Draft list will not auto-refresh;
+      continue using manual reloads until connectivity is restored.
+    </div>
+    {% endif %}
     <h1>Draft Queue</h1>
     <table>
       <thead>

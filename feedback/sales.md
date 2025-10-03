@@ -167,3 +167,39 @@
 ---
 **[04:47 UTC] Proof-of-Work**
 - Action path now logs when analytics bearer missing to clarify fixture exports.
+---
+**[15:45 UTC] Proof-of-Work**
+- Ran ENABLE_MCP=true MCP_FORCE_MOCKS=true vitest suite for sales + metrics; 2/2 tests passing.
+- Verified app metrics endpoint responds with HTTP 200 via curl.
+---
+**[15:46 UTC] Proof-of-Work**
+- Attempted Phase 3 cleanup playbook; halted because worktree has 100+ modified/untracked files across other teams (see `git status`).
+- Logged prereq steps: fetched remotes, confirmed README conflict-free, documented blocker for clean merge prerequisites.
+---
+**[18:09 UTC] Proof-of-Work**
+- Summarized dirty worktree directories (dashboard=81, coordination=21, tmp=45, etc.) and escalated blocker to manager notes.
+- Awaiting owner confirmations before re-running phase3 cleanup sequence.
+---
+**[21:56 UTC] Proof-of-Work**
+- Logged status update to manager: cleanup still blocked waiting on other owners; monitoring MCP token rotation issue while keeping sales flows in mock mode.
+
+---
+**[20:30 UTC] Proof-of-Work — sales.mock-validation**
+- Ran sales + metrics tests in mock mode:
+  - Command: `ENABLE_MCP=true MCP_FORCE_MOCKS=true npx vitest run --root dashboard --config vitest.config.ts app/routes/__tests__/app.sales.test.ts`
+  - Results: 1 file, 5 tests — PASS
+  - Command: `ENABLE_MCP=true MCP_FORCE_MOCKS=true npx vitest run --root dashboard --config vitest.config.ts "dashboard/app/routes/__tests__/app.metrics.test.ts"`
+  - Results: 1 file, 2 tests — PASS
+- Curl metrics after tests to verify counters:
+  - Command: `curl -sS -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:8080/app/metrics || true`
+  - HTTP code: 000 (no local server running)
+- MCP credentials present in `.env` (MCP_API_URL, MCP_CLIENT_ID, MCP_REFRESH_TOKEN); continuing with `MCP_FORCE_MOCKS=true` until Shopify Admin token arrives.
+- Bing remains in mock-mode pending credentials (only if referenced by Sales).
+
+**SLO Candidates (mock-mode placeholders)**
+- Availability: ≥ 99.0% (route `GET /app/sales`, `GET /app/metrics`)
+- Error rate: ≤ 1.0% (5xx from sales loader/action)
+- p95 route latency: ≤ 1800 ms (sales loader, CSV action)
+
+Artifacts: vitest outputs captured above; metrics curl code recorded.
+Blocked: no running app server for `/app/metrics` curl, and Shopify Admin token not yet provided for live MCP-backed path. Proceeding to next molecule (CLV/forecast scaffolds) while mocks remain enabled.

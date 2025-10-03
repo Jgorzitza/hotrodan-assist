@@ -134,3 +134,35 @@
 - Acknowledged new instruction (no “next up” pings; log next steps in notes) and manager reminders across inboxes; staying on backlog tasks with 5-minute proof cadence.
 ## 2025-10-01T22:30:44-06:00
 - Ran `scripts/health_grid.sh`; saw `/app/metrics` timeout (000) and RAG `/health` 000 while `/prometheus` stayed 200. Logged corresponding blockers.
+## 2025-10-02T08:32:55-06:00
+- Morning sweep: `playbooks/phase3/` still missing—flagged for manager to provide checklist path. Logged blocker + noted in release inbox.
+- `git status -sb` shows broad in-flight diffs (dashboard MCP routes/tests, integration & approvals notes, new release-ops assets); awaiting owners to post proof before GO refresh.
+- Latest health grid (08:30 MDT) clean: `/app/metrics` back to 200 alongside RAG/Approvals/MCP connectors. Requested Integration rerun smoke + deliver logs.
+## 2025-10-02T08:42:50-06:00
+- Re-authenticated FastMCP client (`npx -y mcp-remote@latest https://tired-green-ladybug.fastmcp.app/mcp`) after rotating local tokens.
+- `scripts/fetch_mcp_token.sh` now succeeds with refreshed bundle; access token length 781. Live MCP validation pathways unblocked.
+## 2025-10-02T09:07:27-06:00
+- Notified Dashboard + MCP to publish vitest + curl evidence with the fresh FastMCP token; Integration reminded to attach rerun smoke logs.
+- Marked release checklist credential row complete (token length 781 logged); only Bing credentials remain outstanding.
+## 2025-10-02T09:27:03-06:00
+- Logged manager’s cleanup guidance: adopt new `playbooks/phase3/cleanup.md`, chase dirty worktree owners, and track inventory build status awaiting runtime curl.
+- Circulated playbook to Tooling and marked documentation blocker closed.
+## 2025-10-02T09:30:33-06:00
+- Requested Dashboard/Inventory/Approvals/Tooling/MCP to clean worktrees and log git-status proof per new cleanup playbook; flagged Integration for smoke rerun after evidence lands.
+- Added cleanup requirement to GO/NO-GO checklist and logged need for `/api/inventory/health` curl once runtime restarts.
+## 2025-10-02T09:46:35-06:00
+- Tooling confirmed cleanup tooling now references playbooks/phase3/cleanup.md; acknowledged and requested git-status proof before closing the merge gate.
+## 2025-10-02T10:31:35-06:00
+- Manager blocked cleanup until dirty worktree clears; dashboard acknowledged playbook adoption but still needs to provide git-status proof.
+- No new runtime evidence from dashboard (dev restart failed due to env) or inventory (`/api/inventory/health` still 404). Integration smoke remains on hold.
+## 2025-10-02T10:42:16-06:00
+- Requested clean-tree proofs (`git status --short` + artifacts) from Dashboard/Inventory/Approvals/Tooling/MCP per manager’s cleanup block; will follow up next cycle.
+## 2025-10-02T10:42:16-06:00
+- Direction sweep: reran `git status -sb`, health grid (200s), and re-minted MCP token (length 781) after auth refresh (npx mcp-remote).
+## 2025-10-02T10:42:16-06:00
+- Followed up individually with Dashboard/Inventory/Approvals/Tooling/MCP for clean git status proofs; logged dependency in release notes and with Integration.
+- Dashboard still needs env fixes before giving `/api/inventory/health` 200 -> Integration smoke remains queued.
+## 2025-10-02T12:12:23-06:00
+- Added noon sweep to 2025-10-02 notes: Shopify creds pending, cleanup blocker logged, Dashboard/MCP/Tooling owe proof-of-work, Integration smoke still paused.
+- Re-ran `npx mcp-remote` + `bash scripts/fetch_mcp_token.sh` (token length 781) and captured the command in release notes.
+- Refreshed GO/NO-GO evidence table with current `/app/metrics` status, pending `/api/mcp|inventory` proof, and fallback owners.

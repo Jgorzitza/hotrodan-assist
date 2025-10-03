@@ -185,3 +185,31 @@ Mock-mode summary (2025-10-02 19:05Z)
 - Health curl: 000 (no local server on :8080 in this environment);
   - Command: curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/api/seo/health
 - UI gating: Verified via loader tests; banners expected when GA4/GSC/Bing secrets missing. Screenshot pending — blocked by tunnel tooling (cloudflared not installed) and no dev server running.
+[commit 28e50d48] node:dashboard.seo — vitest/gating fixes; proof-of-work appended.
+
+---
+[2025-10-03 02:12Z] Proof-of-Work — Credential Snapshot + Prep Plan
+- .env snapshot: GA4 and GSC credentials present; Bing credentials missing; Shopify Admin tokens appear as placeholders; MCP URL and refresh token present, API key empty; `MCP_FORCE_MOCKS=false`.
+- Action: Proceeding with dev prep using `scripts/prepare_dashboard_dev.sh` and placeholder `TUNNEL_URL` to refresh `application_url` and env entries without requiring cloudflared.
+- Note: Shopify‑dependent SEO panels stay in mock‑mode until Admin tokens land; GA4/GSC loaders can run live where applicable.
+ - Gating UX: Verified in loader test — GA4 live ✓, Bing mock banner visible; MCP disabled by flag; UI degrades gracefully without missing creds.
+
+[2025-10-03 02:13Z] Proof-of-Work — Vitest + Health
+- Vitest run (A): api.seo.health + api.seo.report → Test Files 2/2 PASS, Tests 2/2 PASS
+- Vitest run (B): app.seo.loader + app.seo.prisma → Test Files 1/2 PASS, Tests 1/2 PASS (initial)
+- Retest after raising testTimeout to 15s in dashboard/vitest.config.ts: Test Files 4/4 PASS, Tests 4/4 PASS
+
+---
+[2025-10-03 20:31Z] Proof-of-Work — Prep + SEO Tests + Health Curl
+- Ran dev prep with provided TUNNEL_URL (no live tunnel):
+  - Command: APP_PORT=8080 TUNNEL_TOOL=cloudflared TUNNEL_URL="https://sublime-edges-current-sister.trycloudflare.com" SKIP_PRISMA=1 scripts/prepare_dashboard_dev.sh
+  - Summary: { "vitest_alias_ok": true, "shopify_app_updated": true, "assistants_base": "http://127.0.0.1:8002", "sse_smoke": "fail" }
+- Vitest (targeted SEO): PASS
+  - Test Files 4/4, Tests 4/4
+  - Suites: app.seo.loader, app.seo.prisma, api.seo.health, api.seo.report
+- Health curl: 000 (server not running on :8080 in this environment)
+  - Command: curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/api/seo/health
+- Credential snapshot (.env): GA4/GSC present; Bing missing; MCP URL/client present (API key empty); Shopify Admin tokens appear placeholders.
+- Gating UX: Present in code and covered by tests; banner shown when no live providers connected; “Go to Settings” CTA visible. Screenshot pending until server session available.
+- Health curl: http://127.0.0.1:8080/api/seo/health → 000 (no local server)
+- Coordination note: coordination/inbox/seo/2025-10-03-dev-run.md

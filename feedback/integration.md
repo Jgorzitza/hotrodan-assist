@@ -174,3 +174,4 @@
 - `python3 scripts/monitor_agents.py` → exit 0
 - Updated `coordination/status-dashboard.md` with BLOCKED statuses and paged owners in blockers-log.
 - Nudged Release Ops, MCP, and Dashboard to post FastMCP token-length logs per docs/mcp-env.md; awaiting evidence.
+- Commit: ae16c4e3 — integration sweep + status updates

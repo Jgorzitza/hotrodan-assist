@@ -1,31 +1,27 @@
-# 🔄 AGENT POLLING INSTRUCTIONS
+# 🔄 Agent Polling Instructions
 
 Project root (canonical): /home/justin/llama_rag
 
-## ⚡ CRITICAL: POLL EVERY 5 MINUTES - DON'T WAIT!
+## 5-Minute Poll Loop
+1. `coordination/GO-SIGNAL.md`
+2. `coordination/AGENT-INSTRUCTIONS.md`
+3. `plans/agents/<agent>/direction.md`
+4. Relevant inbox note under `coordination/inbox/<agent>/<date>-notes.md`
 
-## Approvals Policy
-- Manager-owned edits and assignments are pre-approved; no user approval is required.
-- Do not wait for ad-hoc instructions. Poll every 5 minutes and proceed.
-
-## Proof-of-Work Requirement
-- Each cycle, append to feedback/[your-agent].md a short update containing:
-  - What you changed (paths) or test/lint outcomes, or blockers + fallback started.
-- Messages like “working on it” without evidence are non-compliant.
-
-### Files to poll every 5 minutes
-1. coordination/GO-SIGNAL.md
-2. coordination/AGENT-INSTRUCTIONS.md
-3. plans/agents/[your-agent]/direction.md
-4. coordination/agent-notifications.md (if present)
-
-### Polling commands
+Use quick commands:
 ```bash
-ls -la coordination/GO-SIGNAL.md coordination/AGENT-INSTRUCTIONS.md || true
-head -20 plans/agents/[your-agent]/direction.md || true
+ls -l coordination/GO-SIGNAL.md coordination/AGENT-INSTRUCTIONS.md
+head -40 plans/agents/<agent>/direction.md
 ```
 
-### If you're idle
-- Check your direction file
-- Continue current assigned tasks
-- Submit feedback immediately when work complete
+## Proof-of-Work Expectations
+- Every poll cycle append to `feedback/<agent>.md`.
+- Include command output, diff summary, or blocker + fallback started.
+- No evidence → non-compliant.
+
+## Idle? Start the Next Task
+- Re-read direction file; pick the next action listed.
+- Update feedback before switching tasks.
+- Escalate blockers via `coordination/blockers-log.md` with owner + timestamp.
+
+Remember the GO gate: employees stay paused until Manager posts `GO <commit-sha>` in `feedback/manager.md`.

@@ -68,10 +68,6 @@ import type {
 } from "~/types/dashboard";
 import type {
   SyncOrdersActionUpdate,
-  SyncOrdersAssignResponse,
-  SyncOrdersFulfillResponse,
-  SyncOrdersReturnsResponse,
-  SyncOrdersSupportResponse,
 } from "~/types/orders-sync";
 import { z } from "zod";
 

@@ -75,13 +75,78 @@ const stripPersistedKeys = (
 };
 
 export const resolveMcpConfigFromEnv = (
-  overrides?: Pick<McpClientConfig, "apiKey" | "endpoint" | "maxRetries" | "timeoutMs">,
-): McpClientConfig => ({
-  apiKey: selectString(overrides?.apiKey, process.env.MCP_API_KEY),
-  endpoint: selectString(overrides?.endpoint, process.env.MCP_API_URL),
-  maxRetries: selectNumber(overrides?.maxRetries, process.env.MCP_MAX_RETRIES),
-  timeoutMs: selectNumber(overrides?.timeoutMs, process.env.MCP_TIMEOUT_MS),
-});
+  overrides?: Pick<
+    McpClientConfig,
+    | "apiKey"
+    | "endpoint"
+    | "maxRetries"
+    | "timeoutMs"
+    | "maxConcurrent"
+    | "rateLimitRps"
+    | "breaker"
+    | "keepAlive"
+    | "cacheTtlMs"
+    | "cacheSize"
+  >,
+): McpClientConfig => {
+  const apiKey = selectString(overrides?.apiKey, process.env.MCP_API_KEY);
+  const endpoint = selectString(overrides?.endpoint, process.env.MCP_API_URL);
+  const maxRetries = selectNumber(overrides?.maxRetries, process.env.MCP_MAX_RETRIES);
+  const timeoutMs = selectNumber(overrides?.timeoutMs, process.env.MCP_TIMEOUT_MS);
+
+  const maxConcurrent = selectNumber(overrides?.maxConcurrent, process.env.MCP_MAX_CONCURRENT);
+  const rateLimitRps = selectNumber(overrides?.rateLimitRps, process.env.MCP_RATE_LIMIT_RPS);
+
+  const breakerFailureThreshold = selectNumber(
+    overrides?.breaker?.failureThreshold,
+    process.env.MCP_BREAKER_FAILURE_THRESHOLD,
+  );
+  const breakerCooldownMs = selectNumber(
+    overrides?.breaker?.cooldownMs,
+    process.env.MCP_BREAKER_COOLDOWN_MS,
+  );
+  const breakerHalfOpenMax = selectNumber(
+    overrides?.breaker?.halfOpenMax,
+    process.env.MCP_BREAKER_HALF_OPEN_MAX,
+  );
+
+  const hasBreakerEnv =
+    breakerFailureThreshold !== undefined ||
+    breakerCooldownMs !== undefined ||
+    breakerHalfOpenMax !== undefined;
+
+  const breaker = hasBreakerEnv
+    ? {
+        failureThreshold: breakerFailureThreshold,
+        cooldownMs: breakerCooldownMs,
+        halfOpenMax: breakerHalfOpenMax,
+      }
+    : overrides?.breaker;
+
+  const keepAliveEnv = process.env.MCP_KEEP_ALIVE;
+  const keepAlive =
+    overrides?.keepAlive !== undefined
+      ? overrides.keepAlive
+      : keepAliveEnv !== undefined
+        ? parseBoolean(keepAliveEnv, false)
+        : undefined;
+
+  const cacheTtlMs = selectNumber(overrides?.cacheTtlMs, process.env.MCP_CACHE_TTL_MS);
+  const cacheSize = selectNumber(overrides?.cacheSize, process.env.MCP_CACHE_SIZE);
+
+  return {
+    apiKey,
+    endpoint,
+    maxRetries,
+    timeoutMs,
+    maxConcurrent,
+    rateLimitRps,
+    breaker,
+    keepAlive,
+    cacheTtlMs,
+    cacheSize,
+  } as McpClientConfig;
+};
 
 export const isMcpFeatureEnabled = (toggles?: FeatureToggles | null) =>
   envMcpEnabled() && Boolean(toggles?.enableMcpIntegration);

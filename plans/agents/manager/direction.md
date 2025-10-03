@@ -56,6 +56,15 @@ You must **read the current project state** and **realign to the North Star** be
 - Agents never edit `direction.md`; they use `feedback/<agent>.md` only.  
 - **No dated examples/entries in this file; actual decisions must go in `docs/DECISIONS.md`.**
 
+## Execution Policy (Manager Autopilot)
+- Treat this direction file as **pre-approval**. Do **not** ask to proceed.
+- Start with **Intake & Realignment**, then run Cleanup Phases 1–8 without pausing for permission.
+- Enforce **PR-or-Progress** on every agent:
+  - Accept only: (a) PR/commit id with artifacts, or (b) a **concrete blocker** + immediate next-molecule handoff.
+  - Reject plan-only updates (e.g., "next up/next steps/suggested next steps/should I proceed").
+- On any stall, rewrite that agent’s direction to a **single, explicit molecule** with acceptance tests; ping their feedback log with the commit SHA.
+- Cadence: re-check directions/backlog every 5 minutes or when files change; never idle.
+
 ---
 
 ## Non-negotiables
@@ -64,6 +73,7 @@ You must **read the current project state** and **realign to the North Star** be
 - Keep backlog ≤10 active.  
 - PRs must be **atomic** (“molecules”), tied to one RPG node.  
 - **DoD:** tests green (goldens/unit/E2E), docs updated, RPG updated, **DECISIONS entry written**.
+- Reject any "plan-only" feedback (incl. "next up", "next steps", "suggested next steps", "should I proceed", "wait for approval", "let me know if you want") unless it includes a PR/commit id OR a concrete blocker + next-molecule handoff (and the agent immediately switches to the next assigned molecule).
 
 ---
 

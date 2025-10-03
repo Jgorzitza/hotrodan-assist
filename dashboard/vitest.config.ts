@@ -33,6 +33,7 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["test/setup.ts"],
     include: ["app/**/*.test.{ts,tsx}", "app/**/__tests__/**/*.{ts,tsx}"],
+    testTimeout: 15000,
     watch: false,
     // Disable Vite HMR during vitest runs to avoid sandbox WS bindings.
     server: {

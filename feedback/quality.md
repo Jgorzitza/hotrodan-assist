@@ -1,3 +1,35 @@
+# QA Updates — 2025-10-02
+
+- 17:40Z Dashboard Vitest Path B: 58 files, 236 tests — 15 failed, 218 passed, 3 skipped. Failures concentrated in Assistants integration, Orders sync flows, MCP ping/contract, and streaming DLQ timing. Likely cause: test-time mock toggles not engaged (ENABLE_MCP / MCP_FORCE_MOCKS / Assistants & Sync mocks). Artifacts available in console history.
+- 17:43Z RAG goldens: PASS (All goldens passed). Logs appended to logs/run_goldens.log.
+- 17:45Z Approvals SSE HTTP probe: 200 from /assistants/events (reachable). Did not run long soak in this step.
+- 21:58Z Approvals handshake test (pytest) — controlled shell timeout 7s
+  - Command: PYTHONPATH=. .venv_assistants/bin/pytest app/assistants/tests/test_api.py -k handshake -vv --log-cli-level=INFO
+  - Result: TIMEOUT (exit 124) — no data line observed within 7s
+- 21:59Z Approvals handshake test with EVENT_PING_SECONDS=1 — controlled shell timeout 7s
+  - Command: EVENT_PING_SECONDS=1 PYTHONPATH=. .venv_assistants/bin/pytest app/assistants/tests/test_api.py -k handshake -vv --log-cli-level=INFO
+  - Result: TIMEOUT (exit 124) — still no data line within 7s
+- 22:00Z Approvals regression spot-check
+  - Command: PYTHONPATH=. .venv_assistants/bin/pytest app/assistants/tests/test_api.py -k test_approve_dispatches_via_adapter -vv --log-cli-level=INFO
+  - Result: PASS in 1.90s
+  - Notes: adapter dispatch path healthy; handshake stream remains the only concern.
+
+Manager-facing summary
+- Handshake/stream regression suspected: The SSE handshake test hangs under ASGITransport in tests; even with EVENT_PING_SECONDS=1, we received no initial data within 7s. Approvals coordination log shows earlier live SSE soaks passed against port 8002, so the unit-level ASGI path may differ (e.g., initial yield conditions, buffering, or missing immediate handshake emit in the test app path).
+- Recommendation: Adjust assertions to accept either:
+  - handshake arrives first within small window (preferred), or
+  - if no handshake within N seconds, accept first ping (type=ping) as evidence of generator responsiveness, to reduce timing flakiness.
+- Next actions proposed (Owner=Approvals):
+  1) Ensure the /assistants/events handler emits an initial handshake event immediately upon connection in the ASGI path used by tests (no await before first yield).
+  2) If design intentionally sends ping first, update test to assert "first data is handshake OR ping" and then require handshake within a grace window.
+  3) Optionally add an env switch (EVENT_HANDSHAKE_IMMEDIATE=true) for tests to force immediate handshake emission.
+
+Blockers
+- BLOCKER: Approvals handshake test stalls within 7s window under pytest anyio (ASGITransport). Owner=Approvals. Evidence: two timed runs (default and EVENT_PING_SECONDS=1) both timed out; regression check approve path passed.
+
+Proof-of-work
+- Commands, outputs, and timestamps recorded above; additional raw logs available via prior console output.
+
 # Quality Engineer Feedback — 2025-10-01
 
 ## Status: Phase 3 Validation Complete (GO Executed)

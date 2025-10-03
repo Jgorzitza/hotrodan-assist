@@ -8,7 +8,6 @@ vi.mock("../../shopify.server", () => ({
   authenticate: { admin: authenticateAdminMock },
 }));
 
-import { resetAll } from "~/lib/metrics/metrics.server";
 
 describe("app.metrics route", () => {
   beforeEach(() => {

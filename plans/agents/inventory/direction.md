@@ -13,12 +13,12 @@ Project root (canonical): /home/justin/llama_rag
 - Do not wait for ad-hoc instructions. Poll every 5 minutes and proceed.
 
 ## Deliverables this sprint
-- See `plans/tasks.backlog.yaml` items tagged with your node id.
+- Backlog: `inventory.reorder-v1` (see `plans/tasks.backlog.yaml`).
 - Definition of Done: green tests, updated docs, RPG updated by Manager.
 
 ## Dev notes
-- Python: use existing RAG scripts (`discover_urls.py`, `ingest_site_chroma.py`, `query_chroma_router.py`) and `corrections/` + `goldens/`.
-- Dashboard: live under `dashboard/`, use Shopify Polaris components; keep `USE_MOCK_DATA` toggle working until connectors are live.
+- Python: use existing RAG scripts (`discover_urls.py`, `ingest_site_chroma.py`, `query_chroma_router.py`) and `corrections/` + `goldens/`).
+- Dashboard: live under `dashboard/`, use Shopify Polaris components; keep `MCP_FORCE_MOCKS` toggle working until connectors are live.
 - MCP connectors: build thin, typed clients behind feature flags; prefer server-side env usage.
 
 ## Feedback
@@ -33,7 +33,7 @@ Acceptance:
 - Data reflects live connector; p95 route latency within target; health endpoint 200.
 
 ## Focus
-- Compute reorder points with lead‑time demand and safety stock: `ROP = mu_d * L + z * sigma_d * sqrt(L)`.
+- Compute reorder points with lead-time demand and safety stock: `ROP = mu_d * L + z * sigma_d * sqrt(L)`.
 - Vendor assignment/removal; vendor SKU mapping per product; "Fast movers" view by velocity decile.
 - Surfaces: All, Vendor, Fast Movers; export CSV.
 
@@ -41,10 +41,19 @@ Acceptance:
 - Verify live/mocked data path and run targeted tests:
 ```bash
 npx vitest run --root dashboard --config dashboard/vitest.config.ts \
-  dashboard/app/components/inventory/**/__tests__/**/*.test.ts?(x) \
-  dashboard/app/routes/__tests__/app.inventory*.test.ts?(x) || true
+  "dashboard/app/components/inventory/**/__tests__/**/*.test.ts?(x)" \
+  "dashboard/app/routes/__tests__/app.inventory*.test.ts?(x)" \
+  "dashboard/app/routes/__tests__/api.inventory.health.test.ts" \
+  "dashboard/app/routes/__tests__/api.inventory.csv-export.loader.test.ts" || true
 ```
+  Paste pass/fail summary into coordination/inbox/inventory notes.
+- Curl the health endpoint before/after tests to confirm status:
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/api/inventory/health || true
+```
+  If the Remix dev server is offline, log HTTP 000 and the fallback taken.
 - Prepare perf harness for 1000+ SKUs (document plan in feedback/inventory.md).
+- Monitor dashboard metrics blocker (per integration manager updates) and note if rerun is pending infrastructure availability.
 
 ## Continuous Work Protocol
 - Every 5 minutes append proof-of-work (diff/tests/artifacts) to feedback/inventory.md.
@@ -72,13 +81,37 @@ Goals (EOD):
 - Inventory routes healthy with documented p95 target; plan for live Shopify wiring next.
 
 Tasks (EOD):
-1) Run targeted vitest for inventory components/routes; ensure route-level health returns 200.
-2) Document p95 latency target and measurement approach for 1000+ SKUs.
-3) Prepare CSV export test skeleton for follow‑up.
+1) Run targeted vitest for inventory components/routes (including api.inventory.* tests); ensure route-level health returns 200 and log curl output.
+2) Document p95 latency target and measurement approach for 1000+ SKUs (baseline numbers + plan to improve).
+3) Prepare CSV export test skeleton for follow-up and commit notes to feedback/inventory.md.
+4) Add a one-line summary of live Shopify wiring readiness (blocked/unblocked) in coordination/inbox/inventory notes.
+5) When Remix dev server becomes available, rerun `curl` against `/api/inventory/health` to confirm 200 and record the timestamp.
 
 Acceptance:
-- Tests pass; health verified.
+- Tests pass; health verified (or blockers recorded when infrastructure unavailable).
 - p95 target documented; plan captured in feedback/inventory.md.
 
 ### CEO Dependencies — Today
 - None. Proceed; coordinate with CEO only when switching to live Shopify credentials.
+
+## Backlog / Secondary Work
+- Flesh out live Shopify wiring doc (credentials, env vars, validation checklist) under `docs/inventory-performance.md`.
+- Prototype perf harness scripts for 1k+ SKUs and capture sample CSV exports under `artifacts/phase3/inventory/`.
+- Audit inventory UI for vendor mapping edge cases (missing vendors, duplicates) and file findings in feedback.
+
+## Automation & Monitoring
+- Keep local scripts running (where applicable) to provide real-time stats (health_grid, live_check, soak harness).
+- If automation reveals regressions, log blockers immediately and pivot to remediation tasks.
+
+## Execution Policy (no permission-seeking)
+- Treat this `direction.md` as **pre-approval**. Do not ask to proceed.
+- Every cycle must end in one of two outcomes:
+  1) **PR-or-Commit**: open a PR (or local commit if PRs are off) with code + artifacts, **and** append a one-line status to `feedback/<agent>.md` (PR/commit id, molecule id).
+  2) **Concrete Blocker**: append a one-line blocker to `feedback/<agent>.md` with required input/credential AND immediately switch to your next assigned molecule.
+- **Forbidden phrases:** "should I proceed", "wait for approval", "let me know if you want", "next up", "next steps", "suggested next steps".
+- **Forbidden behavior:** any plan-only/summary message that lacks (a) a PR/commit id, or (b) a concrete blocker + immediate switch to next molecule.
+- When `direction.md` changes: checkpoint, re-read, adjust, continue (do **not** wait for chat).
+- Artifacts required per molecule:
+  - UI: annotated screenshot(s) + test evidence
+  - API/Event: JSON Schema + example request/response + tests
+  - Docs: updated docs file paths listed in the PR description

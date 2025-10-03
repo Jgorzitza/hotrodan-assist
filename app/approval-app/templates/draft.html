@@ -12,10 +12,18 @@
       textarea { width: 100%; min-height: 160px; }
       a { color: #2a5db0; }
       .sources ul { margin: 0; padding-left: 1.2rem; }
+      .banner { padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 1rem; }
+      .banner--warning { background: #fff4ce; border: 1px solid #f29900; color: #5c3b00; }
     </style>
   </head>
   <body>
     <p><a href="/">← Back to queue</a></p>
+    {% if not sse_online %}
+    <div class="banner banner--warning">
+      Live event stream is currently offline. Actions will still complete, but
+      new updates will require a page refresh.
+    </div>
+    {% endif %}
     <h1>Draft {{ draft.id }}</h1>
     <div class="meta">
       <strong>Status:</strong> {{ draft.status }}<br>

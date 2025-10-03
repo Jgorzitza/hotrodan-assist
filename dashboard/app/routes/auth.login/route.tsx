@@ -13,25 +13,24 @@ import {
 import polarisTranslations from "@shopify/polaris/locales/en.json";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 
+import { login } from "../../shopify.server";
 
 import { loginErrorMessage } from "./error.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
-export const loader = async (_args: LoaderFunctionArgs) => {
-  return { errors: {}, polarisTranslations };
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const errors = loginErrorMessage(await login(request));
+
+  return { errors, polarisTranslations };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const form = await request.formData();
-  const shop = String(form.get("shop") || "").trim();
-  // Redirect to Shopify auth flow
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: `/auth/login?shop=${encodeURIComponent(shop)}`,
-    },
-  });
+  const errors = loginErrorMessage(await login(request));
+
+  return {
+    errors,
+  };
 };
 
 export default function Auth() {

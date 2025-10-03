@@ -16094,3 +16094,63 @@ Requested Action: Ensure immediate handshake emit on connection in test path OR 
 | 2025-10-03 | Approvals | Approvals `/health` 000; SSE handshake fix still pending — evidence: artifacts/phase3/integration/2025-10-02T20-30-02-06-00-health-grid.tsv | Approvals | Open | — |
 | 2025-10-03 | MCP | Connectors `/health` 000 (localhost:8003 offline) — evidence: artifacts/phase3/integration/2025-10-02T20-30-02-06-00-health-grid.tsv | MCP | Open | — |
 | 2025-10-03 | Inventory | `/api/inventory/health` previously 404; now dev offline (000) — evidence: artifacts/phase3/integration/2025-10-02T20-30-02-06-00-health-grid.tsv | Inventory | Open | — |
+| 2025-10-03 | Poller | Stalled 9x within 15m; no canonical restart command discovered for /home/justin/llama_rag/coordination/inbox/manager/polling.log | Tooling | Open | — |
+| 2025-10-03 | Poller | Stalled 9x within 15m; no canonical restart command discovered for /home/justin/llama_rag/coordination/inbox/status-dashboard/poll-status.log | Tooling | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | release-ops | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | tooling | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | approvals | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | dashboard | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | sales | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | inventory | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | manager | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | quality | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | seo | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | integration | Open | — |
+| 2025-10-03 | Poller | Stalled 10x within 15m; no canonical restart command discovered for /home/justin/llama_rag/coordination/inbox/manager/polling.log | Tooling | Open | — |
+| 2025-10-03 | Poller | Stalled 10x within 15m; no canonical restart command discovered for /home/justin/llama_rag/coordination/inbox/status-dashboard/poll-status.log | Tooling | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | release-ops | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | tooling | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | approvals | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | dashboard | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | sales | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | inventory | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | manager | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | quality | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | seo | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | integration | Open | — |
+| 2025-10-03 | Poller | Stalled 10x within 15m; no canonical restart command discovered for /home/justin/llama_rag/coordination/inbox/manager/polling.log | Tooling | Open | — |
+| 2025-10-03 | Poller | Stalled 10x within 15m; no canonical restart command discovered for /home/justin/llama_rag/coordination/inbox/status-dashboard/poll-status.log | Tooling | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | release-ops | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | tooling | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | approvals | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | dashboard | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | sales | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | inventory | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | manager | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | quality | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | seo | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | integration | Open | — |
+| 2025-10-03 | Poller | Stalled 10x within 15m; no canonical restart command discovered for /home/justin/llama_rag/coordination/inbox/manager/polling.log | Tooling | Open | — |
+| 2025-10-03 | Poller | Stalled 10x within 15m; no canonical restart command discovered for /home/justin/llama_rag/coordination/inbox/status-dashboard/poll-status.log | Tooling | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | release-ops | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | tooling | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | approvals | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | dashboard | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | sales | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | inventory | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | manager | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | quality | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | seo | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | integration | Open | — |
+| 2025-10-03 | Poller | Stalled 10x within 15m; no canonical restart command discovered for /home/justin/llama_rag/coordination/inbox/manager/polling.log | Tooling | Open | — |
+| 2025-10-03 | Poller | Stalled 10x within 15m; no canonical restart command discovered for /home/justin/llama_rag/coordination/inbox/status-dashboard/poll-status.log | Tooling | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | release-ops | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | tooling | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | approvals | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | dashboard | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | sales | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | inventory | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | manager | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | quality | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | seo | Open | — |
+| 2025-10-03 | Proof-of-Work | No proof-of-work in last 10 minutes (diff/tests/artifacts) | integration | Open | — |

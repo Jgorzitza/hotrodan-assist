@@ -24,6 +24,12 @@ if (!('USE_MOCK_DATA' in process.env)) {
 if (!('MCP_FORCE_MOCKS' in process.env)) {
   process.env.MCP_FORCE_MOCKS = 'true';
 }
-if (!('DATABASE_URL' in process.env)) {
-  process.env.DATABASE_URL = 'file:./prisma/dev.db';
-}
+
+// For vitest runs, use the local SQLite dev DB to keep tests hermetic and
+// independent from any root-level DATABASE_URL. prisma.config.ts will pick
+// the SQLite schema when DATABASE_URL starts with "file:" and the generated
+// client will match.
+process.env.DATABASE_URL = 'file:./prisma/dev.db';
+// DIRECT_URL/SHADOW_DATABASE_URL are not used for SQLite; unset to avoid noise
+delete process.env.DIRECT_URL;
+delete process.env.SHADOW_DATABASE_URL;

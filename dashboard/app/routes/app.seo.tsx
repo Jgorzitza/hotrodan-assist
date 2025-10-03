@@ -7,7 +7,6 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { TitleBar } from "@shopify/app-bridge-react";
 import {
   Badge,
   Banner,

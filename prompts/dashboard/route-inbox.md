@@ -16,7 +16,7 @@ Centralize customer inquiries across channels with AI drafting + approval workfl
 - Error boundary for adapter outages + fallback manual entry form.
 
 ## Technical Notes
-- Leverage `USE_MOCK_DATA` to supply deterministic inbox scenarios (empty, heavy load, outage).
+- Leverage `MCP_FORCE_MOCKS` to supply deterministic inbox scenarios (empty, heavy load, outage).
 - Action handler should persist edits to mock store and surface success toast; TODO comment for integration with `app/lib/inbox/providers` + `AiDraft` Prisma model.
 - Implement `useFetcher` for approve/edit actions to avoid full reload.
 - Provide `meta` description referencing AI workflow guardrails.

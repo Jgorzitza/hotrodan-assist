@@ -62,16 +62,23 @@ Environment Variables
 - RAG_API_TOKEN: token value when auth required
 - CORS_ALLOW_ORIGINS: comma-separated origins for CORS
 - OTEL_EXPORTER_OTLP_ENDPOINT: enable OTLP tracing export when set
+- EMBEDDING_CACHE_TTL: seconds to retain cached embeddings in Redis/local memory (default 86400)
+- EMBEDDING_CACHE_PREFIX: key prefix for embedding cache entries (default emb)
+- CHROMA_HNSW_M: HNSW graph M parameter (default 32; docker-compose sets 48 for production latency tuning)
+- CHROMA_HNSW_EF_CONSTRUCTION: HNSW efConstruction parameter (default 200; docker-compose sets 320)
 
 Operational Notes
 - Ingest + goldens loop runs every ~15 minutes via scripts/ingest-goldens-loop.sh
 - 5-minute GO-SIGNAL/direction poller runs via scripts/poll-5m.sh
 - Retrieval uses Chroma + LlamaIndex; retrieval-only mode summarizes top-k snippets and returns sources.
+- Persistence: CHROMA_PATH (/workspace/chroma) and PERSIST_DIR (/workspace/storage) auto-create on boot (fallback to repo `chroma/` and `storage/`); run `scripts/backup_chroma.py --json` or POST /admin/backup to capture timestamped backups under `storage/backups/chroma` (retention via CHROMA_BACKUP_RETENTION, default 5).
+- Embedding cache: query/document embeddings pass through Redis-backed cache (override via EMBEDDING_CACHE_* envs) to reduce duplicate model calls.
 
 Validation & Monitoring
 - Goldens: run `python3 run_goldens.py` in repo root – must pass before declaring changes complete.
 - Health/Readiness: /health and /ready must be OK before considering service available.
 - p95 Baseline: Measured over repeated POST /query calls; documented in coordination notes.
+- Prometheus: scrape /prometheus; look for cache counters (`rag_cache_hits_total`, `rag_embedding_cache_hits_total`), request counters (`rag_requests_total`), and latency histogram (`rag_request_latency_seconds_*`).
 
 Security
 - Optional bearer auth; rate limiting; CORS control; no secrets printed in logs or terminal.

@@ -11,6 +11,8 @@ tasks:
       - "Dashboard list with filters"
     deps: ["mcp.connectors-v1"]
 
+    notes: "Superseded 2025-10-02 by active backlog entry `seo.credentials-gating`."
+
   - id: sales.insights-v1
     node: sales
     title: "Sales funnel and experiment ideas"
@@ -20,3 +22,4 @@ tasks:
       - "Suggest cross-sell/upsell and landing-page tests"
       - "Export CSV"
     deps: ["mcp.connectors-v1"]
+    notes: "Superseded 2025-10-02 by active backlog entry `sales.mock-validation`."

@@ -166,3 +166,56 @@ All goldens passed.; duration ~88.6s. 1/5 failing (Q1 timeout @45s). Logged tabl
   * Do I need a pulse damper when using PTFE hose with a Holley Sniper EFI kit? — p95≈73.7ms (mean≈22.9ms, max≈74.8ms, errors=0).
   * Aggregate p95≈81.5ms; no request errors. Artifacts: tmp/query_load_diverse_1.json, tmp/query_load_diverse_2.json, tmp/query_load_diverse_3.json, tmp/query_load_diverse_4.json
 - 2025-10-02T09:25:52.014694 Cache counters: rag_cache hits=75/misses=5 (~93.8%); embedding hits=2/misses=3 (~40.0%). Total /query count=240. Snapshot tmp/prometheus_snapshot_after_diverse.prom
+- 2025-10-02T10:06:41.722910 HNSW experiment: cloned chroma -> chroma_hnsw_m48 with `hnsw:M=48`, `hnsw:construction_ef=320`, served via local uvicorn port 8101 with Redis disabled. Warm load harness (4 questions, 50 req @ 5 concurrency) landed p95≈197/177/169/161 ms (avg≈176 ms, mean≈108 ms); artifacts tmp/hnsw_m48_http_repeat_{1..4}.json and *_summary.json. Baseline (M=32) sits at p95≈81.5 ms, so M=48 roughly doubled tail latency after warm-up.
+- 2025-10-02T10:06:41.722910 Chromadb expects metadata keys `hnsw:M` and `hnsw:construction_ef`; current app/rag_api/main.py uses `hnsw:ef_construction`, so env knobs will no-op until we patch it. Logged details in coordination; plan to retry once wiring is fixed so caching can stay enabled.
+- 2025-10-02T10:32:25.781380 Patched app/rag_api/main.py to send hnsw:M and hnsw:construction_ef so CHROMA_HNSW_* env overrides take effect; ready to retest once deployed.
+- 2025-10-02T10:49:45.021028 Restarted rag-api (metadata fix live) and reran load harness: M=32 baseline (20 req, concurrency 1) p95≈7.5 ms mean≈4.3 ms; uvicorn test with CHROMA_HNSW_M=48/CHROMA_HNSW_EF_CONSTRUCTION=320 (Redis enabled) yielded p95≈3.8 ms mean≈3.2 ms. Artifacts in tmp/hnsw_baseline_http_summary.json, tmp/hnsw_m48_env_http_summary.json, tmp/prometheus_hnsw_m48_env.prom.
+- 2025-10-02T11:05:20.557737 High-concurrency HNSW benchmark: uvicorn baseline (M=32, Redis on, 80 req @ concurrency10 per question) avg p95≈271 ms mean≈47 ms after warmup; experimental M=48/ef=320 averaged p95≈151 ms mean≈30 ms with max p95≈162 ms. Artifacts: tmp/hnsw_baseline_conc_http_run2_summary.json, tmp/hnsw_m48_high_conc_summary.json, tmp/prometheus_hnsw_m48_env.prom.
+- 2025-10-02T11:12:25.541571 Promoted HNSW=48/320: docker-compose now injects CHROMA_HNSW_M=48 / CHROMA_HNSW_EF_CONSTRUCTION=320; rebuilt chroma via backup+swap (old copy in chroma_hnsw_m32_backup_20251002/). Live check 200 and load harness (`python3 scripts/query_load_test.py --requests 80 --concurrency 5`) shows p95≈220.8 ms, mean≈25.5 ms post-warm (tmp/hnsw_prod_after_http.json). Prom snapshot tmp/prometheus_after_hnsw.prom.
+- 2025-10-02T11:24:17.813470 Goldens run (`python3 run_goldens.py`) post-HNSW rollout: warmup succeeded, 5/5 pass in ~54s (retrieval-only). Logs/run_goldens.log updated.
+- 2025-10-02T11:24:58.841330 Live check (`python3 scripts/live_check.py`): health/ready 200 retrieval-only; snapshots stored in tmp/live_check.out, tmp/health_snapshot.json, tmp/ready_snapshot.json.
+- 2025-10-02T11:54:37.483782 Instrumented `rag_request_latency_seconds` histogram around /query (route labels query/query-hybrid) and primed the series; restart complete. Note: buckets surface per-worker until PROMETHEUS_MULTIPROC_DIR is configured or workers=1.
+- 2025-10-02T13:57:42.252533 Restored MCP token rotation: reauth via `npx mcp-remote ... --reauth`, updated `.env` with new refresh token, and enhanced `scripts/fetch_mcp_token.sh` to auto-load ~/.mcp-auth credentials + persist rotated tokens. Script now returns bearer (~781 chars) and rotates refresh automatically.
+
+## 2025-10-03T01:28:10Z — Goldens + Health + Backup
+- Goldens: PASS (0 regressions). Duration ≈ 20.8s.
+  Artifacts: `tmp/run_goldens.out`, `logs/run_goldens.log`.
+- Health/Ready probe: blocked by sandbox in this session (localhost HTTP not permitted). Snapshots saved:
+  - `tmp/health_snapshot.json`
+  - `tmp/ready_snapshot.json`
+  - Full: `tmp/live_check.out`
+- Persistence and backup plan (see `app/rag_api/BACKUP_PLAN.md`):
+  - CHROMA_PATH: `chroma/` (container default `/workspace/chroma`).
+  - PERSIST_DIR: `storage/` (container default `/workspace/storage`).
+  - Backup dir: `storage/backups/chroma/`.
+  - Cadence: daily 03:00 UTC and pre-ingest/pre-upgrade; retention `CHROMA_BACKUP_RETENTION=5`.
+  - Evidence: `python3 scripts/backup_chroma.py --json` created `storage/backups/chroma/chroma-20251003T012737Z` (manifest also at `tmp/backup_manifest.json`).
+  - Restore note: rehydrate by pointing env to the chosen snapshot or re-running `ingest_incremental_chroma.py` after a volume loss.
+
+Acceptance evidence for EOD goals (partial due to sandbox):
+- Goldens pass: yes (0 regressions).
+- Health/metrics evidence: snapshots present; live HTTP blocked in this run.
+- p95 target: tracking per earlier runs; current measurement pending a live API session.
+
+- 2025-10-03T02:13:41Z Goldens PASS (0 regressions). See 
+## 2025-10-03T02:30:30Z — RAG Status (Sprint: Production Readiness)
+- Goldens: PASS (0 regressions). Duration ≈ 23s.
+  - Artifacts: `tmp/run_goldens.out`, `logs/run_goldens.log`, `tmp/run_goldens.duration`.
+- Health/Ready probe: localhost HTTP blocked by sandbox in this run.
+  - `tmp/health_snapshot.json` and `tmp/ready_snapshot.json` captured; see `tmp/live_check.out` for details.
+  - Health error: `Operation not permitted` connecting to `http://localhost:8001/health`.
+- Persistence & Backups (per `app/rag_api/BACKUP_PLAN.md`):
+  - CHROMA_PATH=`chroma/`, PERSIST_DIR=`storage/`, CHROMA_BACKUP_DIR=`storage/backups/chroma/`, retention=5.
+  - Cadence: hourly local backup; daily offsite; pre-deploy `/admin/backup`.
+  - Evidence: `scripts/backup_chroma.py --json` created `storage/backups/chroma/chroma-20251003T023022Z`; manifest at `tmp/backup_manifest.json`.
+- p95 target: track ≤200 ms in retrieval-only mode; current measurement pending live API access.
+
+Status: concrete blocker on localhost HTTP prevents verifying /ready and /prometheus; goldens complete and backup verified.
+  - coordination/inbox/rag/2025-10-03-notes.md
+  - tmp/run_goldens.out, logs/run_goldens.log
+- 2025-10-03T02:13:41Z Live probe snapshots saved (localhost blocked in this session):
+  - tmp/health_snapshot.json
+  - tmp/ready_snapshot.json
+  - tmp/live_check.json
+- 2025-10-03T02:13:41Z Backup plan recorded; paths: CHROMA_PATH=chroma, PERSIST_DIR=storage, CHROMA_BACKUP_DIR=storage/backups/chroma; retention=5; cadence: hourly local, daily offsite. Ref: app/rag_api/BACKUP_PLAN.md.
+  Backup evidence: tmp/backup_manifest.json; snapshot storage/backups/chroma/chroma-20251003T021501Z

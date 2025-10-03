@@ -21,7 +21,7 @@
 ```
 app/
   mocks/
-    index.ts                // central exports + USE_MOCK_DATA gate
+    index.ts                // central exports + MCP_FORCE_MOCKS gate
     factories/
       dates.ts              // deterministic date helpers
       numbers.ts            // seeded random number utilities
@@ -49,13 +49,13 @@ app/
 - Orders factories should precompute backlog metrics (awaiting fulfillment, overdue pct, avg fulfillment hours, breach counts) so `/orders` loader can return deterministic aggregates per scenario.
 
 ## Integration Pattern
-- Create `USE_MOCK_DATA` boolean via Remix server env (`process.env.USE_MOCK_DATA === "true"`).
+- Create `MCP_FORCE_MOCKS` boolean via Remix server env (`process.env.MCP_FORCE_MOCKS === "true"`).
 - In each loader, branch early:
   ```ts
   import { getSalesSummary } from "~/mocks";
 
   export async function loader({ context }: LoaderArgs) {
-    if (USE_MOCK_DATA) {
+    if (MCP_FORCE_MOCKS) {
       return json(await getSalesSummary(context.params));
     }
     return fetchLiveSales(context);
@@ -73,7 +73,7 @@ app/
 - [ ] Define TypeScript interfaces per dataset and export from `app/types/dashboard.ts`.
 - [ ] Scaffold `app/mocks/` directory structure and seed utilities.
 - [ ] Implement primary scenario factories for each dataset (base, empty, warning, error).
-- [ ] Wire `USE_MOCK_DATA` toggle into Remix loaders and document usage in `README`.
+- [ ] Wire `MCP_FORCE_MOCKS` toggle into Remix loaders and document usage in `README`.
 - [ ] Add minimal Jest/Vitest coverage asserting deterministic mock outputs.
 - [ ] Document developer workflow for switching scenarios.
 - [ ] Ensure settings scenarios include masked secrets, rotation reminders, and connection status variance.

@@ -2,8 +2,9 @@ import { describe, it, expect, beforeAll } from "vitest";
 
 import { storeSettingsRepository } from "~/lib/settings/repository.server";
 import { runConnectionTest } from "~/lib/settings/connection-tests.server";
+import type prismaClient from "~/db.server";
 
-let prisma: typeof import("~/db.server")["default"];
+let prisma: typeof prismaClient;
 
 const SHOP_DOMAIN = "hotrodan.com";
 

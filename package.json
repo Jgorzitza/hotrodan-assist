@@ -18,8 +18,9 @@
     "@remix-run/testing": "^2.8.0",
     "@types/node": "^20.12.7",
     "@vitest/coverage-v8": "^1.4.0",
+    "jsdom": "^27.0.0",
     "msw": "^2.2.3",
-    "prisma": "^5.11.0",
+    "prisma": "^6.16.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.4",
     "vitest": "^1.4.0"

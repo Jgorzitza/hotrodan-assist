@@ -156,7 +156,7 @@ update_shopify_toml() {
       if ($0 ~ /^[ \t]*application_url[ \t]*=/) {
         print "application_url = \"" url "\""
       } else if ($0 ~ /^[ \t]*redirect_urls[ \t]*=/) {
-        print "redirect_urls = [ \"https://" domain "/auth/callback\", \"https://" domain "/auth/callback/online\" ]"
+        print "redirect_urls = [ \"https://" domain "/auth/callback\", \"https://" domain "/auth/callback/online\", \"https://" domain "/api/auth/callback\" ]"
       } else {
         print $0
       }
@@ -176,15 +176,23 @@ sse_smoke() {
   local base="${1:-$DEFAULT_ASSISTANTS_BASE}"
   log "SSE smoke: $base/assistants/events (3s timeout)..."
   set +e
-  # Try to read a few bytes without hanging forever
-  curl -sS -N --max-time 3 "$base/assistants/events" >/dev/null
+  # Read the first event payload and exit; treat timeout/broken pipe as acceptable.
+  local output
+  output="$(curl -sS -N --max-time 3 "$base/assistants/events" | head -n1)"
   local code=$?
   set -e
-  if [[ $code -eq 0 ]]; then
-    echo "ok"
-  else
-    echo "fail"
-  fi
+  case "$code" in
+    0|141|28)
+      if [[ -n "$output" && "$output" == *"\"handshake\""* ]]; then
+        echo "ok"
+      else
+        echo "fail"
+      fi
+      ;;
+    *)
+      echo "fail"
+      ;;
+  esac
 }
 
 main() {

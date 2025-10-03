@@ -52,7 +52,7 @@ Project: /home/justin/llama_rag  •  Canonical branch: chore/repo-canonical-lay
   - CI: remove duplicate job definitions; prisma generate before MCP tests; add Docker build-validation job; fail on errors
   - Evidence: docker build logs, PR link, CI run URL in feedback/tooling.md every cycle
 - Dashboard (P1)
-  - Fix mocks histogram test; remove USE_MOCK_DATA toggles behind feature flags; enforce CSP; verify /api/health and /app/metrics in CI
+  - Fix mocks histogram test; remove legacy mock toggles in favor of MCP_FORCE_MOCKS; enforce CSP; verify /api/health and /app/metrics in CI
   - Evidence: vitest output, CSP header snapshot, curl outputs
 - MCP (P1)
   - Expose connector health/metrics routes; circuit breaker dashboards + alerts; live harness remains env-gated
@@ -66,7 +66,7 @@ Project: /home/justin/llama_rag  •  Canonical branch: chore/repo-canonical-lay
 - Inventory/SEO/Sales (P2)
   - Inventory: mock 1200 SKU perf baseline; CSV export; health/readiness
   - SEO: credentials gating banners done; continue targeted tests; live blocked until creds
-  - Sales: mock contracts validation; CLV/forecast scaffolds; SLO definitions
+  - Sales: mock contracts validation; CLV/forecast scaffolds; SLO definitions; MCP bearer wired (hasAnalyticsToken flag + Authorization headers)
   - Evidence: CSV artifact, perf p95 line, targeted test logs
 
 6) Evidence and Governance

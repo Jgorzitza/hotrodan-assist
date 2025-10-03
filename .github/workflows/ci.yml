@@ -51,7 +51,7 @@ jobs:
       - name: Vitest Suite (dashboard)
         env:
           DATABASE_URL: file:./prisma/dev.db
-        run: npx vitest run --config vitest.config.ts --reporter=default --reporter=junit --outputFile ../test-results/dashboard/vitest-junit.xml
+        run: npx vitest run --no-threads --config vitest.config.ts --reporter=default --reporter=junit --outputFile ../test-results/dashboard/vitest-junit.xml
         working-directory: dashboard
       - name: Playwright Smoke (list only)
         run: npm run test:e2e -- --list

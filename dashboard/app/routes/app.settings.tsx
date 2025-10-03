@@ -27,7 +27,7 @@ import {
   Text,
   TextField,
 } from "@shopify/polaris";
-import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
+import { useAppBridge } from "@shopify/app-bridge-react";
 import { z } from "zod";
 
 import { authenticate } from "../shopify.server";

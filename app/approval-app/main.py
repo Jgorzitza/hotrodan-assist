@@ -69,8 +69,37 @@ class SecurityHeadersMiddleware:
         await self.app(scope, receive, send_wrapper)
 
 app.add_middleware(SecurityHeadersMiddleware)
-
 ASSISTANTS_BASE = os.getenv("ASSISTANTS_BASE", "http://assistants:8002")
+
+_SSE_CHECK_TIMEOUT = httpx.Timeout(2.0, connect=1.0, read=1.0)
+
+
+async def check_sse_availability() -> bool:
+    """Return True when the Assistants SSE endpoint responds within a short timeout."""
+    client: httpx.AsyncClient | None = getattr(app.state, "http", None)
+    if client is None:
+        logger.warning("SSE availability check skipped: http client not ready")
+        return False
+
+    url = f"{ASSISTANTS_BASE}/assistants/events"
+    try:
+        request = client.build_request(
+            "GET",
+            url,
+            headers={"Accept": "text/event-stream"},
+        )
+        response = await client.send(request, stream=True, timeout=_SSE_CHECK_TIMEOUT)
+    except httpx.HTTPError as exc:
+        logger.warning("SSE availability check failed: %s", exc)
+        return False
+
+    try:
+        ok = response.status_code < 400
+        if not ok:
+            logger.warning("SSE availability check returned status=%s", response.status_code)
+        return ok
+    finally:
+        await response.aclose()
 
 
 @app.get("/health")
@@ -126,13 +155,21 @@ async def shutdown() -> None:
 @app.get("/")
 async def index(request: Request):
     data = await _assistants_get("/assistants/drafts")
-    return templates.TemplateResponse("index.html", {"request": request, "drafts": data.get("drafts", [])})
+    sse_online = await check_sse_availability()
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "drafts": data.get("drafts", []), "sse_online": sse_online},
+    )
 
 
 @app.get("/drafts/{draft_id}")
 async def view_draft(request: Request, draft_id: str):
     draft = await _assistants_get(f"/assistants/drafts/{draft_id}")
-    return templates.TemplateResponse("draft.html", {"request": request, "draft": draft})
+    sse_online = await check_sse_availability()
+    return templates.TemplateResponse(
+        "draft.html",
+        {"request": request, "draft": draft, "sse_online": sse_online},
+    )
 
 
 @app.post("/drafts/{draft_id}/approve")

@@ -22,8 +22,6 @@ spec:
           env:
             - name: ENABLE_MCP
               value: "true"
-            - name: USE_MOCK_DATA
-              value: "true"
           readinessProbe:
             httpGet:
               path: /app/metrics

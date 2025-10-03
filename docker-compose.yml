@@ -20,8 +20,7 @@ services:
       context: ./dashboard
       dockerfile: Dockerfile
     environment:
-      - ENABLE_MCP=true
-      - USE_MOCK_DATA=true
+      - ENABLE_MCP=false
       - PORT=8080
     ports:
       - "8080:8080"
@@ -31,6 +30,9 @@ services:
     env_file: .env
     environment:
       - UVICORN_WORKERS=2
+      - CHROMA_HNSW_M=48
+      - CHROMA_HNSW_EF_CONSTRUCTION=320
+      - PROMETHEUS_MULTIPROC_DIR=/workspace/tmp/prom-multiproc
     volumes:
       - ./data:/data
       - ./:/workspace

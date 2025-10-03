@@ -30,7 +30,8 @@ from embedding_cache import RedisCachedEmbedding
 
 # Monitoring helpers
 from monitor import track_performance, get_metrics, save_metrics
-from prometheus_client import Counter, generate_latest
+from prometheus_client import CollectorRegistry, Counter, Histogram, generate_latest
+from prometheus_client import multiprocess
 import redis
 
 # OpenTelemetry (optional)
@@ -85,6 +86,11 @@ EMBEDDING_CACHE_TTL = int(os.getenv("EMBEDDING_CACHE_TTL", "86400"))
 EMBEDDING_CACHE_PREFIX = os.getenv("EMBEDDING_CACHE_PREFIX", "emb")
 CHROMA_HNSW_M = int(os.getenv("CHROMA_HNSW_M", "32"))
 CHROMA_HNSW_EF_CONSTRUCTION = int(os.getenv("CHROMA_HNSW_EF_CONSTRUCTION", "200"))
+PROMETHEUS_MULTIPROC_DIR = os.getenv("PROMETHEUS_MULTIPROC_DIR")
+
+if PROMETHEUS_MULTIPROC_DIR:
+    prom_path = Path(PROMETHEUS_MULTIPROC_DIR)
+    prom_path.mkdir(parents=True, exist_ok=True)
 
 GENERATION_MODE = os.getenv("RAG_GENERATION_MODE", "openai")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -109,7 +115,8 @@ from llama_index.core import Settings as LISettings
 from llama_index.embeddings.fastembed import FastEmbedEmbedding
 
 embed_model = None
-if OPENAI_API_KEY and GENERATION_MODE == "openai":
+DEFER_EMBED_INIT = os.getenv("RAG_SKIP_EMBED_INIT", "0").lower() in {"1", "true", "yes"}
+if OPENAI_API_KEY and GENERATION_MODE == "openai" and not DEFER_EMBED_INIT:
     try:
         from llama_index.llms.openai import OpenAI as OpenAI_LLM
         from llama_index.embeddings.openai import OpenAIEmbedding
@@ -119,19 +126,21 @@ if OPENAI_API_KEY and GENERATION_MODE == "openai":
         GENERATION_MODE = "retrieval-only"
         embed_model = FastEmbedEmbedding(model_name=os.getenv("FASTEMBED_MODEL", "BAAI/bge-small-en-v1.5"))
 else:
-    embed_model = FastEmbedEmbedding(model_name=os.getenv("FASTEMBED_MODEL", "BAAI/bge-small-en-v1.5"))
+    if not DEFER_EMBED_INIT:
+        embed_model = FastEmbedEmbedding(model_name=os.getenv("FASTEMBED_MODEL", "BAAI/bge-small-en-v1.5"))
 
 if not (OPENAI_API_KEY and GENERATION_MODE == "openai"):
     LISettings.llm = None
 
-LISettings.embed_model = RedisCachedEmbedding(
-    inner=embed_model,
-    redis_factory=get_redis,
-    ttl_seconds=EMBEDDING_CACHE_TTL,
-    prefix=EMBEDDING_CACHE_PREFIX,
-    on_hit=lambda kind: EMBED_CACHE_HITS.labels(kind=kind).inc(),
-    on_miss=lambda kind: EMBED_CACHE_MISSES.labels(kind=kind).inc(),
-)
+if not DEFER_EMBED_INIT and embed_model is not None:
+    LISettings.embed_model = RedisCachedEmbedding(
+        inner=embed_model,
+        redis_factory=get_redis,
+        ttl_seconds=EMBEDDING_CACHE_TTL,
+        prefix=EMBEDDING_CACHE_PREFIX,
+        on_hit=lambda kind: EMBED_CACHE_HITS.labels(kind=kind).inc(),
+        on_miss=lambda kind: EMBED_CACHE_MISSES.labels(kind=kind).inc(),
+    )
 
 _SYSTEM_HINT = (
     "Retail EFI specialist. Cover pump sizing (LPH vs hp & fuel), "
@@ -164,6 +173,10 @@ if os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT"):
 
 REQUESTS = Counter("rag_requests_total", "Total RAG requests", ["route"])
 RATE_LIMITED = Counter("rag_rate_limited_total", "Requests rejected due to rate limiting")
+
+REQUEST_LATENCY = Histogram("rag_request_latency_seconds", "RAG request latency", ["route"])
+REQUEST_LATENCY.labels(route="query").observe(0)
+REQUEST_LATENCY.labels(route="query-hybrid").observe(0)
 
 CACHE_HITS = Counter("rag_cache_hits_total", "Cache hits for query/embedding cache", ['layer'])
 CACHE_MISSES = Counter("rag_cache_misses_total", "Cache misses for query/embedding cache", ['layer'])
@@ -302,111 +315,113 @@ def query(req: Request, q: QueryIn):
         RATE_LIMITED.inc()
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
-    REQUESTS.labels(route="query").inc()
+    route_label = "query-hybrid" if (q.mode or "").lower() == "hybrid" else "query"
+    REQUESTS.labels(route=route_label).inc()
 
-    # Assign variant and record analytics
-    variant = (q.ab or assign_variant(ip))
-    record_query(q, variant, ip)
+    with REQUEST_LATENCY.labels(route=route_label).time():
+        # Assign variant and record analytics
+        variant = (q.ab or assign_variant(ip))
+        record_query(q, variant, ip)
 
-    # Offline corrections layer (no retrieval/LLM)
-    hit = corrections_hit(q.question)
-    if hit:
-        result = {"answer": hit.get("answer",""), "sources": hit.get("sources", []), "mode": "corrections"}
-        return result
-
-    # Cache layer
-    ck = cache_key_for(q)
-    cached = cache_get(ck)
-    if cached:
-        return cached
-    REQUESTS.labels(route="query").inc()
-    try:
-        client = chromadb.PersistentClient(path=CHROMA_PATH)
-        collection_metadata = {"hnsw:space": "cosine"}
-        if CHROMA_HNSW_M:
-            collection_metadata["hnsw:M"] = int(CHROMA_HNSW_M)
-        if CHROMA_HNSW_EF_CONSTRUCTION:
-            collection_metadata["hnsw:construction_ef"] = int(CHROMA_HNSW_EF_CONSTRUCTION)
-        try:
-            collection = client.get_collection(COLLECTION)
-        except Exception:
-            collection = client.create_collection(COLLECTION, metadata=collection_metadata)
-        vector_store = ChromaVectorStore(chroma_collection=collection)
-        storage = StorageContext.from_defaults(
-            vector_store=vector_store, persist_dir=PERSIST_DIR
-        )
-        index = load_index_from_storage(storage, index_id=INDEX_ID)
-
-        retriever = index.as_retriever(similarity_top_k=q.top_k)
-        nodes = retriever.retrieve(q.question)
-
-        # Hybrid rerank: use BM25 across retrieved snippets to refine ordering if requested
-        if (q.mode or "").lower() == "hybrid":
-            try:
-                from rank_bm25 import BM25Okapi
-                corpus = []
-                node_list = []
-                for nws in nodes:
-                    node = getattr(nws, "node", nws)
-                    text = getattr(node, "text", None)
-                    if text is None and hasattr(node, "get_content"):
-                        text = node.get_content()
-                    if text:
-                        corpus.append(text.split())
-                        node_list.append(node)
-                if corpus:
-                    bm = BM25Okapi(corpus)
-                    scores = bm.get_scores(q.question.split())
-                    # attach score to node order
-                    paired = list(zip(scores, node_list))
-                    paired.sort(key=lambda x: x[0], reverse=True)
-                    # rebuild nodes list respecting top_k
-                    nodes = [type("NS", (), {"node": nl}) for _, nl in paired[:q.top_k]]
-            except Exception:
-                pass
-
-        if GENERATION_MODE == "openai" and OPENAI_API_KEY:
-            qe = index.as_query_engine(response_mode="compact", similarity_top_k=q.top_k)
-            resp = qe.query(_SYSTEM_HINT + "\n\nQuestion: " + q.question)
-            sources = [
-                n.metadata.get("source_url", "unknown")
-                for n in getattr(resp, "source_nodes", [])
-            ]
-            result = {"answer": str(resp), "sources": sources, "mode": "openai"}
-            cache_set(ck, result)
+        # Offline corrections layer (no retrieval/LLM)
+        hit = corrections_hit(q.question)
+        if hit:
+            result = {"answer": hit.get("answer",""), "sources": hit.get("sources", []), "mode": "corrections"}
             return result
 
-        summaries = []
-        source_urls = []
-        for node_with_score in nodes:
-            node = getattr(node_with_score, "node", None) or node_with_score
-            text = getattr(node, "text", None)
-            if text is None and hasattr(node, "get_content"):
-                text = node.get_content()
-            if not text:
-                continue
-            summaries.append(shorten(text.replace("\n", " "), width=400, placeholder="…"))
-            src = node.metadata.get("source_url", "unknown")
-            if src not in source_urls:
-                source_urls.append(src)
+        # Cache layer
+        ck = cache_key_for(q)
+        cached = cache_get(ck)
+        if cached:
+            return cached
+        REQUESTS.labels(route=route_label).inc()
+        try:
+            client = chromadb.PersistentClient(path=CHROMA_PATH)
+            collection_metadata = {"hnsw:space": "cosine"}
+            if CHROMA_HNSW_M:
+                collection_metadata["hnsw:M"] = int(CHROMA_HNSW_M)
+            if CHROMA_HNSW_EF_CONSTRUCTION:
+                collection_metadata["hnsw:construction_ef"] = int(CHROMA_HNSW_EF_CONSTRUCTION)
+            try:
+                collection = client.get_collection(COLLECTION)
+            except Exception:
+                collection = client.create_collection(COLLECTION, metadata=collection_metadata)
+            vector_store = ChromaVectorStore(chroma_collection=collection)
+            storage = StorageContext.from_defaults(
+                vector_store=vector_store, persist_dir=PERSIST_DIR
+            )
+            index = load_index_from_storage(storage, index_id=INDEX_ID)
 
-        if not summaries:
-            return {
-                "answer": "No relevant documents retrieved. Configure OPENAI_API_KEY for full responses.",
-                "sources": [],
+            retriever = index.as_retriever(similarity_top_k=q.top_k)
+            nodes = retriever.retrieve(q.question)
+
+            # Hybrid rerank: use BM25 across retrieved snippets to refine ordering if requested
+            if (q.mode or "").lower() == "hybrid":
+                try:
+                    from rank_bm25 import BM25Okapi
+                    corpus = []
+                    node_list = []
+                    for nws in nodes:
+                        node = getattr(nws, "node", nws)
+                        text = getattr(node, "text", None)
+                        if text is None and hasattr(node, "get_content"):
+                            text = node.get_content()
+                        if text:
+                            corpus.append(text.split())
+                            node_list.append(node)
+                    if corpus:
+                        bm = BM25Okapi(corpus)
+                        scores = bm.get_scores(q.question.split())
+                        # attach score to node order
+                        paired = list(zip(scores, node_list))
+                        paired.sort(key=lambda x: x[0], reverse=True)
+                        # rebuild nodes list respecting top_k
+                        nodes = [type("NS", (), {"node": nl}) for _, nl in paired[:q.top_k]]
+                except Exception:
+                    pass
+
+            if GENERATION_MODE == "openai" and OPENAI_API_KEY:
+                qe = index.as_query_engine(response_mode="compact", similarity_top_k=q.top_k)
+                resp = qe.query(_SYSTEM_HINT + "\n\nQuestion: " + q.question)
+                sources = [
+                    n.metadata.get("source_url", "unknown")
+                    for n in getattr(resp, "source_nodes", [])
+                ]
+                result = {"answer": str(resp), "sources": sources, "mode": "openai"}
+                cache_set(ck, result)
+                return result
+
+            summaries = []
+            source_urls = []
+            for node_with_score in nodes:
+                node = getattr(node_with_score, "node", None) or node_with_score
+                text = getattr(node, "text", None)
+                if text is None and hasattr(node, "get_content"):
+                    text = node.get_content()
+                if not text:
+                    continue
+                summaries.append(shorten(text.replace("\n", " "), width=400, placeholder="…"))
+                src = node.metadata.get("source_url", "unknown")
+                if src not in source_urls:
+                    source_urls.append(src)
+
+            if not summaries:
+                return {
+                    "answer": "No relevant documents retrieved. Configure OPENAI_API_KEY for full responses.",
+                    "sources": [],
+                    "mode": "retrieval-only",
+                }
+
+            answer = "\n\n".join(f"• {s}" for s in summaries[:3])
+            result = {
+                "answer": answer + "\n\n[LLM disabled: configure OPENAI_API_KEY for full narratives]",
+                "sources": source_urls[:10],
                 "mode": "retrieval-only",
             }
-
-        answer = "\n\n".join(f"• {s}" for s in summaries[:3])
-        result = {
-            "answer": answer + "\n\n[LLM disabled: configure OPENAI_API_KEY for full narratives]",
-            "sources": source_urls[:10],
-            "mode": "retrieval-only",
-        }
-        cache_set(ck, result)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"RAG query failed: {str(e)}")
+            cache_set(ck, result)
+            return result
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"RAG query failed: {str(e)}")
 
 @app.get("/health")
 def health():
@@ -433,7 +448,12 @@ def metrics():
 
 @app.get("/prometheus")
 def prometheus_metrics():
-    return PlainTextResponse(generate_latest().decode("utf-8"))
+    registry = None
+    if PROMETHEUS_MULTIPROC_DIR:
+        registry = CollectorRegistry()
+        multiprocess.MultiProcessCollector(registry)
+    payload = generate_latest(registry) if registry else generate_latest()
+    return PlainTextResponse(payload.decode("utf-8"))
 
 # Streaming endpoint (SSE-like)
 from fastapi import Response

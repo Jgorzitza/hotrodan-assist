@@ -17,7 +17,7 @@ Deliver a cockpit for demand planning and PO drafting:
 
 ## Technical Notes
 - Inventory mocks now use `app/lib/inventory/math.ts` to derive safety stock, reorder point, and stockout dates; buckets & vendors seeded with deterministic faker data.
-- Loader/action both respect `USE_MOCK_DATA`; when false, they authenticate via Admin API stub before accessing mock builders.
+- Loader/action both respect `MCP_FORCE_MOCKS`; when false, they authenticate via Admin API stub before accessing mock builders.
 - URL param `bucket` drives tab selection; actions accept `bucketId` / `vendorId` for targeted CSV exports.
 - CSV export currently returns CSV text in JSON for client-side download; swap to streamed response once real data volume is wired.
 - TODOs: replace trend placeholder with Polaris chart, persist drafts in real store, wire background jobs for bucket recompute + CSV exports >5k rows.

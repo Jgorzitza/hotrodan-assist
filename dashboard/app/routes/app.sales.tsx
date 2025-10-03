@@ -30,7 +30,6 @@ import {
   SparkLineChart,
   type DataSeries,
 } from "@shopify/polaris-viz";
-import { TitleBar } from "@shopify/app-bridge-react";
 import { z } from "zod";
 
 import { authenticate } from "../shopify.server";

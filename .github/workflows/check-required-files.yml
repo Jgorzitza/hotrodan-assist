@@ -17,7 +17,6 @@ jobs:
             docs/TROUBLESHOOTING.md \
             docs/ARCHITECTURE.md \
             docs/DECISIONS.md \
-            docs/cleanup/inventory-20251002.md \
             plans/rpg.json \
             plans/tasks.backlog.yaml \
             agent_launch_commands.md; do
@@ -26,4 +25,9 @@ jobs:
               missing=1
             fi
           done
+          # Require at least one cleanup inventory doc for the current repo state
+          if ! ls docs/cleanup/inventory-*.md >/dev/null 2>&1; then
+            echo "::error::Missing cleanup inventory (docs/cleanup/inventory-YYYYMMDD.md)"
+            missing=1
+          fi
           exit $missing

@@ -138,6 +138,26 @@ async def test_get_draft_detail_404(client: httpx.AsyncClient) -> None:
     assert response.json()["detail"] == "Draft not found"
 
 
+async def test_events_stream_emits_handshake_first(client: httpx.AsyncClient) -> None:
+    async with client.stream("GET", "/assistants/events") as response:
+        assert response.status_code == 200
+        data_line: str | None = None
+
+        async for line in response.aiter_lines():
+            if not line:
+                continue
+            if line.startswith("data:" ):
+                data_line = line
+                break
+
+        assert data_line is not None, "SSE stream did not emit any data lines"
+
+        payload = json.loads(data_line.partition("data: ")[2])
+        assert payload["type"] == "handshake"
+        assert payload["service"] == "assistants"
+        assert payload["capabilities"], "Handshake should advertise capabilities"
+
+
 async def test_approve_dispatches_via_adapter(client: httpx.AsyncClient) -> None:
     sent_payloads: List[Dict[str, object]] = []
 
