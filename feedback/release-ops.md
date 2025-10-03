@@ -166,3 +166,4 @@
 - Added noon sweep to 2025-10-02 notes: Shopify creds pending, cleanup blocker logged, Dashboard/MCP/Tooling owe proof-of-work, Integration smoke still paused.
 - Re-ran `npx mcp-remote` + `bash scripts/fetch_mcp_token.sh` (token length 781) and captured the command in release notes.
 - Refreshed GO/NO-GO evidence table with current `/app/metrics` status, pending `/api/mcp|inventory` proof, and fallback owners.
+2025-10-02T20:40:16-06:00 — Directions realigned to North Star in e3c3ce13; read your direction.md.

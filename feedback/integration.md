@@ -175,3 +175,4 @@
 - Updated `coordination/status-dashboard.md` with BLOCKED statuses and paged owners in blockers-log.
 - Nudged Release Ops, MCP, and Dashboard to post FastMCP token-length logs per docs/mcp-env.md; awaiting evidence.
 - Commit: ae16c4e3 — integration sweep + status updates
+2025-10-02T20:40:16-06:00 — Directions realigned to North Star in e3c3ce13; read your direction.md.

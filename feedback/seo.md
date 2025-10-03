@@ -213,3 +213,4 @@ Mock-mode summary (2025-10-02 19:05Z)
 - Gating UX: Present in code and covered by tests; banner shown when no live providers connected; “Go to Settings” CTA visible. Screenshot pending until server session available.
 - Health curl: http://127.0.0.1:8080/api/seo/health → 000 (no local server)
 - Coordination note: coordination/inbox/seo/2025-10-03-dev-run.md
+2025-10-02T20:40:16-06:00 — Directions realigned to North Star in e3c3ce13; read your direction.md.

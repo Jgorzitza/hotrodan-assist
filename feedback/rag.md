@@ -219,3 +219,4 @@ Status: concrete blocker on localhost HTTP prevents verifying /ready and /promet
   - tmp/live_check.json
 - 2025-10-03T02:13:41Z Backup plan recorded; paths: CHROMA_PATH=chroma, PERSIST_DIR=storage, CHROMA_BACKUP_DIR=storage/backups/chroma; retention=5; cadence: hourly local, daily offsite. Ref: app/rag_api/BACKUP_PLAN.md.
   Backup evidence: tmp/backup_manifest.json; snapshot storage/backups/chroma/chroma-20251003T021501Z
+2025-10-02T20:40:16-06:00 — Directions realigned to North Star in e3c3ce13; read your direction.md.

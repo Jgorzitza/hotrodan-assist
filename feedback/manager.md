@@ -195,3 +195,5 @@ GO — 3c9cf64389371f1a9651dcd8a270c00b5395aee0
 2025-10-03T01:00:21Z Intake & realignment re-run — canonical docs/backlog/directions all current; PR-or-progress compliance confirmed (no plan-only updates).
 
 2025-10-03T01:10:49Z Backlog realigned — active tasks now map to every agent (approvals.loop-v1, dashboard.settings-v1, inventory.reorder-v1, tooling.ops-foundation, mcp.connectors-production, rag.index-optimization, ops.readiness-triad, sales.mock-validation, seo.credentials-gating). Direction files updated with backlog IDs and PR-or-progress policy reaffirmed.
+2025-10-02T20:40:16-06:00 — Directions realigned to North Star in e3c3ce13; read your direction.md.
+GO e3c3ce13

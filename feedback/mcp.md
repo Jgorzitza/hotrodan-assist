@@ -503,3 +503,4 @@ MCP env knobs (current)
 - Command: ENABLE_MCP=1 MCP_FORCE_MOCKS=0 MCP_API_URL=$MCP_API_URL MCP_API_KEY=$MCP_API_KEY SHOPIFY_SHOP=$SHOPIFY_SHOP SHOPIFY_ACCESS_TOKEN=$SHOPIFY_ACCESS_TOKEN npx vitest run --root dashboard --config vitest.config.ts dashboard/app/lib/mcp/__tests__/live-connection.test.ts
 - Result: PASS (1 test) — live connection healthy with real Shopify env
 - Follow-up: need replacement refresh token or guidance to restore fetch_mcp_token.sh rotation
+2025-10-02T20:40:16-06:00 — Directions realigned to North Star in e3c3ce13; read your direction.md.

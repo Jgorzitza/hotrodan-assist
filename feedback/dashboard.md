@@ -758,3 +758,4 @@ Artifacts
 - 2025-10-02T20:30:11-06:00 prisma generated; vitest run executed (mocks).
 POW 2025-10-02T20:32:38-06:00 commit 052b48e0 molecule auth-reset-steps-5-10
 - 2025-10-02T20:32:47-06:00 BLOCKER: Shopify CLI dev reset requires interactive login/network; need Manager to inject CLI session or perform dev run and share tunnel URL.
+2025-10-02T20:40:16-06:00 — Directions realigned to North Star in e3c3ce13; read your direction.md.

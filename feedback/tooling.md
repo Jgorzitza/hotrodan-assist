@@ -203,3 +203,4 @@
   - Artifacts: test-results/dashboard/vitest-junit.xml (generated), lint to test-results/dashboard/eslint.txt in CI.
   - Command logs above; vitest summary attached in console output.
   - Commit: N/A (harness verified; no code changes needed for green Path B). If CI junit flake reproduces, will submit minimal CI flag tweak as a follow-up commit.
+2025-10-02T20:40:16-06:00 — Directions realigned to North Star in e3c3ce13; read your direction.md.

@@ -155,3 +155,4 @@
 - Status (2025-10-03T20:12Z): p95 target remains ≤400ms; measurement plan tracked in docs/inventory-performance.md; perf harness ready for mock dataset runs.
  - Proof-of-work: Targeted vitest (inventory) PASS — 3 files, 9 tests; curl /api/inventory/health pre/post: HTTP 000 (dev server offline). Evidence logged under `coordination/inbox/inventory/2025-10-03-notes.md`.
  - Perf harness plan: Use mock dataset generator (1.2k SKUs) via `/api/inventory/export.csv` pagination to measure p95 over batches; capture p50/p95/error% to `docs/inventory-performance.md` and attach CSV artifacts under `artifacts/phase3/inventory/`.
+2025-10-02T20:40:16-06:00 — Directions realigned to North Star in e3c3ce13; read your direction.md.

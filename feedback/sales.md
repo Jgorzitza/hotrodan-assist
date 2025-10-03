@@ -203,3 +203,4 @@
 
 Artifacts: vitest outputs captured above; metrics curl code recorded.
 Blocked: no running app server for `/app/metrics` curl, and Shopify Admin token not yet provided for live MCP-backed path. Proceeding to next molecule (CLV/forecast scaffolds) while mocks remain enabled.
+2025-10-02T20:40:16-06:00 — Directions realigned to North Star in e3c3ce13; read your direction.md.
