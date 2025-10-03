@@ -1,0 +1,22 @@
+# Archived backlog entries (moved 2025-10-02 during canonicalization). Read-only.
+
+tasks:
+  - id: seo.opportunities-v1
+    node: seo
+    title: "SEO opportunity finder (GSC/Bing/GA4 + crawl competitors)"
+    status: TODO
+    deliverables:
+      - "Query clustering + gap detection"
+      - "Opportunity score and Content Brief export (.md)"
+      - "Dashboard list with filters"
+    deps: ["mcp.connectors-v1"]
+
+  - id: sales.insights-v1
+    node: sales
+    title: "Sales funnel and experiment ideas"
+    status: TODO
+    deliverables:
+      - "Funnel: sessions→add-to-cart→checkout→purchase"
+      - "Suggest cross-sell/upsell and landing-page tests"
+      - "Export CSV"
+    deps: ["mcp.connectors-v1"]

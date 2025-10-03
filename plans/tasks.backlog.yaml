@@ -7,12 +7,33 @@ tasks:
   - id: repo.cleanup
     node: tooling
     title: "Clean branches and archive legacy direction files"
-    status: TODO
+    status: DONE
     deliverables:
       - "main ← merge of chore/repo-canonical-layout (fast-forward if possible)"
       - "archive/ moved: HANDOVER*.md, any obsolete agent direction files"
       - "README updated; no conflict markers"
-    notes: "Follow commands in `commands/cleanup-and-merge.md`"
+    notes: "Follow commands in `commands/cleanup-and-merge.md`. Completed 2025-10-02 via merge commit 020c3b18 on main."
+
+  - id: cleanup.canonicalization-phase1
+    node: tooling
+    title: "Inventory instruction surfaces and archive legacy handovers"
+    status: DONE
+    deliverables:
+      - "Published docs/cleanup/inventory-20251002.md"
+      - "handover/, AGENT_COMMANDS.md, work orders moved to archive/legacy/"
+      - "Created supporting doc placeholders (COMPONENTS, PATTERNS, TROUBLESHOOTING, ARCHITECTURE, DECISIONS)"
+    notes: "Completed 2025-10-02; see docs/cleanup/inventory-20251002.md and archive/legacy/."
+
+  - id: cleanup.policy-guardrails
+    node: tooling
+    title: "Align README, CODEOWNERS, workflows, and PR template with canonical doc set"
+    status: DONE
+    deliverables:
+      - "README references docs/NORTH_STAR.md and repo structure"
+      - "CODEOWNERS + verify-managed-files guard new canonical files"
+      - "Pull request template enforces molecular scope & artifacts"
+      - "agent_launch_commands.md contains GO gate note"
+    notes: "Completed 2025-10-02 alongside canonicalization efforts."
 
   - id: rag.index-v1
     node: rag
@@ -40,7 +61,7 @@ tasks:
     status: TODO
     deliverables:
       - "Polaris form with ENV key presence checks (no values shown)"
-      - "Feature toggles: USE_MOCK_DATA, ENABLE_MCP, ENABLE_SEO, ENABLE_INVENTORY"
+      - "Feature toggles: MCP_FORCE_MOCKS, ENABLE_MCP, ENABLE_SEO, ENABLE_INVENTORY"
       - "Health panel that pings each backend service"
     deps: ["tooling.remix-tests"]
 
@@ -54,16 +75,6 @@ tasks:
       - "Metrics: approval rate, avg edit distance"
     deps: ["mcp.connectors-v1","rag.index-v1"]
 
-  - id: seo.opportunities-v1
-    node: seo
-    title: "SEO opportunity finder (GSC/Bing/GA4 + crawl competitors)"
-    status: TODO
-    deliverables:
-      - "Query clustering + gap detection"
-      - "Opportunity score and Content Brief export (.md)"
-      - "Dashboard list with filters"
-    deps: ["mcp.connectors-v1"]
-
   - id: inventory.reorder-v1
     node: inventory
     title: "Vendor-aware reorder points + SKU/vendor mapping UI"
@@ -72,16 +83,6 @@ tasks:
       - "Lead-time demand + safety stock: ROP = μ_d * L + z * σ_d * √L"
       - "Screens: by All, Vendor, Fast Movers"
       - "Assign/remove vendors; vendor SKU mapping"
-    deps: ["mcp.connectors-v1"]
-
-  - id: sales.insights-v1
-    node: sales
-    title: "Sales funnel and experiment ideas"
-    status: TODO
-    deliverables:
-      - "Funnel: sessions→add-to-cart→checkout→purchase"
-      - "Suggest cross-sell/upsell and landing-page tests"
-      - "Export CSV"
     deps: ["mcp.connectors-v1"]
 
   - id: tooling.qa-basics
@@ -110,7 +111,7 @@ tasks:
     title: "Remove mock data toggles and integrate live data"
     status: DOING
     deliverables:
-      - "Remove USE_MOCK_DATA toggles from all components"
+      - "Remove MCP_FORCE_MOCKS toggles from all components"
       - "Integrate live MCP connector data"
       - "Real-time data updates and caching"
       - "Error handling for live data failures"

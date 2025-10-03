@@ -1,59 +1,64 @@
-# Hot Rod AN — RAG + Omnichannel Assistants
+# Hot Rod AN — Internal Ops Dashboard
 
-Start here: read `HANDOVER.md` for the full specs, milestones, and service layout. See `agents.md` for the condensed agent playbook.
+Our north star is documented in [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md). We are building an embedded Shopify Admin dashboard that unifies RAG-powered assistance, approvals, and analytics so a single operator can steer the business.
 
-## Quickstart (local)
+## Repository Layout (`~/llama_rag`)
+```text
+~/llama_rag/
+├── app/                 # FastAPI services: rag-api, assistants, sync, approval-app
+├── dashboard/           # Remix + Polaris admin experience
+├── corrections/         # RAG corrections applied during golden tests
+├── docs/                # Canonical product & operations documentation
+├── feedback/            # Agent proof-of-work logs (one file per agent)
+├── plans/               # RPG graph, backlog, agent directions
+├── scripts/             # Ops tools (health grid, fetch_mcp_token, load testing)
+├── tests/ & e2e/        # Unit and Playwright suites
+├── archive/legacy/      # Historical handovers and superseded specs (read-only)
+└── artifacts/, tmp/,…   # Generated data, baselines, and local scratch space
 ```
+
+## Local Setup
+```bash
 python3 -m venv .venv
-source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install -U llama-index openai "chromadb>=0.5" \
                llama-index-vector-stores-chroma llama-index-readers-web \
                llama-index-readers-file pyyaml \
                llama-index-embeddings-fastembed fastembed
-cp .env.example .env
-python discover_urls.py
-python ingest_site_chroma.py
+cp .env.example .env                  # fill in service credentials (see docs/environment-variables.md)
+python discover_urls.py               # crawl site content
+python ingest_site_chroma.py          # build Chroma index
 python query_chroma_router.py "EFI swap ~400 hp; pump LPH, 10 micron, AN sizes?"
-```
 
-- Populate `.env` with service credentials (OpenAI, Zoho, Shopify). `SHOPIFY_WEBHOOK_SECRET`, `SHOPIFY_ACCESS_TOKEN`, and `SHOPIFY_SHOP` must be filled before running the sync service.
-- If you leave `OPENAI_API_KEY` empty, the stack now falls back to FastEmbed embeddings and returns retrieval-only bullets from the `/query` endpoint; add a real key to restore full generative answers.
-- Shopify CLI users can run `shopify app config use shopify.app.toml` followed by `shopify app deploy` to apply config, then `shopify app webhook trigger orders/create` to send signed test events to `http://localhost:8003/shopify/webhook`.
-
-## Tests
-```
-# Python RAG regression suite
-python run_goldens.py  # offline corrections-only; no API calls
-
-# Remix dashboard checks (run from repo root)
+# Dashboard (Remix + Polaris)
+npm install
 npm run lint
 npm test -- --run
-npm run test:e2e -- --list
 ```
 
-- When the virtual environment is not active, prefix commands with `.venv/bin/` (e.g., `./.venv/bin/python run_goldens.py`).
-- Install JS deps with `npm install` before running the dashboard test commands. Playwright browsers are installed automatically in CI; locally run `npx playwright install --with-deps` once.
+Key credentials (`OPENAI_API_KEY`, `SHOPIFY_*`, `ZOHO_*`, analytics tokens) live in `.env`; never commit secrets. Mock mode defaults keep the dashboard usable while live connectors are wired (`MCP_FORCE_MOCKS=true`).
 
-## Repo highlights
-- Retrieval stack: LlamaIndex + Chroma scripts in repo root (`discover_urls.py`, `ingest_site_chroma.py`, `query_chroma_router.py`).
-- Quality guardrails: `corrections/corrections.yaml`, `goldens/qa.yaml`, `run_goldens.py`.
-- Service stubs: FastAPI apps under `app/` (rag-api, assistants, sync, approval-app).
-- Specs & docs: `HANDOVER.md`, `HANDOVER_ALL_IN_ONE.md`, and `agents.md`.
+## Quality Gates
+- **RAG**: `python run_goldens.py`
+- **Dashboard**: `npm run lint`, `npx vitest run --root dashboard --config dashboard/vitest.config.ts`
+- **Playwright smoke**: `npm run test:e2e -- --list` (or the smoke target once live creds land)
+- **Ops health**: `bash scripts/health_grid.sh` and `python scripts/live_check.py`
 
-## Dashboard Remix App
-The Shopify Admin dashboard lives under `dashboard/` and was scaffolded from the official Remix template.
+CI runs these lanes via `.github/workflows/ci.yml`; artifacts are published under `test-results/`.
 
-```
-cd dashboard
-npm install
-cp .env.example .env
-# Authenticate the CLI interactively before running the next command
-shopify app config link
-shopify app dev --store=afafsaf.myshopify.com
-```
+## Canonical Sources
+- Strategy: [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md)
+- Architecture notes: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- Components & patterns: [`docs/COMPONENTS.md`](docs/COMPONENTS.md), [`docs/PATTERNS.md`](docs/PATTERNS.md)
+- Troubleshooting & runbooks: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md), [`docs/runbook.md`](docs/runbook.md)
+- Decisions log: [`docs/DECISIONS.md`](docs/DECISIONS.md)
+- Cleanup ledger: [`docs/cleanup/inventory-20251002.md`](docs/cleanup/inventory-20251002.md)
 
-- Update `.env` / `.env.production` with Partner app credentials, tunnel URL, and `DATABASE_URL`.
-- Switch stores by running `shopify app dev --store=fm8vte-ex.myshopify.com` once live-ready.
-- Section 0 status, route briefs, data layer, and integration plans live in `prompts/dashboard/`.
-- All Remix routes currently render Polaris UIs backed by mock data (`USE_MOCK_DATA=true`). Swap to live data by wiring the modules in `dashboard/app/lib/`.
-- Set `ENABLE_MCP=true` after wiring real Storefront MCP credentials (`MCP_API_URL`, `MCP_API_KEY`) and validate via upcoming settings toggle.
+## Planning & Agent Coordination
+- RPG topology: [`plans/rpg.json`](plans/rpg.json)
+- Backlog: [`plans/tasks.backlog.yaml`](plans/tasks.backlog.yaml)
+- Directions: [`plans/agents/<agent>/direction.md`](plans/agents/) (manager-owned)
+- Feedback cadence: [`feedback/<agent>.md`](feedback/) (append proof-of-work every 5 minutes)
+- Launch prompts: [`agent_launch_commands.md`](agent_launch_commands.md) — obey GO-gate instructions before starting any session.
+
+For legacy prompts, handovers, and historical context, refer to `archive/legacy/` (read-only). Update the canonical docs whenever you ship a “molecule”: code, tests, docs, and decisions travel together.

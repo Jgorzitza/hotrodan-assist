@@ -1,4 +1,4 @@
-name: Guard Required Prompts
+name: Guard Canonical Files
 
 on: [push]
 
@@ -7,15 +7,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Ensure required prompts exist
+      - name: Ensure canonical instruction files exist
         run: |
           missing=0
-          for file in prompts/tooling/program-manager.md AGENT_COMMANDS.md scripts/launch_agent.sh prompts/dashboard/overview.md prompts/dashboard/mcp.md prompts/dashboard/data-layer.md HANDOVER.md coordination/dependency-matrix.md; do
-            if [ ! -f "$file" ]; then
+          for file in \
+            docs/NORTH_STAR.md \
+            docs/COMPONENTS.md \
+            docs/PATTERNS.md \
+            docs/TROUBLESHOOTING.md \
+            docs/ARCHITECTURE.md \
+            docs/DECISIONS.md \
+            docs/cleanup/inventory-20251002.md \
+            plans/rpg.json \
+            plans/tasks.backlog.yaml \
+            agent_launch_commands.md; do
+            if [ ! -e "$file" ]; then
               echo "::error::Missing required file $file"
               missing=1
             fi
           done
-          if [ "$missing" -ne 0 ]; then
-            exit 1
-          fi
+          exit $missing

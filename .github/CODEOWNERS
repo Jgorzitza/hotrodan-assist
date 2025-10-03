@@ -1,8 +1,13 @@
-# Managed instruction surfaces require manager approval
-/docs/agents.md                               @manager
-/handover/**                                  @manager
-/coordination/agent-feedback-guidelines.md    @manager
-/coordination/registry/**                     @manager
-/coordination/templates/**                    @manager
-/coordination/digests/**                      @manager
-/agent/*/INSTRUCTIONS.md                      @manager
+# Canonical instruction surfaces (manager-owned)
+/docs/NORTH_STAR.md                         @Jgorzitza
+/docs/COMPONENTS.md                        @Jgorzitza
+/docs/PATTERNS.md                          @Jgorzitza
+/docs/TROUBLESHOOTING.md                   @Jgorzitza
+/docs/ARCHITECTURE.md                      @Jgorzitza
+/docs/DECISIONS.md                         @Jgorzitza
+/docs/cleanup/**                           @Jgorzitza
+/plans/rpg.json                            @Jgorzitza
+/plans/tasks.backlog.yaml                  @Jgorzitza
+/plans/agents/*/direction.md               @Jgorzitza
+/feedback/*.md                             @Jgorzitza
+/agent_launch_commands.md                  @Jgorzitza
