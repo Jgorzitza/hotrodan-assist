@@ -167,3 +167,17 @@
 2025-10-03T01:37Z — Path B harness green (Vitest) — commit 1034d3c7; molecule=ProductionToday:Task1 (jsdom+shims+prisma-generate)
 - Ran: cd dashboard && npx vitest run --config vitest.config.ts (209 passed)
 - Artifacts: JUnit via CI (ci.yml), metrics route added; MCP_FORCE_MOCKS defaulted true in .env.example
+
+## 2025-10-03T02:17Z — Path B green locally; CI workflow fixed (Molecule=ProductionToday:Task1)
+- Command: cd dashboard && DATABASE_URL=file:./prisma/dev.db npx prisma generate && npx vitest run --config vitest.config.ts
+- Result: 51 files, 211 tests → 209 passed, 2 skipped; 0 failed
+- CI: Updated .github/workflows/ci.yml to
+  - set DATABASE_URL=file:./prisma/dev.db during Prisma generate and Vitest
+  - fix Vitest resolve (use working-directory=dashboard; config=vitest.config.ts)
+  - persist ESLint output to test-results/dashboard/eslint.txt
+  - run Playwright in list mode to avoid server dependency
+  - upload artifacts from test-results/dashboard/ (Vitest JUnit + lint log)
+- Credentials snapshot: .env includes MCP_API_URL/MCP_API_KEY + MCP_CLIENT_ID/REFRESH_TOKEN; Shopify Admin tokens remain placeholders (no secrets logged).
+- QA note: prisma.config.ts selects schema.sqlite.prisma when DATABASE_URL starts with file:, avoiding Postgres provider mismatch. No Playwright conflicts observed in Path B.
+- Optional flag proposal (no code changes): VITEST_PRISMA_DISABLE — when true, skip Prisma integration suites in CI to speed feedback while retaining unit coverage.
+- Commit: 48b8a4b1
