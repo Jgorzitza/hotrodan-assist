@@ -149,3 +149,7 @@
 - Proof-of-work (2025-10-03T19:29Z): Targeted vitest (inventory) PASS — 3 files, 9 tests; added stub `dashboard/app/lib/inventory/live.server.ts` to satisfy live import without network I/O.
 - Proof-of-work (2025-10-03T19:29Z): curl http://127.0.0.1:8080/api/inventory/health → HTTP 000 (dev server offline); validated health via loader tests instead.
 - Blocking note (2025-10-03T19:29Z): Live Shopify wiring readiness = BLOCKED (credentials + dev server availability). Will re-run curl upon server/tunnel availability.
+
+- Proof-of-work (2025-10-03T20:12Z): Re-ran targeted vitest with dashboard config — PASS (3 files, 9 tests). Suites: api.inventory.health, api.inventory.csv-export.loader, app.inventory.
+- Proof-of-work (2025-10-03T20:12Z): curl /api/inventory/health → HTTP 000 (server offline); recorded fallback and command in coordination/inbox/inventory/2025-10-03-notes.md.
+- Status (2025-10-03T20:12Z): p95 target remains ≤400ms; measurement plan tracked in docs/inventory-performance.md; perf harness ready for mock dataset runs.
