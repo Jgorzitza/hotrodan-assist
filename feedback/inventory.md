@@ -137,3 +137,15 @@
 - Proof-of-work (2025-10-01T22:21:41-06:00): Strengthened live.mappings test to verify inventoryQuantity parsing; vitest PASS.
 
 - Proof-of-work (2025-10-01T22:29:27-06:00): app.inventory test suite now spies on fetchSkuVendorMapFromAdmin and verifies onHand overlay; vitest PASS.
+- Proof-of-work (2025-10-02T08:32:48-06:00): Targeted vitest run (inventory suite) PASS — 2 files, 4 tests; health curl http://127.0.0.1:8080/api/inventory/health returned 404 (endpoint likely misnamed); next step is to inspect Remix route naming to restore 200 response.
+- Proof-of-work (2025-10-02T08:36:00-06:00): Renamed inventory API routes to flat Remix form (`api.inventory.health.ts`, `api.inventory.export.csv.ts`), fixed imports, and reran targeted vitest (PASS). Curl still 404 pending dev server restart.
+- Proof-of-work (2025-10-02T08:39:31-06:00): `npx remix routes` confirms `/api/inventory/*` endpoints registered after rename; `npm run build` currently blocked by existing `useNonce` import issue in dashboard/app/root.tsx — flagged for follow-up; curl pending dev server restart.
+- Proof-of-work (2025-10-02T09:15:04-06:00): `npm run build` now succeeds after dropping `useNonce`; refreshed `isMockMode` to respect `MCP_FORCE_MOCKS`/`USE_MOCK_DATA`, adjusted CSV loader test to flip the toggle, and reran vitest (4 tests) — all passing.
+- Proof-of-work (2025-10-02T09:38:04-06:00): Adopted phase 3 cleanup kit — noted playbook location, cross-linked `commands/cleanup-and-merge.md`, ran `git fetch --all --prune`; awaiting clean tree before executing archival merge steps.
+- Proof-of-work (2025-10-02T11:24:39-06:00): Stabilized inventory perf harness (warm-ups + timeout tweaks) and re-ran vitest — p95 inventory_generation ≈ 102ms, csv_export ≈ 3.85ms; documented results in docs/inventory-performance.md.
+- Proof-of-work (2025-10-02T12:22:11-06:00): Ran live-mode vitest bundle with ENABLE_MCP=true / MCP_FORCE_MOCKS=false using fm8vte-ex.myshopify.com credentials — 5 files, 13 tests PASS; inventory_generation p95 ≈ 46.6ms, csv_export p95 ≈ 5.6ms.
+- Proof-of-work (2025-10-02T13:43:39-06:00): Manager noted MCP refresh token failure; acknowledged dependency and waiting on updated credentials before re-enabling automation.
+
+- Proof-of-work (2025-10-03T19:29Z): Targeted vitest (inventory) PASS — 3 files, 9 tests; added stub `dashboard/app/lib/inventory/live.server.ts` to satisfy live import without network I/O.
+- Proof-of-work (2025-10-03T19:29Z): curl http://127.0.0.1:8080/api/inventory/health → HTTP 000 (dev server offline); validated health via loader tests instead.
+- Blocking note (2025-10-03T19:29Z): Live Shopify wiring readiness = BLOCKED (credentials + dev server availability). Will re-run curl upon server/tunnel availability.
