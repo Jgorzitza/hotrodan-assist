@@ -1,7 +1,8 @@
 import { inc } from "~/lib/metrics/metrics.server";
+import { publishInboxActionEvent } from "~/lib/inbox/events.server";
+import { publishInboxActionEvent } from "~/lib/inbox/events.server";
 import type { TelemetryHooks } from "./client.server";
-import { McpResourceType } from "./types";
-
+import type { McpTelemetryEvent } from "./types";
 const key = (name: string, tags: Record<string, string | number | undefined>) => {
   const parts = Object.entries(tags)
     .filter(([, v]) => v !== undefined)
@@ -38,10 +39,6 @@ export const buildMcpMetricsTelemetry = (): TelemetryHooks => ({
     inc(key("mcp_breaker_close_total", { shop: context.shopDomain, resource }));
   },
 });
-
-import { publishInboxActionEvent } from "~/lib/inbox/events.server";
-import type { TelemetryHooks } from "./client.server";
-import type { McpTelemetryEvent } from "./types";
 
 const mask = (value: string | undefined) => (value ? value.replace(/https?:\/\//, "") : undefined);
 

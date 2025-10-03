@@ -12,6 +12,8 @@ node_modules
 database.sqlite
 
 .env
+# Allow committed example env files while ignoring other env variants
+!.env.example
 .env.*
 
 package-lock.json
